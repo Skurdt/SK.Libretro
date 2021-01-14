@@ -1,0 +1,17 @@
+{
+  "name": "com.sk.libretro",
+  "version": "0.1.0",
+  "displayName": "SK.Libretro",
+  "description": "Libretro to Unity bridge",
+  "unity": "2020.2",
+  "keywords": [
+    "library",
+    "libretro"
+  ],
+  "author": {
+    "name": "Skurdt",
+    "email": "skurdt@gmail.com",
+    "url": "https://github.com/Skurdt"
+  },
+  "type": "library"
+}
