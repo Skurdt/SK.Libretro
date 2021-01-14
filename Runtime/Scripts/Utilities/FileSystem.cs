@@ -33,10 +33,8 @@ namespace SK.Libretro.Utilities
         {
             try
             {
-                using (_ = File.Create(GetAbsolutePath(path)))
-                {
-                    return true;
-                }
+                using FileStream fs = File.Create(GetAbsolutePath(path));
+                return true;
             }
             catch (Exception e)
             {
