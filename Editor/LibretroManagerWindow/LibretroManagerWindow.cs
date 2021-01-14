@@ -20,7 +20,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-#if UNITY_EDITOR
 using HtmlAgilityPack;
 using SK.Libretro.Utilities;
 using System;
@@ -35,7 +34,7 @@ using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
-namespace SK.Libretro.Unity.EditorOnly
+namespace SK.Libretro.UnityEditor
 {
     public class LibretroManagerWindow : EditorWindow
     {
@@ -284,15 +283,13 @@ namespace SK.Libretro.Unity.EditorOnly
 
         private static string DownloadFile(string url)
         {
-            using (WebClient webClient = new WebClient())
-            {
-                string fileName = Path.GetFileName(url);
-                string filePath = Path.GetFullPath(Path.Combine(_coresDirectory, fileName));
-                if (File.Exists(filePath))
-                    File.Delete(filePath);
-                webClient.DownloadFile(url, filePath);
-                return filePath;
-            }
+            using WebClient webClient = new WebClient();
+            string fileName = Path.GetFileName(url);
+            string filePath = Path.GetFullPath(Path.Combine(_coresDirectory, fileName));
+            if (File.Exists(filePath))
+                File.Delete(filePath);
+            webClient.DownloadFile(url, filePath);
+            return filePath;
         }
 
         private static void ExtractFile(string zipPath)
@@ -302,15 +299,13 @@ namespace SK.Libretro.Unity.EditorOnly
 
             try
             {
-                using (ZipArchive archive = ZipFile.OpenRead(zipPath))
+                using ZipArchive archive = ZipFile.OpenRead(zipPath);
+                foreach (ZipArchiveEntry entry in archive.Entries)
                 {
-                    foreach (ZipArchiveEntry entry in archive.Entries)
-                    {
-                        string destinationPath = Path.GetFullPath(Path.Combine(_coresDirectory, entry.FullName));
-                        if (File.Exists(destinationPath))
-                            File.Delete(destinationPath);
-                        entry.ExtractToFile(destinationPath);
-                    }
+                    string destinationPath = Path.GetFullPath(Path.Combine(_coresDirectory, entry.FullName));
+                    if (File.Exists(destinationPath))
+                        File.Delete(destinationPath);
+                    entry.ExtractToFile(destinationPath);
                 }
             }
             finally
@@ -322,4 +317,3 @@ namespace SK.Libretro.Unity.EditorOnly
         }
     }
 }
-#endif

@@ -1,0 +1,16 @@
+{
+    "name": "SK.Libretro.UnityEditor",
+    "rootNamespace": "SK.Libretro.UnityEditor",
+    "references": [
+        "GUID:fc3ade9bc3ff120479c546ff8570333a"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

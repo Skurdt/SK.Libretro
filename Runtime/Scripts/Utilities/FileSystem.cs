@@ -25,7 +25,7 @@ using System.IO;
 
 namespace SK.Libretro.Utilities
 {
-    internal static class FileSystem
+    public static class FileSystem
     {
         public static bool FileExists(string path) => File.Exists(path);
 
