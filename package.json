@@ -13,5 +13,9 @@
     "email": "skurdt@gmail.com",
     "url": "https://github.com/Skurdt"
   },
-  "type": "library"
+  "type": "library",
+  "dependencies": {
+    "com.sk.utilities": "https://github.com/Skurdt/SK.Utilities.git",
+    "com.sk.utilities.unity": "https://github.com/Skurdt/SK.Utilities.Unity.git"
+  }
 }
