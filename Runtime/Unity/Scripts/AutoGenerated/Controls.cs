@@ -1,4 +1,4 @@
-// GENERATED AUTOMATICALLY FROM 'Assets/SK.Plugins/SK.Libretro/Unity/Controls.inputactions'
+// GENERATED AUTOMATICALLY FROM 'Packages/com.sk.libretro/Runtime/Unity/Controls.inputactions'
 
 using System;
 using System.Collections;
