@@ -15,7 +15,9 @@
   },
   "type": "library",
   "dependencies": {
-    "com.sk.utilities": "https://github.com/Skurdt/SK.Utilities.git",
-    "com.sk.utilities.unity": "https://github.com/Skurdt/SK.Utilities.Unity.git"
+    "com.unity.burst": "1.4.3",
+    "com.unity.inputsystem": "1.0.1",
+    "com.sk.utilities": "1.0.0",
+    "com.sk.utilities.unity": "1.0.0"
   }
 }
