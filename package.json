@@ -4,20 +4,20 @@
   "displayName": "SK.Libretro",
   "description": "Libretro to Unity bridge",
   "unity": "2020.2",
-  "keywords": [
-    "library",
-    "libretro"
-  ],
-  "author": {
-    "name": "Skurdt",
-    "email": "skurdt@gmail.com",
-    "url": "https://github.com/Skurdt"
-  },
-  "type": "library",
   "dependencies": {
     "com.unity.burst": "1.4.3",
     "com.unity.inputsystem": "1.0.1",
     "com.sk.utilities": "1.0.0",
     "com.sk.utilities.unity": "1.0.0"
+  },
+  "keywords": [
+    "library",
+    "libretro"
+  ],
+  "type": "library",
+  "author": {
+    "name": "Skurdt",
+    "email": "skurdt@gmail.com",
+    "url": "https://github.com/Skurdt"
   }
 }

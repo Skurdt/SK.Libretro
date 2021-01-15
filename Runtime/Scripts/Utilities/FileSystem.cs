@@ -131,6 +131,9 @@ namespace SK.Libretro.Utilities
         {
             try
             {
+                if (!FileExists(sourcePath))
+                    return null;
+
                 string jsonString = File.ReadAllText(GetAbsolutePath(sourcePath));
                 return UnityEngine.JsonUtility.FromJson<T>(jsonString);
             }

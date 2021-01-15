@@ -550,14 +550,9 @@ namespace SK.Libretro
                 return true;
             }
 
-            bool SetCoreOptions()
-            {
-                if (data == null)
-                    return false;
+            bool SetCoreOptions() => data != null && SetCoreOptionsInternal();
 
-                return SetCoreOptionsInternal();
-            }
-
+            // TODO: implement this
             bool SetCoreOptionsIntl()
             {
                 if (data == null)
@@ -566,7 +561,6 @@ namespace SK.Libretro
                 try
                 {
                     retro_core_options_intl inOptionsIntl = Marshal.PtrToStructure<retro_core_options_intl>((IntPtr)data);
-                    retro_core_option_definition def = Marshal.PtrToStructure<retro_core_option_definition>(Marshal.ReadIntPtr(inOptionsIntl.us, 0));
                 }
                 catch (Exception e)
                 {

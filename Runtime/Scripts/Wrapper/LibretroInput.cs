@@ -127,17 +127,14 @@ namespace SK.Libretro
             if (Processor == null)
                 return 0;
 
-            switch (device)
+            return device switch
             {
-                case RETRO_DEVICE_JOYPAD:   return ProcessJoypadDeviceState(port, id);
-                case RETRO_DEVICE_MOUSE:    return ProcessMouseDeviceState(port, id);
-                case RETRO_DEVICE_KEYBOARD: return ProcessKeyboardDeviceState(port, id);
-                case RETRO_DEVICE_ANALOG:   return ProcessAnalogDeviceState(port, index, id);
-                case RETRO_DEVICE_LIGHTGUN:
-                case RETRO_DEVICE_POINTER:
-                default:
-                    return 0;
-            }
+                RETRO_DEVICE_JOYPAD   => ProcessJoypadDeviceState(port, id),
+                RETRO_DEVICE_MOUSE    => ProcessMouseDeviceState(port, id),
+                RETRO_DEVICE_KEYBOARD => ProcessKeyboardDeviceState(port, id),
+                RETRO_DEVICE_ANALOG   => ProcessAnalogDeviceState(port, index, id),
+                _ => 0,
+            };
         }
 
         private short ProcessJoypadDeviceState(uint port, uint button) => BoolToShort(Processor.JoypadButton((int)port, (int)button));

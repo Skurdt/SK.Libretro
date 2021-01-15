@@ -94,10 +94,7 @@ namespace SK.Libretro.Utilities
 
         private static void LogInternal(LogLevel level, string message, string caller)
         {
-            if (!string.IsNullOrEmpty(caller))
-                caller = ColorSupport ? $"<color=lightblue>[{caller}]</color> " : $"[{caller}] ";
-            else
-                caller = "";
+            caller = !string.IsNullOrEmpty(caller) ? ColorSupport ? $"<color=lightblue>[{caller}]</color> " : $"[{caller}] " : "";
 
             switch (level)
             {
