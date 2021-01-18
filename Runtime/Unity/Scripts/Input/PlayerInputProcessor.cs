@@ -43,51 +43,52 @@ namespace SK.Libretro.Unity
         private const int NUM_JOYPAD_BUTTONS = 16;
         private const int NUM_MOUSE_BUTTONS  = 5;
 
-#pragma warning disable IDE0051 // Remove unused private members, Callbacks for the PlayerInput component
-        private void OnDeviceLost(PlayerInput player) => Utilities.Logger.LogInfo($"Player #{player.playerIndex} device lost ({player.devices.Count}).");
+        public void OnDeviceLost(PlayerInput player) => Utilities.Logger.LogInfo($"Player #{player.playerIndex} device lost ({player.devices.Count}).");
 
-        private void OnDeviceRegained(PlayerInput player) => Utilities.Logger.LogInfo($"Player #{player.playerIndex} device regained ({player.devices.Count}).");
+        public void OnDeviceRegained(PlayerInput player) => Utilities.Logger.LogInfo($"Player #{player.playerIndex} device regained ({player.devices.Count}).");
 
-        private void OnControlsChanged(PlayerInput player) => Utilities.Logger.LogInfo($"Player #{player.playerIndex} controls changed ({player.devices.Count}).");
+        public void OnControlsChanged(PlayerInput player) => Utilities.Logger.LogInfo($"Player #{player.playerIndex} controls changed ({player.devices.Count}).");
 
-        private void OnJoypadDirections(InputValue value)
+        public void OnDPad(InputAction.CallbackContext context) => HandleDPad(GetVector2(context));
+
+        public void OnAnalogLeft(InputAction.CallbackContext context)
         {
-            Vector2 vec = value.Get<Vector2>();
+            AnalogLeft = GetVector2(context);
+            if (AnalogDirectionsToDigital)
+                HandleDPad(AnalogLeft);
+        }
+
+        public void OnAnalogRight(InputAction.CallbackContext context) => AnalogRight = GetVector2(context);
+
+        public void OnJoypadStartButton(InputAction.CallbackContext context)  => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_START]  = context.performed;
+        public void OnJoypadSelectButton(InputAction.CallbackContext context) => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_SELECT] = context.performed;
+        public void OnJoypadAButton(InputAction.CallbackContext context)      => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_A]      = context.performed;
+        public void OnJoypadBButton(InputAction.CallbackContext context)      => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_B]      = context.performed;
+        public void OnJoypadXButton(InputAction.CallbackContext context)      => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_X]      = context.performed;
+        public void OnJoypadYButton(InputAction.CallbackContext context)      => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_Y]      = context.performed;
+        public void OnJoypadLButton(InputAction.CallbackContext context)      => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_L]      = context.performed;
+        public void OnJoypadRButton(InputAction.CallbackContext context)      => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_R]      = context.performed;
+        public void OnJoypadL2Button(InputAction.CallbackContext context)     => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_L2]     = context.performed;
+        public void OnJoypadR2Button(InputAction.CallbackContext context)     => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_R2]     = context.performed;
+        public void OnJoypadL3Button(InputAction.CallbackContext context)     => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_L3]     = context.performed;
+        public void OnJoypadR3Button(InputAction.CallbackContext context)     => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_R3]     = context.performed;
+
+        public void OnMousePositionDelta(InputAction.CallbackContext context) => MousePositionDelta = GetVector2(context);
+        public void OnMouseWheelDelta(InputAction.CallbackContext context)    => MouseWheelDelta    = GetVector2(context);
+        public void OnMouseLeftButton(InputAction.CallbackContext context)    => MouseButtons[0]    = context.performed;
+        public void OnMouseRightButton(InputAction.CallbackContext context)   => MouseButtons[1]    = context.performed;
+        public void OnMouseMiddleButton(InputAction.CallbackContext context)  => MouseButtons[2]    = context.performed;
+        public void OnMouseForwardButton(InputAction.CallbackContext context) => MouseButtons[3]    = context.performed;
+        public void OnMouseBackButton(InputAction.CallbackContext context)    => MouseButtons[4]    = context.performed;
+
+        private Vector2 GetVector2(InputAction.CallbackContext context) => context.performed ? context.ReadValue<Vector2>() : Vector2.zero;
+
+        private void HandleDPad(Vector2 vec)
+        {
             JoypadButtons[RETRO_DEVICE_ID_JOYPAD_UP]    = vec.y >=  0.2f;
             JoypadButtons[RETRO_DEVICE_ID_JOYPAD_DOWN]  = vec.y <= -0.2f;
             JoypadButtons[RETRO_DEVICE_ID_JOYPAD_LEFT]  = vec.x <= -0.2f;
             JoypadButtons[RETRO_DEVICE_ID_JOYPAD_RIGHT] = vec.x >=  0.2f;
         }
-
-        private void OnAnalogLeft(InputValue value)
-        {
-            AnalogLeft = value.Get<Vector2>();
-            if (AnalogDirectionsToDigital)
-                OnJoypadDirections(value);
-        }
-
-        private void OnAnalogRight(InputValue value) => AnalogRight = value.Get<Vector2>();
-
-        private void OnJoypadStartButton(InputValue value)  => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_START]  = value.isPressed;
-        private void OnJoypadSelectButton(InputValue value) => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_SELECT] = value.isPressed;
-        private void OnJoypadAButton(InputValue value)      => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_A]      = value.isPressed;
-        private void OnJoypadBButton(InputValue value)      => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_B]      = value.isPressed;
-        private void OnJoypadXButton(InputValue value)      => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_X]      = value.isPressed;
-        private void OnJoypadYButton(InputValue value)      => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_Y]      = value.isPressed;
-        private void OnJoypadLButton(InputValue value)      => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_L]      = value.isPressed;
-        private void OnJoypadRButton(InputValue value)      => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_R]      = value.isPressed;
-        private void OnJoypadL2Button(InputValue value)     => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_L2]     = value.isPressed;
-        private void OnJoypadR2Button(InputValue value)     => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_R2]     = value.isPressed;
-        private void OnJoypadL3Button(InputValue value)     => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_L3]     = value.isPressed;
-        private void OnJoypadR3Button(InputValue value)     => JoypadButtons[RETRO_DEVICE_ID_JOYPAD_R3]     = value.isPressed;
-
-        private void OnMousePositionDelta(InputValue value) => MousePositionDelta = value.Get<Vector2>();
-        private void OnMouseWheelDelta(InputValue value)    => MouseWheelDelta    = value.Get<Vector2>();
-        private void OnMouseLeftButton(InputValue value)    => MouseButtons[0]    = value.isPressed;
-        private void OnMouseRightButton(InputValue value)   => MouseButtons[1]    = value.isPressed;
-        private void OnMouseMiddleButton(InputValue value)  => MouseButtons[2]    = value.isPressed;
-        private void OnMouseForwardButton(InputValue value) => MouseButtons[3]    = value.isPressed;
-        private void OnMouseBackButton(InputValue value)    => MouseButtons[4]    = value.isPressed;
-#pragma warning restore IDE0051 // Remove unused private members
     }
 }

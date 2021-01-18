@@ -1,15 +1,15 @@
 {
-    "name": "Controls",
+    "name": "LibretroControls",
     "maps": [
         {
-            "name": "All",
+            "name": "RetroPad",
             "id": "639a1fe9-28e1-41ea-a98f-20b729bf505d",
             "actions": [
                 {
-                    "name": "JoypadDirections",
-                    "type": "Value",
+                    "name": "DPad",
+                    "type": "Button",
                     "id": "3d136013-1adf-4a01-ad86-7e5f4e85dd81",
-                    "expectedControlType": "Vector2",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
@@ -30,98 +30,98 @@
                     "interactions": ""
                 },
                 {
-                    "name": "JoypadStartButton",
-                    "type": "Value",
+                    "name": "Start",
+                    "type": "Button",
                     "id": "9c24f261-5878-4731-84f6-c78c63030707",
-                    "expectedControlType": "Digital",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
                 {
-                    "name": "JoypadSelectButton",
-                    "type": "Value",
+                    "name": "Select",
+                    "type": "Button",
                     "id": "f36bdbe8-984d-4ee1-828f-09864532efd2",
-                    "expectedControlType": "Digital",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
                 {
-                    "name": "JoypadAButton",
-                    "type": "Value",
+                    "name": "A",
+                    "type": "Button",
                     "id": "e53ba5ed-7472-4b78-84c0-1fb5090f8c02",
-                    "expectedControlType": "Digital",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
                 {
-                    "name": "JoypadBButton",
-                    "type": "Value",
+                    "name": "B",
+                    "type": "Button",
                     "id": "43910c93-05e7-444e-a9a2-e9672dc24851",
-                    "expectedControlType": "Digital",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
                 {
-                    "name": "JoypadXButton",
-                    "type": "Value",
+                    "name": "X",
+                    "type": "Button",
                     "id": "e4753e14-08e3-4a66-8300-14400a4ac68f",
-                    "expectedControlType": "Digital",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
                 {
-                    "name": "JoypadYButton",
-                    "type": "Value",
+                    "name": "Y",
+                    "type": "Button",
                     "id": "b06fcc7f-56a6-474b-8210-8542c0a84670",
-                    "expectedControlType": "Digital",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
                 {
-                    "name": "JoypadLButton",
-                    "type": "Value",
+                    "name": "L1",
+                    "type": "Button",
                     "id": "7b0cf759-77c7-4989-9771-c92f0d252cbe",
-                    "expectedControlType": "Digital",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
                 {
-                    "name": "JoypadRButton",
-                    "type": "Value",
-                    "id": "818c3450-ed6f-43c4-b028-bd2e462d9531",
-                    "expectedControlType": "Digital",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
-                    "name": "JoypadL2Button",
-                    "type": "Value",
+                    "name": "L2",
+                    "type": "Button",
                     "id": "056ab63b-501f-43c2-b9ef-6f18ba200cbc",
-                    "expectedControlType": "Digital",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
                 {
-                    "name": "JoypadR2Button",
-                    "type": "Value",
-                    "id": "53f451b1-0b6c-4fb3-aa44-e9adb960fde3",
-                    "expectedControlType": "Digital",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
-                    "name": "JoypadL3Button",
-                    "type": "Value",
+                    "name": "L3",
+                    "type": "Button",
                     "id": "e24819fc-988c-4580-b3f3-5cf81d5bc5f6",
-                    "expectedControlType": "Digital",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
                 {
-                    "name": "JoypadR3Button",
-                    "type": "Value",
+                    "name": "R1",
+                    "type": "Button",
+                    "id": "818c3450-ed6f-43c4-b028-bd2e462d9531",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "R2",
+                    "type": "Button",
+                    "id": "53f451b1-0b6c-4fb3-aa44-e9adb960fde3",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "R3",
+                    "type": "Button",
                     "id": "c370147f-9b2e-4df5-94d7-ee55bbf96f12",
-                    "expectedControlType": "Digital",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
@@ -143,41 +143,41 @@
                 },
                 {
                     "name": "MouseLeftButton",
-                    "type": "Value",
+                    "type": "Button",
                     "id": "fb5fe1ab-4f43-4283-aa33-979f65f561f8",
-                    "expectedControlType": "Digital",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
                 {
                     "name": "MouseRightButton",
-                    "type": "Value",
+                    "type": "Button",
                     "id": "0f8e30f0-b439-4f01-b0d1-a44602b472a9",
-                    "expectedControlType": "Digital",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
                 {
                     "name": "MouseMiddleButton",
-                    "type": "Value",
+                    "type": "Button",
                     "id": "d083c22f-6003-497b-b429-a6768fdd427c",
-                    "expectedControlType": "Digital",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
                 {
                     "name": "MouseForwardButton",
-                    "type": "Value",
+                    "type": "Button",
                     "id": "717e1b43-c43a-483a-b741-74bcebf873c7",
-                    "expectedControlType": "Digital",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
                 {
                     "name": "MouseBackButton",
-                    "type": "Value",
+                    "type": "Button",
                     "id": "2dd72a4a-66e3-4798-a075-6bb2dc2960bc",
-                    "expectedControlType": "Digital",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 }
@@ -190,7 +190,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard & Mouse",
-                    "action": "JoypadStartButton",
+                    "action": "Start",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -201,7 +201,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadStartButton",
+                    "action": "Start",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -212,7 +212,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard & Mouse",
-                    "action": "JoypadSelectButton",
+                    "action": "Select",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -223,7 +223,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadSelectButton",
+                    "action": "Select",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -234,18 +234,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard & Mouse",
-                    "action": "JoypadAButton",
+                    "action": "A",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
                     "id": "e3ccd30f-77fc-4578-a8df-c0913f9a0453",
-                    "path": "<Gamepad>/buttonEast",
+                    "path": "<Gamepad>/buttonSouth",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadAButton",
+                    "action": "A",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -256,18 +256,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard & Mouse",
-                    "action": "JoypadBButton",
+                    "action": "B",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
                     "id": "61173740-6cfb-488d-a57d-dcddd1a8a2e5",
-                    "path": "<Gamepad>/buttonSouth",
+                    "path": "<Gamepad>/buttonEast",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadBButton",
+                    "action": "B",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -278,7 +278,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard & Mouse",
-                    "action": "JoypadR3Button",
+                    "action": "R3",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -289,29 +289,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadR3Button",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "0d80c12b-1749-473c-9c2c-c60fa0590331",
-                    "path": "<Keyboard>/x",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard & Mouse",
-                    "action": "JoypadL3Button",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "eebd950f-62b4-42d1-bc9c-ecf76e78bb42",
-                    "path": "<Gamepad>/leftStickPress",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "JoypadL3Button",
+                    "action": "R3",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -322,7 +300,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard & Mouse",
-                    "action": "JoypadR2Button",
+                    "action": "R2",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -333,7 +311,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadR2Button",
+                    "action": "R2",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -344,7 +322,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard & Mouse",
-                    "action": "JoypadL2Button",
+                    "action": "L2",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -355,29 +333,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadL2Button",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "77e966b4-1ecd-432d-a7a8-0d1c9de4abfb",
-                    "path": "<Keyboard>/numpad6",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard & Mouse",
-                    "action": "JoypadRButton",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "82af4109-f72d-433e-82b4-7031442c1b89",
-                    "path": "<Gamepad>/rightShoulder",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "JoypadRButton",
+                    "action": "L2",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -388,7 +344,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard & Mouse",
-                    "action": "JoypadLButton",
+                    "action": "L1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -399,7 +355,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadLButton",
+                    "action": "L1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -410,18 +366,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard & Mouse",
-                    "action": "JoypadYButton",
+                    "action": "Y",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
                     "id": "1f2fe01b-53ad-4bc4-95d6-f91356467e79",
-                    "path": "<Gamepad>/buttonWest",
+                    "path": "<Gamepad>/buttonNorth",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadYButton",
+                    "action": "Y",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -432,18 +388,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard & Mouse",
-                    "action": "JoypadXButton",
+                    "action": "X",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
                     "id": "8d1cea9a-b937-4dab-af57-6f7703f0f3e5",
-                    "path": "<Gamepad>/buttonNorth",
+                    "path": "<Gamepad>/buttonWest",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadXButton",
+                    "action": "X",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -454,7 +410,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "JoypadDirections",
+                    "action": "DPad",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -465,7 +421,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard & Mouse",
-                    "action": "JoypadDirections",
+                    "action": "DPad",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -476,7 +432,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard & Mouse",
-                    "action": "JoypadDirections",
+                    "action": "DPad",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -487,7 +443,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard & Mouse",
-                    "action": "JoypadDirections",
+                    "action": "DPad",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -498,7 +454,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard & Mouse",
-                    "action": "JoypadDirections",
+                    "action": "DPad",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -509,7 +465,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadDirections",
+                    "action": "DPad",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -719,6 +675,50 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "AnalogRight",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0d80c12b-1749-473c-9c2c-c60fa0590331",
+                    "path": "<Keyboard>/x",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard & Mouse",
+                    "action": "L3",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "eebd950f-62b4-42d1-bc9c-ecf76e78bb42",
+                    "path": "<Gamepad>/leftStickPress",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "L3",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "77e966b4-1ecd-432d-a7a8-0d1c9de4abfb",
+                    "path": "<Keyboard>/numpad6",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard & Mouse",
+                    "action": "R1",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "82af4109-f72d-433e-82b4-7031442c1b89",
+                    "path": "<Gamepad>/rightShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "R1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

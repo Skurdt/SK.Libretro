@@ -33,6 +33,7 @@ namespace SK.Libretro.Unity
     {
         public sealed class Settings
         {
+            public string MainDirectory                 = Path.Combine(Application.streamingAssetsPath, "libretro~");
             public float TimeScale                      = 1.0f;
             public bool AudioVolumeControlledByDistance = true;
             public float AudioMaxVolume                 = 1f;
@@ -98,7 +99,7 @@ namespace SK.Libretro.Unity
 
         public bool Start(string coreName, string gameDirectory, string gameName)
         {
-            _wrapper = new LibretroWrapper((LibretroTargetPlatform)Application.platform, Path.Combine(Application.streamingAssetsPath, "libretro~"));
+            _wrapper = new LibretroWrapper((LibretroTargetPlatform)Application.platform, _settings.MainDirectory);
             if (!_wrapper.StartGame(coreName, gameDirectory, gameName))
             {
                 Stop();
