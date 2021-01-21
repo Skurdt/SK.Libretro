@@ -56,6 +56,9 @@ namespace SK.Libretro.Unity
             }
         }
 
+        private static readonly int _shaderTextureId   = Shader.PropertyToID("_Texture");
+        private static readonly int _shaderIntensityId = Shader.PropertyToID("_Intensity");
+
         private static bool _firstInstance = true;
 
         private readonly ScreenNode _screenNode;
@@ -409,8 +412,8 @@ namespace SK.Libretro.Unity
 
             MaterialPropertyBlock block = new MaterialPropertyBlock();
             _screenRenderer.GetPropertyBlock(block);
-            block.SetTexture("_Texture", texture);
-            block.SetFloat("_Intensity", 1.2f);
+            block.SetTexture(_shaderTextureId, texture);
+            block.SetFloat(_shaderIntensityId, 1.2f);
             _screenRenderer.SetPropertyBlock(block);
         }
 
@@ -420,7 +423,7 @@ namespace SK.Libretro.Unity
 
             MaterialPropertyBlock block = new MaterialPropertyBlock();
             _screenRenderer.GetPropertyBlock(block);
-            Texture2D tex = block.GetTexture("_Texture") as Texture2D;
+            Texture2D tex = block.GetTexture(_shaderTextureId) as Texture2D;
     	    File.WriteAllBytes(screenshotPath, tex.EncodeToTGA());
             _screenshotCoroutine = null;
         }
