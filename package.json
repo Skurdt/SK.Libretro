@@ -5,7 +5,8 @@
   "description": "Libretro to Unity bridge",
   "unity": "2020.2",
   "dependencies": {
-    "com.unity.burst": "1.4.3",
+    "com.unity.mathematics": "1.2.1",
+    "com.unity.burst": "1.4.4",
     "com.unity.textmeshpro": "3.0.3",
     "com.unity.inputsystem": "1.1.0-preview.2",
     "com.sk.utilities": "1.0.0",
