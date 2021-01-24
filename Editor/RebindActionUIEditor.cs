@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using SK.Libretro.Unity;
 using System.Linq;
 using UnityEditor;
@@ -177,3 +178,4 @@ namespace SK.Libretro.UnityEditor
         }
     }
 }
+#endif
