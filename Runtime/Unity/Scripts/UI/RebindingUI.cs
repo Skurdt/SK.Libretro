@@ -14,11 +14,7 @@ namespace SK.Libretro.Unity
         private static readonly string _saveDirectory = $"{Application.streamingAssetsPath}/libretro~/bindings";
         private static readonly string _savePath      = $"{_saveDirectory}/default.json";
 
-        private void Start()
-        {
-            _bindingsScreen.SetActive(false);
-            _bindingOptionsButton.SetActive(true);
-        }
+        private void Start() => HideInputUI();
 
         public void ShowInputUI()
         {
