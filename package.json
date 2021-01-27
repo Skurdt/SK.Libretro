@@ -12,15 +12,17 @@
     "com.sk.utilities": "1.0.0",
     "com.sk.utilities.unity": "1.0.0"
   },
-  "keywords": [
-    "library",
-    "libretro"
-  ],
-  "type": "library",
+  "keywords": [],
   "author": {
     "name": "Skurdt",
     "email": "skurdt@gmail.com",
     "url": "https://github.com/Skurdt"
+  },
+  "type": "library",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Skurdt/SK.Libretro.git",
+    "directory": ""
   },
   "hideInEditor": false
 }
