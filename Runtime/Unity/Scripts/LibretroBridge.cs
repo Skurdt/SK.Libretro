@@ -196,7 +196,7 @@ namespace SK.Libretro.Unity
             _wrapper = null;
 
             _updateFunc = null;
-            Running    = false;
+            Running     = false;
         }
 
         public void Rewind(bool rewind) => _wrapper.DoRewind = rewind;
@@ -243,11 +243,17 @@ namespace SK.Libretro.Unity
                 _screenshotCoroutine = _screenNode.StartCoroutine(CoSaveScreenshot(screenshotPath));
         }
 
-        public void ToggleAnalogToDigitalInput(bool value)
+        public void SetAnalogToDigitalInput(bool value)
         {
             DeactivateInput();
             _settings.AnalogDirectionsToDigital = value;
             ActivateInput();
+        }
+
+        public void SetRewindEnabled(bool value)
+        {
+            if (_wrapper != null)
+                _wrapper.RewindEnabled = value;
         }
 
         private IEnumerator CoUpdateSoftware()

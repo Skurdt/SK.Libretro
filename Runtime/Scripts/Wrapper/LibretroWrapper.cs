@@ -104,6 +104,15 @@ namespace SK.Libretro
                 }
             }
         }
+        public bool RewindEnabled
+        {
+            get => _rewindEnabled;
+            set
+            {
+                _rewindEnabled = value;
+                _rewindSaveStates.Clear();
+            }
+        }
         public bool DoRewind { get; set; } = false;
         public bool HwRenderHasDepth => HwRenderInterface.depth;
         public bool HwRenderHasStencil => HwRenderInterface.stencil;
@@ -150,14 +159,15 @@ namespace SK.Libretro
             }
         }
 
-        private const int MAX_STATES_COUNT = 2048;
-
+        private const int MAX_STATES_COUNT                     = 2048;
+        private const int REWIND_FRAMES_INTERVAL               = 10;
         private readonly List<IntPtr> _unsafePointers          = new List<IntPtr>();
         private readonly List<SaveStateData> _rewindSaveStates = new List<SaveStateData>(MAX_STATES_COUNT);
 
         private LibretroPlugin.InteropInterface _interopInterface = default;
-        private uint _totalFrameCount                             = 0;
         private long _frameTimeLast                               = 0;
+        private uint _totalFrameCount                             = 0;
+        private bool _rewindEnabled                               = false;
 
         public unsafe LibretroWrapper(LibretroTargetPlatform targetPlatform, string baseDirectory = null)
         {
@@ -275,16 +285,19 @@ namespace SK.Libretro
 
             _totalFrameCount++;
 
-            if (DoRewind && _rewindSaveStates.Count > 0)
+            if (RewindEnabled)
             {
-                RewindLoadState(_rewindSaveStates[_rewindSaveStates.Count - 1]);
-                _rewindSaveStates.RemoveAt(_rewindSaveStates.Count - 1);
-            }
-            else if (_totalFrameCount % 2 == 0)
-            {
-                if (_rewindSaveStates.Count >= MAX_STATES_COUNT)
-                    _rewindSaveStates.RemoveAt(0);
-                _rewindSaveStates.Add(RewindSaveState());
+                if (DoRewind && _rewindSaveStates.Count > 0)
+                {
+                    RewindLoadState(_rewindSaveStates[_rewindSaveStates.Count - 1]);
+                    _rewindSaveStates.RemoveAt(_rewindSaveStates.Count - 1);
+                }
+                else if (_totalFrameCount % REWIND_FRAMES_INTERVAL == 0)
+                {
+                    if (_rewindSaveStates.Count >= MAX_STATES_COUNT)
+                        _rewindSaveStates.RemoveAt(0);
+                    _rewindSaveStates.Add(RewindSaveState());
+                }
             }
 
             if (!Core.HwAccelerated)
