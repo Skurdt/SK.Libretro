@@ -39,6 +39,8 @@ namespace SK.Libretro.Unity
         [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Input Callback")]
         private void OnPlayerJoined(PlayerInput player)
         {
+            player.actions.Enable();
+
             Utilities.Logger.LogInfo($"Player #{player.playerIndex} joined ({player.currentControlScheme}).");
             if (!_controls.ContainsKey(player.playerIndex))
             {
