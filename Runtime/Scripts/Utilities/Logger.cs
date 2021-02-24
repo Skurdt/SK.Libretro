@@ -35,19 +35,19 @@ namespace SK.Libretro.Utilities
 
                 if (value)
                 {
-                    _debugPrefix     = "<color=white>[DEBUG]</color>";
-                    _infoPrefix      = "<color=yellow>[INFO]</color>";
-                    _warningPrefix   = "<color=orange>[WARNING]</color>";
-                    _errorPrefix     = "<color=red>[ERROR]</color>";
-                    _exceptionPrefix = "<color=red>[EXCEPTION]</color>";
+                    _prefixDebug     = "<color=white>[DEBUG]</color>";
+                    _prefixInfo      = "<color=yellow>[INFO]</color>";
+                    _prefixWarning   = "<color=orange>[WARNING]</color>";
+                    _prefixError     = "<color=red>[ERROR]</color>";
+                    _prefixException = "<color=red>[EXCEPTION]</color>";
                 }
                 else
                 {
-                    _debugPrefix     = "[DEBUG]";
-                    _infoPrefix      = "[INFO]";
-                    _warningPrefix   = "[WARNING]";
-                    _errorPrefix     = "[ERROR]";
-                    _exceptionPrefix = "[EXCEPTION]";
+                    _prefixDebug     = "[DEBUG]";
+                    _prefixInfo      = "[INFO]";
+                    _prefixWarning   = "[WARNING]";
+                    _prefixError     = "[ERROR]";
+                    _prefixException = "[EXCEPTION]";
                 }
             }
         }
@@ -66,11 +66,11 @@ namespace SK.Libretro.Utilities
         private static Action<string> _logError   = null;
         private static bool _colorSupport         = false;
 
-        private static string _debugPrefix     = "[DEBUG]";
-        private static string _infoPrefix      = "[INFO]";
-        private static string _warningPrefix   = "[WARNING]";
-        private static string _errorPrefix     = "[ERROR]";
-        private static string _exceptionPrefix = "[EXCEPTION]";
+        private static string _prefixDebug     = "[DEBUG]";
+        private static string _prefixInfo      = "[INFO]";
+        private static string _prefixWarning   = "[WARNING]";
+        private static string _prefixError     = "[ERROR]";
+        private static string _prefixException = "[EXCEPTION]";
 
         public static void SetLoggers(Action<string> logInfo, Action<string> logWarning, Action<string> logError)
         {
@@ -94,24 +94,27 @@ namespace SK.Libretro.Utilities
 
         private static void LogInternal(LogLevel level, string message, string caller)
         {
-            caller = !string.IsNullOrEmpty(caller) ? ColorSupport ? $"<color=lightblue>[{caller}]</color> " : $"[{caller}] " : "";
+            if (string.IsNullOrEmpty(message))
+                return;
+
+            caller = !string.IsNullOrEmpty(caller) ? (ColorSupport ? $"<color=lightblue>[{caller}]</color> " : $"[{caller}] ") : "";
 
             switch (level)
             {
                 case LogLevel.Debug:
-                    _logInfo?.Invoke($"{_debugPrefix} {caller}{message}");
+                    _logInfo?.Invoke($"{_prefixDebug} {caller}{message}");
                     break;
                 case LogLevel.Info:
-                    _logInfo?.Invoke($"{_infoPrefix} {caller}{message}");
+                    _logInfo?.Invoke($"{_prefixInfo} {caller}{message}");
                     break;
                 case LogLevel.Warning:
-                    _logWarning?.Invoke($"{_warningPrefix} {caller}{message}");
+                    _logWarning?.Invoke($"{_prefixWarning} {caller}{message}");
                     break;
                 case LogLevel.Error:
-                    _logError?.Invoke($"{_errorPrefix} {caller}{message}");
+                    _logError?.Invoke($"{_prefixError} {caller}{message}");
                     break;
                 case LogLevel.Exception:
-                    _logError?.Invoke($"{_exceptionPrefix} {caller}{message}");
+                    _logError?.Invoke($"{_prefixException} {caller}{message}");
                     break;
             }
         }

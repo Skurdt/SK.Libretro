@@ -1,4 +1,4 @@
-﻿/* MIT License
+/* MIT License
 
  * Copyright (c) 2020 Skurdt
  *
@@ -1038,25 +1038,19 @@ namespace SK.Libretro
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public struct retro_core_option_value
         {
-            [MarshalAs(UnmanagedType.LPStr)]
-            public string value;
-            [MarshalAs(UnmanagedType.LPStr)]
-            public string label;
+            public char* value;
+            public char* label;
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public struct retro_core_option_definition
         {
-            [MarshalAs(UnmanagedType.LPStr)]
-            public string key;
-            [MarshalAs(UnmanagedType.LPStr)]
-            public string desc;
-            [MarshalAs(UnmanagedType.LPStr)]
-            public string info;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = RETRO_NUM_CORE_OPTION_VALUES_MAX)]
+            public char* key;
+            public char* desc;
+            public char* info;
+            [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.Struct, SizeConst = RETRO_NUM_CORE_OPTION_VALUES_MAX)]
             public retro_core_option_value[] values; // retro_core_option_value[RETRO_NUM_CORE_OPTION_VALUES_MAX]
-            [MarshalAs(UnmanagedType.LPStr)]
-            public string default_value;
+            public char* default_value;
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]

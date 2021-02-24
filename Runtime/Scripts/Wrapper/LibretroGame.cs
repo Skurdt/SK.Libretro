@@ -1,4 +1,4 @@
-﻿/* MIT License
+/* MIT License
 
  * Copyright (c) 2020 Skurdt
  *
@@ -135,6 +135,7 @@ namespace SK.Libretro
                     Logger.LogError($"Game not set, core '{_wrapper.Core.Name}' needs a game to run.", "Libretro.LibretroGame.Start");
                     return false;
                 }
+
                 return true;
             }
 
@@ -142,18 +143,16 @@ namespace SK.Libretro
 
             if (!_wrapper.Core.NeedFullpath)
             {
-                using (FileStream stream = new FileStream(_path, FileMode.Open))
-                {
-                    byte[] data = new byte[stream.Length];
+                using FileStream stream = new FileStream(_path, FileMode.Open);
+                byte[] data = new byte[stream.Length];
 
-                    GameInfo.size = (ulong)data.Length;
-                    GameInfo.data = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
+                GameInfo.size = (ulong)data.Length;
+                GameInfo.data = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
 
-                    _ = stream.Read(data, 0, (int)stream.Length);
-                    Marshal.Copy(data, 0, GameInfo.data, data.Length);
-
-                }
+                _ = stream.Read(data, 0, (int)stream.Length);
+                Marshal.Copy(data, 0, GameInfo.data, data.Length);
             }
+
             return true;
         }
 

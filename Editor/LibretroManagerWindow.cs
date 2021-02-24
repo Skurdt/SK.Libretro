@@ -1,4 +1,4 @@
-﻿/* MIT License
+/* MIT License
 
  * Copyright (c) 2020 Skurdt
  *
@@ -123,56 +123,54 @@ namespace SK.Libretro.UnityEditor
             GUILayout.Space(8f);
             using (new EditorGUILayout.HorizontalScope())
             {
-                using (EditorGUILayout.ScrollViewScope scrollView = new EditorGUILayout.ScrollViewScope(_scrollPos, EditorStyles.helpBox))
+                using EditorGUILayout.ScrollViewScope scrollView = new EditorGUILayout.ScrollViewScope(_scrollPos, EditorStyles.helpBox);
+                _scrollPos = scrollView.scrollPosition;
+
+                foreach (Core core in _coreList.Cores)
                 {
-                    _scrollPos = scrollView.scrollPosition;
-
-                    foreach (Core core in _coreList.Cores)
+                    using (new EditorGUILayout.HorizontalScope())
                     {
-                        using (new EditorGUILayout.HorizontalScope())
+                        GUILayout.Label(core.DisplayName, GUILayout.Width(180f));
+
+                        string buttonText;
+                        if (core.Available && core.Latest)
                         {
-                            GUILayout.Label(core.DisplayName, GUILayout.Width(180f));
-
-                            string buttonText;
-                            if (core.Available && core.Latest)
-                            {
-                                GUI.backgroundColor = core.Processing ? _grayColor : _greenColor;
-                                buttonText          = core.Processing ? "Busy..." : "OK";
-                            }
-                            else if (core.Available && !core.Latest)
-                            {
-                                GUI.backgroundColor = core.Processing ? _grayColor : _orangeColor;
-                                buttonText          = core.Processing ? "Busy..." : "Update";
-                            }
-                            else
-                            {
-                                GUI.backgroundColor = core.Processing ? _grayColor : _redColor;
-                                buttonText          = core.Processing ? "Busy..." : "Download";
-                            }
-
-                            if (GUILayout.Button(new GUIContent(buttonText, null, core.DisplayName), GUILayout.Width(100f), GUILayout.Height(EditorGUIUtility.singleLineHeight)))
-                            {
-                                core.TaskRunning = true;
-
-                                // Threaded processing taken from: https://ru.stackoverflow.com/questions/1088120
-                                core.CancellationTokenSource = new CancellationTokenSource();
-                                CancellationToken token = core.CancellationTokenSource.Token;
-                                SynchronizationContext context = SynchronizationContext.Current;
-                                _ = Task.Run(() => DownloadAndExtractTask(core, context, token), token)
-                                                   .ContinueWith(
-                                                       t =>
-                                                       {
-                                                           HandleTaskException(t);
-                                                           OnTaskFinishedOrCanceled(core);
-                                                       },
-                                                       token,
-                                                       TaskContinuationOptions.OnlyOnFaulted,
-                                                       TaskScheduler.FromCurrentSynchronizationContext()
-                                                   );
-                            }
-
-                            GUI.backgroundColor = Color.white;
+                            GUI.backgroundColor = core.Processing ? _grayColor : _greenColor;
+                            buttonText          = core.Processing ? "Busy..." : "OK";
                         }
+                        else if (core.Available && !core.Latest)
+                        {
+                            GUI.backgroundColor = core.Processing ? _grayColor : _orangeColor;
+                            buttonText          = core.Processing ? "Busy..." : "Update";
+                        }
+                        else
+                        {
+                            GUI.backgroundColor = core.Processing ? _grayColor : _redColor;
+                            buttonText          = core.Processing ? "Busy..." : "Download";
+                        }
+
+                        if (GUILayout.Button(new GUIContent(buttonText, null, core.DisplayName), GUILayout.Width(100f), GUILayout.Height(EditorGUIUtility.singleLineHeight)))
+                        {
+                            core.TaskRunning = true;
+
+                            // Threaded processing taken from: https://ru.stackoverflow.com/questions/1088120
+                            core.CancellationTokenSource = new CancellationTokenSource();
+                            CancellationToken token = core.CancellationTokenSource.Token;
+                            SynchronizationContext context = SynchronizationContext.Current;
+                            _ = Task.Run(() => DownloadAndExtractTask(core, context, token), token)
+                                               .ContinueWith(
+                                                   t =>
+                                                   {
+                                                       HandleTaskException(t);
+                                                       OnTaskFinishedOrCanceled(core);
+                                                   },
+                                                   token,
+                                                   TaskContinuationOptions.OnlyOnFaulted,
+                                                   TaskScheduler.FromCurrentSynchronizationContext()
+                                               );
+                        }
+
+                        GUI.backgroundColor = Color.white;
                     }
                 }
             }
@@ -190,7 +188,7 @@ namespace SK.Libretro.UnityEditor
             core.TaskRunning = false;
             core.CancellationTokenSource?.Dispose();
             core.CancellationTokenSource = null;
-            core.Processing = false;
+            core.Processing              = false;
         }
 
         private static void HandleTaskException(Task task)

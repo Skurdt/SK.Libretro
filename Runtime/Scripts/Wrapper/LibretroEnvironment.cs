@@ -23,6 +23,7 @@
 using SK.Libretro.Utilities;
 using SK.Utilities;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using static SK.Libretro.LibretroHeader;
@@ -550,24 +551,14 @@ namespace SK.Libretro
                 return true;
             }
 
-            bool SetCoreOptions() => data != null && SetCoreOptionsInternal();
+            bool SetCoreOptions() => data != null && SetCoreOptionsInternal((long)data);
 
-            // TODO: implement this
             bool SetCoreOptionsIntl()
             {
                 if (data == null)
                     return false;
-
-                try
-                {
-                    retro_core_options_intl inOptionsIntl = Marshal.PtrToStructure<retro_core_options_intl>((IntPtr)data);
-                }
-                catch (Exception e)
-                {
-                    Logger.LogException(e);
-                }
-
-                return SetCoreOptionsInternal();
+                retro_core_options_intl inOptionsIntl = Marshal.PtrToStructure<retro_core_options_intl>((IntPtr)data);
+                return SetCoreOptionsInternal(inOptionsIntl.us.ToInt64());
             }
 
             bool Shutdown() => true;
@@ -575,7 +566,7 @@ namespace SK.Libretro
         }
 
         // TODO: fix this
-        private unsafe bool SetCoreOptionsInternal()
+        private unsafe bool SetCoreOptionsInternal(long data)
         {
             _wrapper.Core.CoreOptions = LibretroWrapper.CoreOptionsList.Cores.Find(x => x.CoreName.Equals(_wrapper.Core.Name, StringComparison.OrdinalIgnoreCase));
             if (_wrapper.Core.CoreOptions == null)
@@ -584,7 +575,48 @@ namespace SK.Libretro
                 LibretroWrapper.CoreOptionsList.Cores.Add(_wrapper.Core.CoreOptions);
             }
 
-            LibretroWrapper.SaveCoreOptionsFile();
+            try
+            {
+                for (int i = 0; i < RETRO_NUM_CORE_OPTION_VALUES_MAX; ++i)
+                {
+                    IntPtr ins = new IntPtr(data + (i * Marshal.SizeOf<retro_core_option_definition>()));
+                    retro_core_option_definition defs = Marshal.PtrToStructure<retro_core_option_definition>(ins);
+                    if (defs.key == null)
+                        break;
+
+                    string key = UnsafeStringUtils.CharsToString(defs.key);
+
+                    string coreOption = _wrapper.Core.CoreOptions.Options.Find(x => x.StartsWith(key, StringComparison.OrdinalIgnoreCase));
+                    if (coreOption != null)
+                        continue;
+
+                    string defaultValue = UnsafeStringUtils.CharsToString(defs.default_value);
+
+                    List<string> possibleValues = new List<string>();
+                    for (int j = 0; j < defs.values.Length; j++)
+                    {
+                        retro_core_option_value val = defs.values[j];
+                        if (val.value != null)
+                            possibleValues.Add(UnsafeStringUtils.CharsToString(val.value));
+                    }
+
+                    string value = "";
+                    if (!string.IsNullOrEmpty(defaultValue))
+                        value = defaultValue;
+                    else if (possibleValues.Count > 0)
+                        value = possibleValues[0];
+
+                    coreOption = $"{key};{value};{string.Join("|", possibleValues)}";
+
+                    _wrapper.Core.CoreOptions.Options.Add(coreOption);
+                }
+
+                LibretroWrapper.SaveCoreOptionsFile();
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Failed to retrieve and write the core options, they must be entered manually in the configuration file for now... (Exception message: {e.Message})");
+            }
 
             return true;
         }
