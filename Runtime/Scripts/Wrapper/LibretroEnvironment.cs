@@ -25,6 +25,7 @@ using SK.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using static SK.Libretro.LibretroHeader;
 
@@ -35,6 +36,12 @@ namespace SK.Libretro
         public bool UpdateVariables = false;
 
         private readonly LibretroWrapper _wrapper;
+
+        // TEMP_HACK
+        private sealed class CoresUsingOptionsIntlList
+        {
+            public List<string> Cores;
+        }
 
         public LibretroEnvironment(LibretroWrapper wrapper) => _wrapper = wrapper;
 
@@ -289,9 +296,18 @@ namespace SK.Libretro
 
             bool GetCoreOptionsVersion()
             {
-                if (data != null)
-                    *(uint*)data = RETRO_API_VERSION;
+                if (data == null)
+                    return false;
+
+                // TEMP_HACK
+                string filePath = Path.GetFullPath(Path.Combine(LibretroWrapper.MainDirectory, "cores_using_options_intl.json"));
+                CoresUsingOptionsIntlList coresUsingOptionsIntl = FileSystem.DeserializeFromJson<CoresUsingOptionsIntlList>(filePath);
+                *(uint*)data = coresUsingOptionsIntl == null || coresUsingOptionsIntl.Cores == null || !coresUsingOptionsIntl.Cores.Contains(_wrapper.Core.Name)
+                             ? RETRO_API_VERSION
+                             : 0;
+
                 return true;
+
             }
             #endregion
 
@@ -553,10 +569,12 @@ namespace SK.Libretro
 
             bool SetCoreOptions() => data != null && SetCoreOptionsInternal((long)data);
 
+            // FIXME: I can't read into the pointer to the retro_core_options_intl.us array at this time.
             bool SetCoreOptionsIntl()
             {
                 if (data == null)
                     return false;
+
                 retro_core_options_intl inOptionsIntl = Marshal.PtrToStructure<retro_core_options_intl>((IntPtr)data);
                 return SetCoreOptionsInternal(inOptionsIntl.us.ToInt64());
             }
@@ -565,7 +583,6 @@ namespace SK.Libretro
             #endregion
         }
 
-        // TODO: fix this
         private unsafe bool SetCoreOptionsInternal(long data)
         {
             _wrapper.Core.CoreOptions = LibretroWrapper.CoreOptionsList.Cores.Find(x => x.CoreName.Equals(_wrapper.Core.Name, StringComparison.OrdinalIgnoreCase));
