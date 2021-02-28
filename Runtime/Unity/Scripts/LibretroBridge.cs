@@ -140,14 +140,13 @@ namespace SK.Libretro.Unity
                 _updateCoroutine = _screenNode.StartCoroutine(_updateFunc());
 
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-            if (_settings.AudioVolumeControlledByDistance && _wrapper.Audio.Processor is NAudio.AudioProcessor audioProcessor)
+            if (_viewer == null || !_settings.AudioVolumeControlledByDistance || !(_wrapper.Audio.Processor is NAudio.AudioProcessor audioProcessor))
+                return;
+            float distance = Vector3.Distance(_screenTransform.position, _viewer.transform.position);
+            if (distance > 0f)
             {
-                float distance = Vector3.Distance(_screenTransform.position, _viewer.transform.position);
-                if (distance > 0f)
-                {
-                    float volume = math.clamp(math.pow((distance - _settings.AudioMaxDistance) / (_settings.AudioMinDistance - _settings.AudioMaxDistance), 2f), 0f, _settings.AudioMaxVolume);
-                    audioProcessor.SetVolume(volume);
-                }
+                float volume = math.clamp(math.pow((distance - _settings.AudioMaxDistance) / (_settings.AudioMinDistance - _settings.AudioMaxDistance), 2f), 0f, _settings.AudioMaxVolume);
+                audioProcessor.SetVolume(volume);
             }
 #endif
         }

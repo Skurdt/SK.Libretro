@@ -128,7 +128,7 @@ namespace SK.Libretro.Unity
                 for (int y = Height - 1; y >= 0; --y)
                 {
                     for (int x = 0; x < Width; ++x)
-                        TextureData[y * Width + x] = ARGB1555toBGRA32(line[x]);
+                        TextureData[(y * Width) + x] = ARGB1555toBGRA32(line[x]);
                     line += PitchPixels;
                 }
             }
@@ -149,7 +149,7 @@ namespace SK.Libretro.Unity
                 for (int y = Height - 1; y >= 0; --y)
                 {
                     for (int x = 0; x < Width; ++x)
-                        TextureData[y * Width + x] = line[x];
+                        TextureData[(y * Width) + x] = line[x];
                     line += PitchPixels;
                 }
             }
@@ -170,7 +170,7 @@ namespace SK.Libretro.Unity
                 for (int y = Height - 1; y >= 0; --y)
                 {
                     for (int x = 0; x < Width; ++x)
-                        TextureData[y * Width + x] = RGB565toBGRA32(line[x]);
+                        TextureData[(y * Width) + x] = RGB565toBGRA32(line[x]);
                     line += PitchPixels;
                 }
             }
