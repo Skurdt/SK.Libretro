@@ -61,7 +61,7 @@ namespace SK.Libretro.Unity
 
         private static bool _firstInstance = true;
 
-        private readonly ScreenNode _screenNode;
+        private readonly LibretroScreenNode _screenNode;
         private readonly Transform _screenTransform;
         private readonly Renderer _screenRenderer;
         private readonly Transform _viewer;
@@ -83,7 +83,7 @@ namespace SK.Libretro.Unity
         private double _accumulatedTime                          = 0.0;
         private int _nLoops                                      = 0;
 
-        public LibretroBridge(ScreenNode screen, Transform viewer, Settings settings = null)
+        public LibretroBridge(LibretroScreenNode screen, Transform viewer, Settings settings = null)
         {
             if (_firstInstance)
             {

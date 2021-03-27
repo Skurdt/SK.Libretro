@@ -24,7 +24,7 @@ using UnityEngine;
 
 namespace SK.Libretro.Unity
 {
-    public sealed class ScreenNode : MonoBehaviour
+    public sealed class LibretroScreenNode : MonoBehaviour
     {
     }
 }
