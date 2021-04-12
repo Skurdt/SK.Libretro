@@ -58,7 +58,7 @@ namespace SK.Libretro
 
             if (argumentsToPush > 12)
             {
-                Logger.LogWarning($"Too many arguments ({argumentsToPush}) supplied to retroLogCallback", LOG_PRINTF_CALLER);
+                Logger.Instance.LogWarning($"Too many arguments ({argumentsToPush}) supplied to retroLogCallback", LOG_PRINTF_CALLER);
                 return;
             }
 
@@ -67,16 +67,16 @@ namespace SK.Libretro
             switch (level)
             {
                 case retro_log_level.RETRO_LOG_DEBUG:
-                    Logger.LogInfo(formattedString, LOG_PRINTF_CALLER);
+                    Logger.Instance.LogInfo(formattedString, LOG_PRINTF_CALLER);
                     break;
                 case retro_log_level.RETRO_LOG_INFO:
-                    Logger.LogInfo(formattedString, LOG_PRINTF_CALLER);
+                    Logger.Instance.LogInfo(formattedString, LOG_PRINTF_CALLER);
                     break;
                 case retro_log_level.RETRO_LOG_WARN:
-                    Logger.LogWarning(formattedString, LOG_PRINTF_CALLER);
+                    Logger.Instance.LogWarning(formattedString, LOG_PRINTF_CALLER);
                     break;
                 case retro_log_level.RETRO_LOG_ERROR:
-                    Logger.LogError(formattedString, LOG_PRINTF_CALLER);
+                    Logger.Instance.LogError(formattedString, LOG_PRINTF_CALLER);
                     break;
             }
         }

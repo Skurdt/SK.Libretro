@@ -29,28 +29,28 @@ namespace SK.Libretro
     {
         public long GetTimeUsec()
         {
-            Logger.LogWarning("RetroPerfGetTimeUsec");
+            Logger.Instance.LogWarning("RetroPerfGetTimeUsec");
             return 0;
         }
 
         public ulong GetCounter()
         {
-            Logger.LogWarning("RetroPerfGetCounter");
+            Logger.Instance.LogWarning("RetroPerfGetCounter");
             return 0;
         }
 
         public ulong GetCPUFeatures()
         {
-            Logger.LogWarning("RetroGetCPUFeatures");
+            Logger.Instance.LogWarning("RetroGetCPUFeatures");
             return 0;
         }
 
-        public void Log() => Logger.LogWarning("RetroPerfLog");
+        public void Log() => Logger.Instance.LogWarning("RetroPerfLog");
 
-        public void Register(ref retro_perf_counter _/*counter*/) => Logger.LogWarning("RetroPerfRegister");
+        public void Register(ref retro_perf_counter _/*counter*/) => Logger.Instance.LogWarning("RetroPerfRegister");
 
-        public void RetroPerfStart(ref retro_perf_counter _/*counter*/) => Logger.LogWarning("RetroPerfStart");
+        public void RetroPerfStart(ref retro_perf_counter _/*counter*/) => Logger.Instance.LogWarning("RetroPerfStart");
 
-        public void RetroPerfStop(ref retro_perf_counter _/*counter*/) => Logger.LogWarning("RetroPerfStop");
+        public void RetroPerfStop(ref retro_perf_counter _/*counter*/) => Logger.Instance.LogWarning("RetroPerfStop");
     }
 }

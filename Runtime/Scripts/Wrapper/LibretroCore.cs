@@ -93,7 +93,7 @@ namespace SK.Libretro
                     _dll = new DynamicLibraryLinux();
                     break;
                 default:
-                    Logger.LogError($"Target platform '{_wrapper.TargetPlatform}' not supported.");
+                    Logger.Instance.LogError($"Target platform '{_wrapper.TargetPlatform}' not supported.");
                     return false;
             }
 
@@ -132,7 +132,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.LogException(e, "Libretro.LibretroCore.Stop");
+                Logger.Instance.LogException(e);
             }
         }
 
@@ -143,7 +143,7 @@ namespace SK.Libretro
                 string corePath = FileSystem.GetAbsolutePath($"{LibretroWrapper.CoresDirectory}/{Name}_libretro.{_dll.Extension}");
                 if (!FileSystem.FileExists(corePath))
                 {
-                    Logger.LogError($"Core '{Name}' at path '{corePath}' not found.");
+                    Logger.Instance.LogError($"Core '{Name}' at path '{corePath}' not found.");
                     return false;
                 }
 
@@ -159,7 +159,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.LogException(e, "LibretroCore.LoadLibrary");
+                Logger.Instance.LogException(e);
                 Stop();
                 return false;
             }
@@ -192,7 +192,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.LogException(e, "LibretroCore.GetCoreFunctions");
+                Logger.Instance.LogException(e);
                 Stop();
                 return false;
             }
@@ -224,7 +224,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.LogException(e, "LibretroCore.SetCallbacks");
+                Logger.Instance.LogException(e);
                 Stop();
                 return false;
             }

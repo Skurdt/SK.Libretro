@@ -87,8 +87,11 @@ namespace SK.Libretro.Unity
         {
             if (_firstInstance)
             {
-                Utilities.Logger.SetLoggers(Debug.Log, Debug.LogWarning, Debug.LogError);
-                Utilities.Logger.ColorSupport = true;
+                Utilities.Logger.Instance.AddDebughandler(Debug.Log, true);
+                Utilities.Logger.Instance.AddInfoHandler(Debug.Log, true);
+                Utilities.Logger.Instance.AddWarningHandler(Debug.LogWarning, true);
+                Utilities.Logger.Instance.AddErrorhandler(Debug.LogError, true);
+                Utilities.Logger.Instance.AddExceptionHandler(Debug.LogException);
                 _firstInstance = false;
             }
 

@@ -38,7 +38,7 @@ namespace SK.Libretro.Utilities
             }
             catch (Exception e)
             {
-                Logger.LogException(e, "FileSystem.CreateFile");
+                Logger.Instance.LogException(e);
             }
 
             return false;
@@ -53,7 +53,7 @@ namespace SK.Libretro.Utilities
             }
             catch (Exception e)
             {
-                Logger.LogException(e, "FileSystem.DeleteFile");
+                Logger.Instance.LogException(e);
             }
 
             return false;
@@ -71,7 +71,7 @@ namespace SK.Libretro.Utilities
             }
             catch (Exception e)
             {
-                Logger.LogException(e, "FileSystem.GetAbsolutePath");
+                Logger.Instance.LogException(e);
             }
 
             return Path.GetFullPath(path);
@@ -91,7 +91,7 @@ namespace SK.Libretro.Utilities
             }
             catch (Exception e)
             {
-                Logger.LogException(e, "FileSystem.GetRelativePath");
+                Logger.Instance.LogException(e);
             }
 
             return path;
@@ -105,7 +105,7 @@ namespace SK.Libretro.Utilities
             }
             catch (Exception e)
             {
-                Logger.LogException(e, "FileSystem.GetFilesInDirectory");
+                Logger.Instance.LogException(e);
             }
 
             return null;
@@ -121,7 +121,7 @@ namespace SK.Libretro.Utilities
             }
             catch (Exception e)
             {
-                Logger.LogException(e, $"FileSystem.SerializeToJson<{typeof(T).Name}>");
+                Logger.Instance.LogException(e);
             }
 
             return false;
@@ -139,7 +139,7 @@ namespace SK.Libretro.Utilities
             }
             catch (Exception e)
             {
-                Logger.LogException(e, $"FileSystem.DeserializeFromJson<{typeof(T).Name}>");
+                Logger.Instance.LogException(e);
             }
 
             return null;
