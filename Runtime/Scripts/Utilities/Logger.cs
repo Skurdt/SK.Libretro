@@ -21,38 +21,16 @@
  * SOFTWARE. */
 
 using System;
+using System.Collections.Generic;
 
 namespace SK.Libretro.Utilities
 {
-    internal static class Logger
+    internal sealed class Logger
     {
-        public static bool ColorSupport
-        {
-            get => _colorSupport;
-            set
-            {
-                _colorSupport = value;
+        public static Logger Instance => _instance ?? new Logger();
+        private static Logger _instance;
 
-                if (value)
-                {
-                    _prefixDebug     = "<color=white>[DEBUG]</color>";
-                    _prefixInfo      = "<color=yellow>[INFO]</color>";
-                    _prefixWarning   = "<color=orange>[WARNING]</color>";
-                    _prefixError     = "<color=red>[ERROR]</color>";
-                    _prefixException = "<color=red>[EXCEPTION]</color>";
-                }
-                else
-                {
-                    _prefixDebug     = "[DEBUG]";
-                    _prefixInfo      = "[INFO]";
-                    _prefixWarning   = "[WARNING]";
-                    _prefixError     = "[ERROR]";
-                    _prefixException = "[EXCEPTION]";
-                }
-            }
-        }
-
-        private enum LogLevel
+        public enum LogLevel
         {
             Debug,
             Info,
@@ -61,62 +39,88 @@ namespace SK.Libretro.Utilities
             Exception
         }
 
-        private static Action<string> _logInfo    = null;
-        private static Action<string> _logWarning = null;
-        private static Action<string> _logError   = null;
-        private static bool _colorSupport         = false;
-
-        private static string _prefixDebug     = "[DEBUG]";
-        private static string _prefixInfo      = "[INFO]";
-        private static string _prefixWarning   = "[WARNING]";
-        private static string _prefixError     = "[ERROR]";
-        private static string _prefixException = "[EXCEPTION]";
-
-        public static void SetLoggers(Action<string> logInfo, Action<string> logWarning, Action<string> logError)
+        private sealed class LogStringHandler
         {
-            if (_logInfo != null)
-                return;
+            private readonly string _prefix;
+            private readonly Action<string> _logAction;
+            private readonly bool _colorSupport;
+            private readonly string _color;
 
-            _logInfo    = logInfo;
-            _logWarning = logWarning;
-            _logError   = logError;
+            public LogStringHandler(LogLevel logLevel, Action<string> logAction, bool colorSupport = false)
+            {
+                string logLevelString = logLevel.ToString().ToUpper();
+
+                _color = logLevel switch
+                {
+                    LogLevel.Debug     => "white",
+                    LogLevel.Info      => "yellow",
+                    LogLevel.Warning   => "orange",
+                    LogLevel.Error     => "red",
+                    LogLevel.Exception => "red",
+                    _ => throw new NotImplementedException(),
+                };
+
+                _prefix       = colorSupport ? $"[<color={_color}>{logLevelString}</color>]" : $"[{logLevelString}]";
+                _logAction    = logAction;
+                _colorSupport = colorSupport;
+            }
+
+            public void Log(string message, string caller = null)
+            {
+                caller = !string.IsNullOrEmpty(caller) ? (_colorSupport ? $"<color=lightblue>[{caller}]</color> " : $"[{caller}] ") : "";
+                _logAction?.Invoke($"{_prefix} {caller}{message}");
+            }
         }
 
-        public static void LogDebug(string message, string caller = null) => LogInternal(LogLevel.Debug, message, caller);
+        private readonly Dictionary<LogLevel, List<LogStringHandler>> _loggers = new Dictionary<LogLevel, List<LogStringHandler>>();
+        private readonly List<Action<Exception>> _exceptionLoggers = new List<Action<Exception>>();
 
-        public static void LogInfo(string message, string caller = null) => LogInternal(LogLevel.Info, message, caller);
+        private Logger() => _instance = this;
 
-        public static void LogWarning(string message, string caller = null) => LogInternal(LogLevel.Warning, message, caller);
+        public void AddDebughandler(Action<string> function, bool colorSupport = false) => AddHandler(LogLevel.Debug, function, colorSupport);
+        public void AddInfoHandler(Action<string> function, bool colorSupport = false) => AddHandler(LogLevel.Info, function, colorSupport);
+        public void AddWarningHandler(Action<string> function, bool colorSupport = false) => AddHandler(LogLevel.Warning, function, colorSupport);
+        public void AddErrorhandler(Action<string> function, bool colorSupport = false) => AddHandler(LogLevel.Error, function, colorSupport);
+        public void AddExceptionHandler(Action<Exception> function) => AddHandler(function);
 
-        public static void LogError(string message, string caller = null) => LogInternal(LogLevel.Error, message, caller);
+        public void LogDebug(string message, string caller = null) => LogInternal(LogLevel.Debug, message, caller);
+        public void LogInfo(string message, string caller = null) => LogInternal(LogLevel.Info, message, caller);
+        public void LogWarning(string message, string caller = null) => LogInternal(LogLevel.Warning, message, caller);
+        public void LogError(string message, string caller = null) => LogInternal(LogLevel.Error, message, caller);
+        public void LogException(Exception exception) => LogInternal(exception);
 
-        public static void LogException(Exception e, string caller = null) => LogInternal(LogLevel.Exception, e.Message, caller);
+        private void AddHandler(LogLevel logLevel, Action<string> function, bool colorSupport)
+        {
+            if (!_loggers.ContainsKey(logLevel))
+                _loggers.Add(logLevel, new List<LogStringHandler>());
+            _loggers[logLevel].Add(new LogStringHandler(logLevel, function, colorSupport));
+        }
 
-        private static void LogInternal(LogLevel level, string message, string caller)
+        private void AddHandler(Action<Exception> function)
+        {
+            if (!_exceptionLoggers.Contains(function))
+                _exceptionLoggers.Add(function);
+        }
+
+        private void LogInternal(LogLevel level, string message, string caller)
         {
             if (string.IsNullOrEmpty(message))
                 return;
 
-            caller = !string.IsNullOrEmpty(caller) ? (ColorSupport ? $"<color=lightblue>[{caller}]</color> " : $"[{caller}] ") : "";
+            if (!_loggers.TryGetValue(level, out List<LogStringHandler> stringHandlers))
+                return;
 
-            switch (level)
-            {
-                case LogLevel.Debug:
-                    _logInfo?.Invoke($"{_prefixDebug} {caller}{message}");
-                    break;
-                case LogLevel.Info:
-                    _logInfo?.Invoke($"{_prefixInfo} {caller}{message}");
-                    break;
-                case LogLevel.Warning:
-                    _logWarning?.Invoke($"{_prefixWarning} {caller}{message}");
-                    break;
-                case LogLevel.Error:
-                    _logError?.Invoke($"{_prefixError} {caller}{message}");
-                    break;
-                case LogLevel.Exception:
-                    _logError?.Invoke($"{_prefixException} {caller}{message}");
-                    break;
-            }
+            foreach (LogStringHandler stringHandler in stringHandlers)
+                stringHandler.Log(message, caller);
+        }
+
+        private void LogInternal(Exception e)
+        {
+            if (e == null || _exceptionLoggers == null)
+                return;
+
+            foreach (Action<Exception> exceptionLogger in _exceptionLoggers)
+                exceptionLogger.Invoke(e);
         }
     }
 }

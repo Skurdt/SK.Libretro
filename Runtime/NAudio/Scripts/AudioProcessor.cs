@@ -64,7 +64,7 @@ namespace SK.Libretro.NAudio
             }
             catch (Exception e)
             {
-                Utilities.Logger.LogException(e);
+                Utilities.Logger.Instance.LogException(e);
             }
         }
 

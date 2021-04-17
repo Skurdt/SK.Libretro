@@ -125,7 +125,7 @@ namespace SK.Libretro
 
                 default:
                 {
-                    Logger.LogError($"Environment unknown: {cmd}", "LibretroEnvironment.Callback");
+                    Logger.Instance.LogError($"Environment unknown: {cmd}", "LibretroEnvironment.Callback");
                     return false;
                 }
             }
@@ -136,9 +136,9 @@ namespace SK.Libretro
             bool ENVIRONMENT_NOT_IMPLEMENTED(bool defaultReturns = false)
             {
                 if (defaultReturns)
-                    Logger.LogWarning("Environment not implemented!", cmd.ToString());
+                    Logger.Instance.LogWarning("Environment not implemented!", cmd.ToString());
                 else
-                    Logger.LogError("Environment not implemented!", cmd.ToString());
+                    Logger.Instance.LogError("Environment not implemented!", cmd.ToString());
                 return defaultReturns;
             }
 
@@ -150,7 +150,7 @@ namespace SK.Libretro
             {
                 if (data != null)
                     *(bool*)data = _wrapper.OptionCropOverscan;
-                Logger.LogInfo($"-> Crop Overscan: {_wrapper.OptionCropOverscan}", $"{cmd}");
+                Logger.Instance.LogInfo($"-> Crop Overscan: {_wrapper.OptionCropOverscan}", $"{cmd}");
                 return true;
             }
 
@@ -158,7 +158,7 @@ namespace SK.Libretro
             {
                 if (data != null)
                     *(bool*)data = true;
-                Logger.LogInfo("-> CanDupe: true", $"{cmd}");
+                Logger.Instance.LogInfo("-> CanDupe: true", $"{cmd}");
                 return true;
             }
 
@@ -169,7 +169,7 @@ namespace SK.Libretro
                     _ = Directory.CreateDirectory(path);
                 if (data != null)
                     *(char**)data = _wrapper.GetUnsafeString(path);
-                Logger.LogInfo($"-> SystemDirectory: {path}", $"{cmd}");
+                Logger.Instance.LogInfo($"-> SystemDirectory: {path}", $"{cmd}");
                 return true;
             }
 
@@ -177,7 +177,7 @@ namespace SK.Libretro
             {
                 if (data == null)
                 {
-                    Logger.LogWarning($"Variable data is null.", $"{cmd}");
+                    Logger.Instance.LogWarning($"Variable data is null.", $"{cmd}");
                     return false;
                 }
 
@@ -186,14 +186,14 @@ namespace SK.Libretro
 
                 if (_wrapper.Core.CoreOptions == null)
                 {
-                    Logger.LogWarning($"Core didn't set its options. Requested key: {key}", $"{cmd}");
+                    Logger.Instance.LogWarning($"Core didn't set its options. Requested key: {key}", $"{cmd}");
                     return false;
                 }
 
                 string coreOption = _wrapper.Core.CoreOptions.Options.Find(x => x.StartsWith(key, StringComparison.OrdinalIgnoreCase));
                 if (coreOption == null)
                 {
-                    Logger.LogWarning($"Core option '{key}' not found.", $"{cmd}");
+                    Logger.Instance.LogWarning($"Core option '{key}' not found.", $"{cmd}");
                     return false;
                 }
 
@@ -218,7 +218,7 @@ namespace SK.Libretro
                     _ = Directory.CreateDirectory(path);
                 if (data != null)
                     *(char**)data = _wrapper.GetUnsafeString(path);
-                Logger.LogInfo($"-> LibretroPath: {path}", $"{cmd}");
+                Logger.Instance.LogInfo($"-> LibretroPath: {path}", $"{cmd}");
                 return true;
             }
 
@@ -243,7 +243,7 @@ namespace SK.Libretro
                     _ = Directory.CreateDirectory(path);
                 if (data != null)
                     *(char**)data = _wrapper.GetUnsafeString(path);
-                Logger.LogInfo($"-> CoreAssetsDirectory: {path}", $"{cmd}");
+                Logger.Instance.LogInfo($"-> CoreAssetsDirectory: {path}", $"{cmd}");
                 return true;
             }
 
@@ -254,7 +254,7 @@ namespace SK.Libretro
                     _ = Directory.CreateDirectory(path);
                 if (data != null)
                     *(char**)data = _wrapper.GetUnsafeString(path);
-                Logger.LogInfo($"-> SaveDirectory: {path}", $"{cmd}");
+                Logger.Instance.LogInfo($"-> SaveDirectory: {path}", $"{cmd}");
                 return true;
             }
 
@@ -262,7 +262,7 @@ namespace SK.Libretro
             {
                 if (data != null)
                     *(char**)data = _wrapper.GetUnsafeString(_wrapper.OptionUserName);
-                Logger.LogInfo($"-> UserName: {_wrapper.OptionUserName}", $"{cmd}");
+                Logger.Instance.LogInfo($"-> UserName: {_wrapper.OptionUserName}", $"{cmd}");
                 return true;
             }
 
@@ -270,7 +270,7 @@ namespace SK.Libretro
             {
                 if (data != null)
                     *(char**)data = _wrapper.GetUnsafeString(_wrapper.OptionLanguage.ToString());
-                Logger.LogInfo($"-> Language: {_wrapper.OptionLanguage}", $"{cmd}");
+                Logger.Instance.LogInfo($"-> Language: {_wrapper.OptionLanguage}", $"{cmd}");
                 return true;
             }
 
@@ -290,7 +290,7 @@ namespace SK.Libretro
             {
                 if (data != null)
                     *(bool*)data = false;
-                Logger.LogInfo("-> Input Bitmasks: False", $"{cmd}");
+                Logger.Instance.LogInfo("-> Input Bitmasks: False", $"{cmd}");
                 return false;
             }
 
@@ -321,7 +321,7 @@ namespace SK.Libretro
                 // Result: 0, 90, 180, 270 degrees
                 if (data != null)
                     _wrapper.Core.Rotation = (int)*(uint*)data * 90;
-                Logger.LogInfo($"<- Rotation: {_wrapper.Core.Rotation}", $"{cmd}");
+                Logger.Instance.LogInfo($"<- Rotation: {_wrapper.Core.Rotation}", $"{cmd}");
                 // return true;
                 return false;
             }
@@ -330,7 +330,7 @@ namespace SK.Libretro
             bool SetMessage()
             {
                 if (data != null)
-                    Logger.LogWarning($"<- Message: {UnsafeStringUtils.CharsToString(((retro_message*)data)->msg)}", $"{cmd}");
+                    Logger.Instance.LogWarning($"<- Message: {UnsafeStringUtils.CharsToString(((retro_message*)data)->msg)}", $"{cmd}");
                 return true;
             }
 
@@ -338,7 +338,7 @@ namespace SK.Libretro
             {
                 if (data != null)
                     _wrapper.Core.PerformanceLevel = *(int*)data;
-                Logger.LogInfo($"<- PerformanceLevel: {_wrapper.Core.PerformanceLevel}", $"{cmd}");
+                Logger.Instance.LogInfo($"<- PerformanceLevel: {_wrapper.Core.PerformanceLevel}", $"{cmd}");
                 return true;
             }
 
@@ -355,7 +355,7 @@ namespace SK.Libretro
                     case retro_pixel_format.RETRO_PIXEL_FORMAT_RGB565:
                     {
                         _wrapper.Game.PixelFormat = *inPixelFormat;
-                        Logger.LogInfo($"<- PixelFormat: {_wrapper.Game.PixelFormat}", $"{cmd}");
+                        Logger.Instance.LogInfo($"<- PixelFormat: {_wrapper.Game.PixelFormat}", $"{cmd}");
                         return true;
                     }
                 }
@@ -494,7 +494,7 @@ namespace SK.Libretro
                 }
                 catch (Exception e)
                 {
-                    Logger.LogException(e);
+                    Logger.Instance.LogException(e);
                 }
 
                 LibretroWrapper.SaveCoreOptionsFile();
@@ -533,12 +533,12 @@ namespace SK.Libretro
                 int numPorts;
                 for (numPorts = 0; inControllerInfo[numPorts].types != null; ++numPorts)
                 {
-                    Logger.LogInfo($"# Controller port: {numPorts + 1}", $"{cmd}");
+                    Logger.Instance.LogInfo($"# Controller port: {numPorts + 1}", $"{cmd}");
                     for (int j = 0; j < inControllerInfo[numPorts].num_types; ++j)
                     {
                         string desc = UnsafeStringUtils.CharsToString(inControllerInfo[numPorts].types[j].desc);
                         uint id     = inControllerInfo[numPorts].types[j].id;
-                        Logger.LogInfo($"    {desc} (ID: {id})", $"{cmd}");
+                        Logger.Instance.LogInfo($"    {desc} (ID: {id})", $"{cmd}");
                     }
                 }
 
@@ -632,7 +632,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.LogError($"Failed to retrieve and write the core options, they must be entered manually in the configuration file for now... (Exception message: {e.Message})");
+                Logger.Instance.LogError($"Failed to retrieve and write the core options, they must be entered manually in the configuration file for now... (Exception message: {e.Message})");
             }
 
             return true;

@@ -81,7 +81,7 @@ namespace SK.Libretro
 
                 if (!GetGameInfo())
                 {
-                    Logger.LogWarning($"Game not set, running '{_wrapper.Core.Name}' core only.", "Libretro.LibretroGame.Start");
+                    Logger.Instance.LogWarning($"Game not set, running '{_wrapper.Core.Name}' core only.", "Libretro.LibretroGame.Start");
                     return false;
                 }
 
@@ -90,7 +90,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.LogException(e);
+                Logger.Instance.LogException(e);
             }
 
             return false;
@@ -132,7 +132,7 @@ namespace SK.Libretro
             {
                 if (!_wrapper.Core.SupportNoGame)
                 {
-                    Logger.LogError($"Game not set, core '{_wrapper.Core.Name}' needs a game to run.", "Libretro.LibretroGame.Start");
+                    Logger.Instance.LogError($"Game not set, core '{_wrapper.Core.Name}' needs a game to run.", "Libretro.LibretroGame.Start");
                     return false;
                 }
 
@@ -168,7 +168,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.LogException(e, "Libretro.LibretroGame.LoadGame");
+                Logger.Instance.LogException(e);
             }
 
             return false;
