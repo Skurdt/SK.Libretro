@@ -207,6 +207,17 @@
                 },
                 {
                     "name": "",
+                    "id": "6ea933b0-6174-42ee-a12a-6f7d357aa7d0",
+                    "path": "<XRController>{RightHand}/thumbstickClicked",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard & Mouse",
+                    "action": "Start",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "9038026f-a11d-4b46-8642-914319aecbc9",
                     "path": "<Keyboard>/rightShift",
                     "interactions": "",
@@ -223,6 +234,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
+                    "action": "Select",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8c131ee0-c595-43fc-a143-9c5e43b95c69",
+                    "path": "<XRController>{LeftHand}/thumbstickClicked",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard & Mouse",
                     "action": "Select",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -251,6 +273,17 @@
                 },
                 {
                     "name": "",
+                    "id": "f3743692-239c-4b7b-9746-23dd06c20933",
+                    "path": "<XRController>{RightHand}/secondaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard & Mouse",
+                    "action": "A",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "96354b97-ed6e-4294-ad85-4cf0aa8b7f0f",
                     "path": "<Keyboard>/numpad1",
                     "interactions": "",
@@ -267,6 +300,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
+                    "action": "B",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "820b1e80-9a18-4d8b-b1f0-4560a4ce68b0",
+                    "path": "<XRController>{RightHand}/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard & Mouse",
                     "action": "B",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -317,6 +361,17 @@
                 },
                 {
                     "name": "",
+                    "id": "02fb5cb1-3d62-4a8e-8530-0bb7a5a3c268",
+                    "path": "<XRController>{RightHand}/gripButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard & Mouse",
+                    "action": "R2",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "a5bc3b7e-58b2-4333-a557-4bcaff47c53e",
                     "path": "<Keyboard>/z",
                     "interactions": "",
@@ -333,6 +388,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
+                    "action": "L2",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b358726c-25e2-40e1-bd6d-79111e19370b",
+                    "path": "<XRController>{RightHand}/triggerButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard & Mouse",
                     "action": "L2",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -361,6 +427,17 @@
                 },
                 {
                     "name": "",
+                    "id": "5e4af279-b67c-44ba-9114-2c2bb4443087",
+                    "path": "<XRController>{LeftHand}/triggerButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard & Mouse",
+                    "action": "L1",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "e7173dc3-17d0-49f2-917b-a1713f08362d",
                     "path": "<Keyboard>/numpad3",
                     "interactions": "",
@@ -383,6 +460,17 @@
                 },
                 {
                     "name": "",
+                    "id": "16513cee-8da6-4c7b-8bdc-5ca07f6186d3",
+                    "path": "<XRController>{LeftHand}/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard & Mouse",
+                    "action": "Y",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "b04b3254-45f7-42ff-91e7-3ee94dd070f1",
                     "path": "<Keyboard>/numpad4",
                     "interactions": "",
@@ -399,6 +487,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
+                    "action": "X",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "429553a0-14fc-40f3-b9d1-510f4cef06ba",
+                    "path": "<XRController>{LeftHand}/secondaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard & Mouse",
                     "action": "X",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -657,6 +756,17 @@
                     "isPartOfComposite": false
                 },
                 {
+                    "name": "",
+                    "id": "12b93b2d-ef7c-495e-8400-18978b281845",
+                    "path": "<XRController>{LeftHand}/thumbstick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard & Mouse",
+                    "action": "AnalogLeft",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
                     "name": "IKJL",
                     "id": "e95e7196-0734-475d-ae26-f7b0c6aa1582",
                     "path": "2DVector(mode=1)",
@@ -724,6 +834,17 @@
                 },
                 {
                     "name": "",
+                    "id": "9ec89672-1ba9-4c81-8014-b9f6b95907e5",
+                    "path": "<XRController>{RightHand}/thumbstick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard & Mouse",
+                    "action": "AnalogRight",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "0d80c12b-1749-473c-9c2c-c60fa0590331",
                     "path": "<Keyboard>/x",
                     "interactions": "",
@@ -765,6 +886,17 @@
                     "action": "R1",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "471051bd-efc7-4e4e-ac3e-afb0f033ecfe",
+                    "path": "<XRController>{LeftHand}/gripButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard & Mouse",
+                    "action": "R1",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }
@@ -781,6 +913,21 @@
                 },
                 {
                     "devicePath": "<Mouse>",
+                    "isOptional": true,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<XRController>",
+                    "isOptional": true,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<XRController>{LeftHand}",
+                    "isOptional": true,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<XRController>{RightHand}",
                     "isOptional": true,
                     "isOR": false
                 }
