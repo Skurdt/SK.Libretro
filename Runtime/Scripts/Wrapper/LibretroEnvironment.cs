@@ -25,7 +25,6 @@ using SK.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using static SK.Libretro.LibretroHeader;
 
@@ -40,7 +39,7 @@ namespace SK.Libretro
         // TEMP_HACK
         private sealed class CoresUsingOptionsIntlList
         {
-            public List<string> Cores;
+            public List<string> Cores = null;
         }
 
         public LibretroEnvironment(LibretroWrapper wrapper) => _wrapper = wrapper;
