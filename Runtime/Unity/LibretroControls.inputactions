@@ -7,9 +7,9 @@
             "actions": [
                 {
                     "name": "DPad",
-                    "type": "Button",
+                    "type": "Value",
                     "id": "3d136013-1adf-4a01-ad86-7e5f4e85dd81",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "Axis",
                     "processors": "",
                     "interactions": ""
                 },
