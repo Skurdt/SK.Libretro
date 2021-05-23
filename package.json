@@ -6,9 +6,9 @@
   "unity": "2020.2",
   "dependencies": {
     "com.unity.mathematics": "1.2.1",
-    "com.unity.burst": "1.4.4",
-    "com.unity.textmeshpro": "3.0.3",
-    "com.unity.inputsystem": "1.1.0-preview.3",
+    "com.unity.burst": "1.4.8",
+    "com.unity.textmeshpro": "3.0.6",
+    "com.unity.inputsystem": "1.1.0-pre.5",
     "com.sk.utilities": "1.0.0",
     "com.sk.utilities.unity": "1.0.0"
   },

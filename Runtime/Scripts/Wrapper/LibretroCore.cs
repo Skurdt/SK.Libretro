@@ -112,6 +112,7 @@ namespace SK.Libretro
                 return false;
 
             retro_init();
+            retro_set_controller_port_device(0, RETRO_DEVICE_JOYPAD);
 
             Initialized = true;
             return true;
