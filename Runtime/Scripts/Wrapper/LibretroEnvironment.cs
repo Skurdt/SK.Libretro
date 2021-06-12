@@ -68,7 +68,7 @@ namespace SK.Libretro
                 case retro_environment.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY:                          return GetSaveDirectory();
                 case retro_environment.RETRO_ENVIRONMENT_GET_USERNAME:                                return GetUsername();
                 case retro_environment.RETRO_ENVIRONMENT_GET_LANGUAGE:                                return GetLanguage();
-                case retro_environment.RETRO_ENVIRONMENT_GET_CURRENT_SOFTWARE_FRAMEBUFFER:            return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_GET_CURRENT_SOFTWARE_FRAMEBUFFER:            return GetCurrentSoftwareFramebuffer();
                 case retro_environment.RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE:                     return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_VFS_INTERFACE:                           return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_LED_INTERFACE:                           return ENVIRONMENT_NOT_IMPLEMENTED();
@@ -273,6 +273,8 @@ namespace SK.Libretro
                 return true;
             }
 
+            bool GetCurrentSoftwareFramebuffer() => false;
+
             bool GetAudioVideoEnable()
             {
                 if (data != null)
@@ -304,9 +306,7 @@ namespace SK.Libretro
                 *(uint*)data = coresUsingOptionsIntl == null || coresUsingOptionsIntl.Cores == null || !coresUsingOptionsIntl.Cores.Contains(_wrapper.Core.Name)
                              ? RETRO_API_VERSION
                              : 0;
-
                 return true;
-
             }
             #endregion
 
