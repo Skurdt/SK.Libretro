@@ -97,7 +97,7 @@ namespace SK.Libretro.UnityEditor
         [MenuItem("Libretro/Manage Cores"), SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Unity Editor")]
         private static void ShowWindow()
         {
-            if (CurrentPlatform == null)
+            if (CurrentPlatform is null)
                 return;
 
             if (!Directory.Exists(_libretroDirectory))
@@ -105,7 +105,6 @@ namespace SK.Libretro.UnityEditor
 
             if (!Directory.Exists(_coresDirectory))
                 _ = Directory.CreateDirectory(_coresDirectory);
-
 
             GetCustomWindow(true).minSize = new Vector2(311f, 200f);
         }
@@ -196,7 +195,7 @@ namespace SK.Libretro.UnityEditor
             if (task.IsFaulted)
             {
                 Exception taskException = task.Exception;
-                while (taskException is AggregateException && taskException.InnerException != null)
+                while (taskException is AggregateException && !(taskException.InnerException is null))
                     taskException = taskException.InnerException;
                 _ = EditorUtility.DisplayDialog("Task chain terminated", $"Exception: {taskException.Message}", "Ok");
             }
@@ -238,12 +237,7 @@ namespace SK.Libretro.UnityEditor
                 string lastModified = tdNodes[2].InnerText;
                 bool available      = File.Exists(Path.GetFullPath(Path.Combine(_coresDirectory, fileName.Replace(".zip", ""))));
                 Core found          = _coreList.Cores.Find(x => x.FullName.Equals(fileName, StringComparison.OrdinalIgnoreCase));
-                if (found != null)
-                {
-                    found.LatestDate = lastModified;
-                    found.Available  = available;
-                }
-                else
+                if (found is null)
                 {
                     _coreList.Cores.Add(new Core
                     {
@@ -252,6 +246,11 @@ namespace SK.Libretro.UnityEditor
                         LatestDate  = lastModified,
                         Available   = available
                     });
+                }
+                else
+                {
+                    found.LatestDate = lastModified;
+                    found.Available  = available;
                 }
             }
 

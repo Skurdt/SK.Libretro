@@ -176,21 +176,21 @@ namespace SK.Libretro
             {
                 if (data == null)
                 {
-                    Logger.Instance.LogWarning($"Variable data is null.", $"{cmd}");
+                    Logger.Instance.LogWarning($"Variable data == null.", $"{cmd}");
                     return false;
                 }
 
                 retro_variable* outVariable = (retro_variable*)data;
                 string key                  = UnsafeStringUtils.CharsToString(outVariable->key);
 
-                if (_wrapper.Core.CoreOptions == null)
+                if (_wrapper.Core.CoreOptions is null)
                 {
                     Logger.Instance.LogWarning($"Core didn't set its options. Requested key: {key}", $"{cmd}");
                     return false;
                 }
 
                 string coreOption = _wrapper.Core.CoreOptions.Options.Find(x => x.StartsWith(key, StringComparison.OrdinalIgnoreCase));
-                if (coreOption == null)
+                if (coreOption is null)
                 {
                     Logger.Instance.LogWarning($"Core option '{key}' not found.", $"{cmd}");
                     return false;
@@ -303,7 +303,7 @@ namespace SK.Libretro
                 // TEMP_HACK
                 string filePath = Path.GetFullPath(Path.Combine(LibretroWrapper.MainDirectory, "cores_using_options_intl.json"));
                 CoresUsingOptionsIntlList coresUsingOptionsIntl = FileSystem.DeserializeFromJson<CoresUsingOptionsIntlList>(filePath);
-                *(uint*)data = coresUsingOptionsIntl == null || coresUsingOptionsIntl.Cores == null || !coresUsingOptionsIntl.Cores.Contains(_wrapper.Core.Name)
+                *(uint*)data = coresUsingOptionsIntl is null || coresUsingOptionsIntl.Cores is null || !coresUsingOptionsIntl.Cores.Contains(_wrapper.Core.Name)
                              ? RETRO_API_VERSION
                              : 0;
                 return true;
@@ -468,7 +468,7 @@ namespace SK.Libretro
                     retro_variable* inVariable = (retro_variable*)data;
 
                     _wrapper.Core.CoreOptions = LibretroWrapper.CoreOptionsList.Cores.Find(x => x.CoreName.Equals(_wrapper.Core.Name, StringComparison.OrdinalIgnoreCase));
-                    if (_wrapper.Core.CoreOptions == null)
+                    if (_wrapper.Core.CoreOptions is null)
                     {
                         _wrapper.Core.CoreOptions = new LibretroCoreOptions { CoreName = _wrapper.Core.Name };
                         LibretroWrapper.CoreOptionsList.Cores.Add(_wrapper.Core.CoreOptions);
@@ -478,7 +478,7 @@ namespace SK.Libretro
                     {
                         string key        = UnsafeStringUtils.CharsToString(inVariable->key);
                         string coreOption = _wrapper.Core.CoreOptions.Options.Find(x => x.StartsWith(key, StringComparison.OrdinalIgnoreCase));
-                        if (coreOption == null)
+                        if (coreOption is null)
                         {
                             string inValue                = UnsafeStringUtils.CharsToString(inVariable->value);
                             string[] descriptionAndValues = inValue.Split(';');
@@ -585,7 +585,7 @@ namespace SK.Libretro
         private unsafe bool SetCoreOptionsInternal(long data)
         {
             _wrapper.Core.CoreOptions = LibretroWrapper.CoreOptionsList.Cores.Find(x => x.CoreName.Equals(_wrapper.Core.Name, StringComparison.OrdinalIgnoreCase));
-            if (_wrapper.Core.CoreOptions == null)
+            if (_wrapper.Core.CoreOptions is null)
             {
                 _wrapper.Core.CoreOptions = new LibretroCoreOptions { CoreName = _wrapper.Core.Name };
                 LibretroWrapper.CoreOptionsList.Cores.Add(_wrapper.Core.CoreOptions);
@@ -603,7 +603,7 @@ namespace SK.Libretro
                     string key = UnsafeStringUtils.CharsToString(defs.key);
 
                     string coreOption = _wrapper.Core.CoreOptions.Options.Find(x => x.StartsWith(key, StringComparison.OrdinalIgnoreCase));
-                    if (coreOption != null)
+                    if (!(coreOption is null))
                         continue;
 
                     string defaultValue = UnsafeStringUtils.CharsToString(defs.default_value);

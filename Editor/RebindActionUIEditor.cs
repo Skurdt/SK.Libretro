@@ -137,10 +137,10 @@ namespace SK.Libretro.UnityEditor
             if (actionReference != null)
                  action = actionReference.action;
 
-            if (action == null)
+            if (action is null)
             {
-                _bindingOptions      = new GUIContent[0];
-                _bindingOptionValues = new string[0];
+                _bindingOptions        = new GUIContent[0];
+                _bindingOptionValues   = new string[0];
                 _selectedBindingOption = -1;
                 return;
             }

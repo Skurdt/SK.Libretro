@@ -61,7 +61,7 @@ namespace SK.Libretro
                 {
                     string directory = FileSystem.GetAbsolutePath(gameDirectory);
                     _path = GetGamePath(directory, gameName);
-                    if (_path == null)
+                    if (_path is null)
                     {
                         // Try Zip archive
                         // TODO(Tom): Check for any file after extraction instead of exact game name (only the archive needs to match)
@@ -113,7 +113,7 @@ namespace SK.Libretro
 
         private string GetGamePath(string directory, string gameName)
         {
-            if (_wrapper.Core.ValidExtensions == null)
+            if (_wrapper.Core.ValidExtensions is null)
                 return null;
 
             foreach (string extension in _wrapper.Core.ValidExtensions)

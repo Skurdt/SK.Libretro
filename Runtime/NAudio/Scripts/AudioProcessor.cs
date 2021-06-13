@@ -70,7 +70,7 @@ namespace SK.Libretro.NAudio
 
         public void DeInit()
         {
-            if (_audioDevice == null)
+            if (_audioDevice is null)
                 return;
 
             _audioDevice.Stop();
@@ -80,7 +80,7 @@ namespace SK.Libretro.NAudio
 
         public void ProcessSamples(float[] samples)
         {
-            if (_bufferedWaveProvider == null)
+            if (_bufferedWaveProvider is null)
                 return;
 
             byte[] byteBuffer = new byte[samples.Length * sizeof(float)];
@@ -90,8 +90,10 @@ namespace SK.Libretro.NAudio
 
         public void SetVolume(float volume)
         {
-            if (_volumeProvider != null)
-                _volumeProvider.Volume = math.clamp(volume, 0f, 1f);
+            if (_volumeProvider is null)
+                return;
+
+            _volumeProvider.Volume = math.clamp(volume, 0f, 1f);
         }
     }
 }

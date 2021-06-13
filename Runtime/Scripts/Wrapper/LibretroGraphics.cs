@@ -35,7 +35,7 @@ namespace SK.Libretro
 
         public unsafe void Callback(void* data, uint width, uint height, ulong pitch)
         {
-            if (Processor == null)
+            if (Processor is null)
                 return;
 
             if (_wrapper.Core.HwAccelerated)

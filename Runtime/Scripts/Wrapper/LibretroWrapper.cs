@@ -173,7 +173,7 @@ namespace SK.Libretro
         {
             TargetPlatform = targetPlatform;
 
-            if (MainDirectory == null)
+            if (MainDirectory is null)
             {
                 MainDirectory       = !string.IsNullOrEmpty(baseDirectory) ? baseDirectory : "libretro";
                 CoresDirectory      = $"{MainDirectory}/cores";
@@ -266,7 +266,7 @@ namespace SK.Libretro
 
         public void FrameTimeUpdate()
         {
-            if (FrameTimeInterfaceCallback == null)
+            if (FrameTimeInterfaceCallback is null)
                 return;
 
             long current = System.Diagnostics.Stopwatch.GetTimestamp();
@@ -347,11 +347,11 @@ namespace SK.Libretro
             if (!Directory.Exists(coreDirectory))
                 _ = Directory.CreateDirectory(coreDirectory);
 
-            string gameDirectory = Game.Name != null ? Path.Combine(coreDirectory, Path.GetFileNameWithoutExtension(Game.Name)) : null;
-            if (gameDirectory != null && !Directory.Exists(gameDirectory))
+            string gameDirectory = !(Game.Name is null) ? Path.Combine(coreDirectory, Path.GetFileNameWithoutExtension(Game.Name)) : null;
+            if (!(gameDirectory is null) && !Directory.Exists(gameDirectory))
                 _ = Directory.CreateDirectory(gameDirectory);
 
-            outPath = Path.GetFullPath(gameDirectory != null ? Path.Combine(gameDirectory, $"save_{index}.state") : Path.Combine(coreDirectory, $"save_{index}.state"));
+            outPath = Path.GetFullPath(!(gameDirectory is null) ? Path.Combine(gameDirectory, $"save_{index}.state") : Path.Combine(coreDirectory, $"save_{index}.state"));
             File.WriteAllBytes(outPath, data);
 
             return true;
@@ -363,11 +363,11 @@ namespace SK.Libretro
             if (!Directory.Exists(coreDirectory))
                 return false;
 
-            string gameDirectory = Game.Name != null ? Path.Combine(coreDirectory, Path.GetFileNameWithoutExtension(Game.Name)) : null;
-            if (gameDirectory != null && !Directory.Exists(gameDirectory))
+            string gameDirectory = !(Game.Name is null) ? Path.Combine(coreDirectory, Path.GetFileNameWithoutExtension(Game.Name)) : null;
+            if (!(gameDirectory is null) && !Directory.Exists(gameDirectory))
                 return false;
 
-            string savePath = gameDirectory != null ? Path.Combine(gameDirectory, $"save_{index}.state") : Path.Combine(coreDirectory, $"save_{index}.state");
+            string savePath = !(gameDirectory is null) ? Path.Combine(gameDirectory, $"save_{index}.state") : Path.Combine(coreDirectory, $"save_{index}.state");
 
             if (!File.Exists(savePath))
                 return false;
@@ -386,13 +386,12 @@ namespace SK.Libretro
         public static void LoadCoreOptionsFile()
         {
             CoreOptionsList = FileSystem.DeserializeFromJson<LibretroCoreOptionsList>(CoreOptionsFile);
-            if (CoreOptionsList == null)
-                CoreOptionsList = new LibretroCoreOptionsList();
+            CoreOptionsList ??= new LibretroCoreOptionsList();
         }
 
         public static void SaveCoreOptionsFile()
         {
-            if (CoreOptionsList == null || CoreOptionsList.Cores.Count == 0)
+            if (CoreOptionsList is null || CoreOptionsList.Cores.Count == 0)
                 return;
 
             CoreOptionsList.Cores = CoreOptionsList.Cores.OrderBy(x => x.CoreName).ToList();
@@ -421,7 +420,7 @@ namespace SK.Libretro
 
         private unsafe void RewindLoadState(SaveStateData saveStateData)
         {
-            if (saveStateData == null)
+            if (saveStateData is null)
                 return;
 
             fixed (byte* p = saveStateData.Data)

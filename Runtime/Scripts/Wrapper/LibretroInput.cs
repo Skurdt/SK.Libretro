@@ -125,7 +125,7 @@ namespace SK.Libretro
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "target-typed is C#9+")]
         public short StateCallback(uint port, uint device, uint index, uint id)
         {
-            if (Processor == null)
+            if (Processor is null)
                 return 0;
 
             return device switch

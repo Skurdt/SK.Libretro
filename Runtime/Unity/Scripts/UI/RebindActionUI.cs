@@ -154,7 +154,7 @@ namespace SK.Libretro.Unity
             bindingIndex = -1;
 
             action = _action != null ? _action.action : null;
-            if (action == null)
+            if (action is null)
                 return false;
 
             if (string.IsNullOrEmpty(_bindingId))
@@ -322,7 +322,7 @@ namespace SK.Libretro.Unity
             {
                 RebindActionUI component = _rebindActionUIs[i];
                 InputAction referencedAction = component.ActionReference != null ? component.ActionReference.action : null;
-                if (referencedAction == null)
+                if (referencedAction is null)
                     continue;
 
                 if (referencedAction == action ||

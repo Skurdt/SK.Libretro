@@ -116,7 +116,7 @@ namespace SK.Libretro.Utilities
 
         private void LogInternal(Exception e)
         {
-            if (e == null || _exceptionLoggers == null)
+            if (e is null || _exceptionLoggers is null)
                 return;
 
             foreach (Action<Exception> exceptionLogger in _exceptionLoggers)

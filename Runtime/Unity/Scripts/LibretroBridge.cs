@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using System.Collections;
+using Cysharp.Threading.Tasks;
 using System.IO;
 using Unity.Mathematics;
 using UnityEngine;
@@ -44,6 +44,30 @@ namespace SK.Libretro.Unity
 
         public bool Running { get; private set; } = false;
 
+        public bool GraphicsEnabled
+        {
+            get => _graphicsEnabled;
+            set
+            {
+                if (value)
+                    ActivateGraphics();
+                else
+                    DeactivateGraphics();
+            }
+        }
+
+        public bool AudioEnabled
+        {
+            get => _audioEnabled;
+            set
+            {
+                if (value)
+                    ActivateAudio();
+                else
+                    DeactivateAudio();
+            }
+        }
+
         public bool InputEnabled
         {
             get => _inputEnabled;
@@ -61,7 +85,6 @@ namespace SK.Libretro.Unity
 
         private static bool _firstInstance = true;
 
-        private readonly LibretroScreenNode _screenNode;
         private readonly Transform _screenTransform;
         private readonly Renderer _screenRenderer;
         private readonly Transform _viewer;
@@ -70,12 +93,12 @@ namespace SK.Libretro.Unity
         private readonly Material _savedMaterial = null;
 
         private LibretroWrapper _wrapper              = null;
-        private System.Func<IEnumerator> _updateFunc  = null;
         private GraphicsProcessorHardware _hwRenderer = null;
+        private bool _graphicsEnabled                 = false;
+        private bool _audioEnabled                    = false;
         private bool _inputEnabled                    = false;
 
-        private Coroutine _updateCoroutine     = null;
-        private Coroutine _screenshotCoroutine = null;
+        private bool _savingScreenshot;
 
         private readonly System.Diagnostics.Stopwatch _stopwatch = new System.Diagnostics.Stopwatch();
         private readonly int _maxSkipFrames                      = 10;
@@ -95,7 +118,6 @@ namespace SK.Libretro.Unity
                 _firstInstance = false;
             }
 
-            _screenNode      = screen;
             _screenTransform = screen.transform;
             _screenRenderer  = screen.GetComponent<Renderer>();
             _viewer          = viewer;
@@ -112,18 +134,6 @@ namespace SK.Libretro.Unity
                 return false;
             }
 
-            if (_wrapper.Core.HwAccelerated)
-            {
-                if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.OpenGLCore)
-                {
-                    Stop();
-                    return false;
-                }
-                _updateFunc = CoUpdateHardware;
-            }
-            else
-                _updateFunc = CoUpdateSoftware;
-
             ActivateGraphics();
             ActivateAudio();
 
@@ -131,39 +141,26 @@ namespace SK.Libretro.Unity
             _stopwatch.Restart();
 
             Running = true;
-            return true;
-        }
 
-        public void Update()
-        {
-            if (_wrapper == null || !Running)
-                return;
-
-            if (_updateCoroutine == null)
-                _updateCoroutine = _screenNode.StartCoroutine(_updateFunc());
-
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-            if (_viewer == null || !_settings.AudioVolumeControlledByDistance || !(_wrapper.Audio.Processor is NAudio.AudioProcessor audioProcessor))
-                return;
-            float distance = Vector3.Distance(_screenTransform.position, _viewer.transform.position);
-            if (distance > 0f)
+            if (_wrapper.Core.HwAccelerated)
             {
-                float volume = math.clamp(math.pow((distance - _settings.AudioMaxDistance) / (_settings.AudioMinDistance - _settings.AudioMaxDistance), 2f), 0f, _settings.AudioMaxVolume);
-                audioProcessor.SetVolume(volume);
+                if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.OpenGLCore || _hwRenderer is null || !_hwRenderer.Initialized)
+                {
+                    Stop();
+                    return false;
+                }
+                UpdateHardware().Forget();
+                return true;
             }
-#endif
+
+            UpdateSoftware().Forget();
+            return true;
         }
 
         public void Pause()
         {
             if (!Running)
                 return;
-
-            if (_updateCoroutine != null)
-            {
-                _screenNode.StopCoroutine(_updateCoroutine);
-                _updateCoroutine = null;
-            }
 
             Running = false;
         }
@@ -181,31 +178,20 @@ namespace SK.Libretro.Unity
 
         public void Stop()
         {
-            if (_updateCoroutine != null)
-            {
-                _screenNode.StopCoroutine(_updateCoroutine);
-                _updateCoroutine = null;
-            }
-
-            DeactivateGraphics();
-            DeactivateAudio();
-            DeactivateInput();
-
-            if (_screenRenderer != null && _savedMaterial != null)
-                _screenRenderer.material = _savedMaterial;
+            Running = false;
 
             _wrapper?.StopGame();
             _wrapper = null;
 
-            _updateFunc = null;
-            Running     = false;
+            if (_screenRenderer != null && _savedMaterial != null)
+                _screenRenderer.material = _savedMaterial;
         }
 
         public void Rewind(bool rewind) => _wrapper.DoRewind = rewind;
 
         public bool SaveState(int index, bool saveScreenshot)
         {
-            if (_wrapper == null)
+            if (_wrapper is null)
                 return false;
 
             Pause();
@@ -230,7 +216,7 @@ namespace SK.Libretro.Unity
 
         public bool LoadState(int index)
         {
-            if (_wrapper == null)
+            if (_wrapper is null)
                 return false;
 
             _accumulatedTime = 0;
@@ -241,8 +227,9 @@ namespace SK.Libretro.Unity
 
         public void SaveScreenshot(string screenshotPath)
         {
-            if (_screenshotCoroutine == null)
-                _screenshotCoroutine = _screenNode.StartCoroutine(CoSaveScreenshot(screenshotPath));
+            if (_savingScreenshot)
+                return;
+            SaveScreenshotAsync(screenshotPath).Forget();
         }
 
         public void SetAnalogToDigitalInput(bool value)
@@ -254,55 +241,10 @@ namespace SK.Libretro.Unity
 
         public void SetRewindEnabled(bool value)
         {
-            if (_wrapper != null)
-                _wrapper.RewindEnabled = value;
-        }
+            if (_wrapper is null)
+                return;
 
-        private IEnumerator CoUpdateSoftware()
-        {
-            if (_wrapper == null || !Running)
-            {
-                Stop();
-                yield break;
-            }
-
-            UpdateTimings();
-
-            while (_accumulatedTime >= _targetFrameTime && _nLoops < _maxSkipFrames)
-            {
-                _wrapper.Update();
-                _accumulatedTime -= _targetFrameTime;
-                ++_nLoops;
-                yield return null;
-            }
-
-            _updateCoroutine = null;
-        }
-
-        private IEnumerator CoUpdateHardware()
-        {
-            if (_wrapper == null || !Running || _hwRenderer == null || !_hwRenderer.Initialized)
-            {
-                Stop();
-                yield break;
-            }
-
-            UpdateTimings();
-
-            _hwRenderer.ClearRetroRunCommandQueue();
-
-            while (_accumulatedTime >= _targetFrameTime && _nLoops < _maxSkipFrames)
-            {
-                _hwRenderer.UpdateRetroRunCommandQueue();
-                _accumulatedTime -= _targetFrameTime;
-                ++_nLoops;
-                yield return null;
-            }
-
-            yield return new WaitForEndOfFrame();
-            _hwRenderer.FlushRetroRunCommandQueue();
-
-            _updateCoroutine = null;
+            _wrapper.RewindEnabled = value;
         }
 
         private void UpdateTimings()
@@ -317,7 +259,7 @@ namespace SK.Libretro.Unity
 
         private void ActivateGraphics()
         {
-            if (_wrapper == null)
+            if (_wrapper is null)
                 return;
 
             IGraphicsProcessor graphicsProcessor;
@@ -346,17 +288,22 @@ namespace SK.Libretro.Unity
                 graphicsProcessor = new GraphicsProcessorSoftware(_wrapper.Game.VideoWidth, _wrapper.Game.VideoHeight, SetTexture);
 
             _wrapper.ActivateGraphics(graphicsProcessor);
+            _graphicsEnabled = true;
         }
 
         private void DeactivateGraphics()
         {
-            _wrapper?.DeactivateGraphics();
-            _hwRenderer = null;
+            if (_wrapper is null)
+                return;
+
+            _wrapper.DeactivateGraphics();
+            _hwRenderer      = null;
+            _graphicsEnabled = false;
         }
 
         private void ActivateAudio()
         {
-            if (_wrapper == null)
+            if (_wrapper is null)
                 return;
 
             IAudioProcessor audioProcessor;
@@ -379,13 +326,21 @@ namespace SK.Libretro.Unity
             }
 #endif
             _wrapper.ActivateAudio(audioProcessor);
+            _audioEnabled = true;
         }
 
-        private void DeactivateAudio() => _wrapper?.DeactivateAudio();
+        private void DeactivateAudio()
+        {
+            if (_wrapper is null)
+                return;
+
+            _wrapper.DeactivateAudio();
+            _audioEnabled = false;
+        }
 
         private void ActivateInput()
         {
-            if (_wrapper == null)
+            if (_wrapper is null)
                 return;
 
             PlayerInputManager playerInputManager = Object.FindObjectOfType<PlayerInputManager>();
@@ -399,7 +354,7 @@ namespace SK.Libretro.Unity
             }
 
             IInputProcessor processor = playerInputManager.GetComponent<IInputProcessor>();
-            if (processor == null)
+            if (processor is null)
                 processor = playerInputManager.gameObject.AddComponent<InputProcessor>();
 
             processor.AnalogDirectionsToDigital = _settings.AnalogDirectionsToDigital;
@@ -409,8 +364,63 @@ namespace SK.Libretro.Unity
 
         private void DeactivateInput()
         {
-            _wrapper?.DeactivateInput();
+            if (_wrapper is null)
+                return;
+
+            _wrapper.DeactivateInput();
             _inputEnabled = false;
+        }
+
+        private async UniTaskVoid UpdateSoftware()
+        {
+            while (!(_wrapper is null))
+            {
+                UpdateDistanceBasedAudio();
+                UpdateTimings();
+                while (_accumulatedTime >= _targetFrameTime && _nLoops < _maxSkipFrames)
+                {
+                    if (Running)
+                        _wrapper.Update();
+                    _accumulatedTime -= _targetFrameTime;
+                    ++_nLoops;
+                }
+                await UniTask.Yield();
+            }
+        }
+
+        private async UniTaskVoid UpdateHardware()
+        {
+            while (!(_wrapper is null))
+            {
+                _hwRenderer.ClearRetroRunCommandQueue();
+
+                UpdateDistanceBasedAudio();
+                UpdateTimings();
+                while (_accumulatedTime >= _targetFrameTime && _nLoops < _maxSkipFrames)
+                {
+                    if (Running)
+                        _hwRenderer.UpdateRetroRunCommandQueue();
+                    _accumulatedTime -= _targetFrameTime;
+                    ++_nLoops;
+                    await UniTask.Yield();
+                }
+                await UniTask.WaitForEndOfFrame();
+                _hwRenderer.FlushRetroRunCommandQueue();
+            }
+        }
+
+        private void UpdateDistanceBasedAudio()
+        {
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+            if (_viewer == null || !_settings.AudioVolumeControlledByDistance || !(_wrapper.Audio.Processor is NAudio.AudioProcessor audioProcessor))
+                return;
+            float distance = Vector3.Distance(_screenTransform.position, _viewer.transform.position);
+            if (distance > 0f)
+            {
+                float volume = math.clamp(math.pow((distance - _settings.AudioMaxDistance) / (_settings.AudioMinDistance - _settings.AudioMaxDistance), 2f), 0f, _settings.AudioMaxVolume);
+                audioProcessor.SetVolume(volume);
+            }
+#endif
         }
 
         private void SetTexture(Texture texture)
@@ -425,15 +435,16 @@ namespace SK.Libretro.Unity
             _screenRenderer.SetPropertyBlock(block);
         }
 
-        private IEnumerator CoSaveScreenshot(string screenshotPath)
+        private async UniTaskVoid SaveScreenshotAsync(string screenshotPath)
         {
-            yield return new WaitForEndOfFrame();
+            _savingScreenshot = true;
+            await UniTask.WaitForEndOfFrame();
 
             MaterialPropertyBlock block = new MaterialPropertyBlock();
             _screenRenderer.GetPropertyBlock(block);
             Texture2D tex = block.GetTexture(_shaderTextureId) as Texture2D;
     	    File.WriteAllBytes(screenshotPath, tex.EncodeToTGA());
-            _screenshotCoroutine = null;
+            _savingScreenshot = false;
         }
     }
 }

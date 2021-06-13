@@ -40,7 +40,7 @@ namespace SK.Libretro
 
         public void SampleCallback(short left, short right)
         {
-            if (Processor == null)
+            if (Processor is null)
                 return;
 
             float gain          = AUDIO_GAIN / 0x8000;
@@ -55,7 +55,7 @@ namespace SK.Libretro
 
         public unsafe ulong SampleBatchCallback(short* data, ulong frames)
         {
-            if (Processor != null)
+            if (!(Processor is null))
             {
                 float gain          = AUDIO_GAIN / 0x8000;
                 uint numSamples     = Convert.ToUInt32(frames) * 2;
