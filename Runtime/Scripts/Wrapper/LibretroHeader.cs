@@ -962,7 +962,6 @@ namespace SK.Libretro
             RETRO_MESSAGE_TYPE_PROGRESS
         }
 
-
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public struct retro_message_ext
         {
