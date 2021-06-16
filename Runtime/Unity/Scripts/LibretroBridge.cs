@@ -429,10 +429,10 @@ namespace SK.Libretro.Unity
                 return;
 
             MaterialPropertyBlock block = new MaterialPropertyBlock();
-            _screenRenderer.GetPropertyBlock(block, 0);
+            _screenRenderer.GetPropertyBlock(block);
             block.SetTexture(_shaderTextureId, texture);
             block.SetFloat(_shaderIntensityId, 1.2f);
-            _screenRenderer.SetPropertyBlock(block, 0);
+            _screenRenderer.SetPropertyBlock(block);
         }
 
         private async UniTaskVoid SaveScreenshotAsync(string screenshotPath)
@@ -441,7 +441,7 @@ namespace SK.Libretro.Unity
             await UniTask.WaitForEndOfFrame();
 
             MaterialPropertyBlock block = new MaterialPropertyBlock();
-            _screenRenderer.GetPropertyBlock(block, 0);
+            _screenRenderer.GetPropertyBlock(block);
             Texture2D tex = block.GetTexture(_shaderTextureId) as Texture2D;
     	    File.WriteAllBytes(screenshotPath, tex.EncodeToTGA());
             _savingScreenshot = false;
