@@ -34,6 +34,7 @@ namespace SK.Libretro.Unity
         public sealed class Settings
         {
             public string MainDirectory                 = Path.Combine(Application.streamingAssetsPath, "libretro~");
+            public string ShaderTextureName             = "_BaseMap";
             public float TimeScale                      = 1.0f;
             public bool AudioVolumeControlledByDistance = true;
             public float AudioMaxVolume                 = 1f;
@@ -80,9 +81,6 @@ namespace SK.Libretro.Unity
             }
         }
 
-        private static readonly int _shaderTextureId   = Shader.PropertyToID("_Texture");
-        private static readonly int _shaderIntensityId = Shader.PropertyToID("_Intensity");
-
         private static bool _firstInstance = true;
 
         private readonly Transform _screenTransform;
@@ -90,7 +88,8 @@ namespace SK.Libretro.Unity
         private readonly Transform _viewer;
         private readonly Settings _settings;
 
-        private readonly Material _savedMaterial = null;
+        private readonly int _shaderTextureId;
+        private readonly Material _savedMaterial;
 
         private LibretroWrapper _wrapper              = null;
         private GraphicsProcessorHardware _hwRenderer = null;
@@ -98,13 +97,13 @@ namespace SK.Libretro.Unity
         private bool _audioEnabled                    = false;
         private bool _inputEnabled                    = false;
 
-        private bool _savingScreenshot;
-
         private readonly System.Diagnostics.Stopwatch _stopwatch = new System.Diagnostics.Stopwatch();
         private readonly int _maxSkipFrames                      = 10;
         private double _targetFrameTime                          = 0.0;
         private double _accumulatedTime                          = 0.0;
         private int _nLoops                                      = 0;
+
+        private bool _savingScreenshot;
 
         public LibretroBridge(LibretroScreenNode screen, Transform viewer, Settings settings = null)
         {
@@ -122,6 +121,7 @@ namespace SK.Libretro.Unity
             _screenRenderer  = screen.GetComponent<Renderer>();
             _viewer          = viewer;
             _settings        = settings ?? new Settings();
+            _shaderTextureId = Shader.PropertyToID(_settings.ShaderTextureName);
             _savedMaterial   = new Material(_screenRenderer.material);
         }
 
@@ -412,7 +412,7 @@ namespace SK.Libretro.Unity
         private void UpdateDistanceBasedAudio()
         {
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-            if (_viewer == null || !_settings.AudioVolumeControlledByDistance || !(_wrapper.Audio.Processor is NAudio.AudioProcessor audioProcessor))
+            if (_wrapper is null || _viewer == null || _screenTransform == null || !_settings.AudioVolumeControlledByDistance || !(_wrapper.Audio.Processor is NAudio.AudioProcessor audioProcessor))
                 return;
             float distance = Vector3.Distance(_screenTransform.position, _viewer.transform.position);
             if (distance > 0f)
@@ -429,9 +429,7 @@ namespace SK.Libretro.Unity
                 return;
 
             MaterialPropertyBlock block = new MaterialPropertyBlock();
-            _screenRenderer.GetPropertyBlock(block);
             block.SetTexture(_shaderTextureId, texture);
-            block.SetFloat(_shaderIntensityId, 1.2f);
             _screenRenderer.SetPropertyBlock(block);
         }
 
