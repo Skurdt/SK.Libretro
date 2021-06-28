@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -32,7 +32,7 @@ namespace SK.Libretro.Unity
     {
         public bool AnalogDirectionsToDigital { get; set; }
 
-        private readonly Dictionary<int, PlayerInputProcessor> _controls = new Dictionary<int, PlayerInputProcessor>();
+        private readonly ConcurrentDictionary<int, PlayerInputProcessor> _controls = new ConcurrentDictionary<int, PlayerInputProcessor>();
 
         [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Input Callback")]
         private void OnPlayerJoined(PlayerInput player)
@@ -46,7 +46,7 @@ namespace SK.Libretro.Unity
                 if (processor != null)
                 {
                     processor.AnalogDirectionsToDigital = AnalogDirectionsToDigital;
-                    _controls.Add(player.playerIndex, processor);
+                    _ = _controls.TryAdd(player.playerIndex, processor);
                 }
             }
         }
@@ -56,7 +56,7 @@ namespace SK.Libretro.Unity
         {
             Utilities.Logger.Instance.LogInfo($"Player #{player.playerIndex} left ({player.currentControlScheme}).");
             if (_controls.ContainsKey(player.playerIndex))
-                _ = _controls.Remove(player.playerIndex);
+                _ = _controls.TryRemove(player.playerIndex, out PlayerInputProcessor _);
         }
 
         public bool JoypadButton(int port, int button) => _controls.ContainsKey(port) && _controls[port].JoypadButtons[button];
@@ -67,7 +67,7 @@ namespace SK.Libretro.Unity
         public float MouseWheelDeltaY(int port)       => _controls.ContainsKey(port) ?  _controls[port].MouseWheelDelta.y    : 0f;
         public bool MouseButton(int port, int button) => _controls.ContainsKey(port) && _controls[port].MouseButtons[button];
 
-        public bool KeyboardKey(int port, int key) => _controls.ContainsKey(port) && Input.GetKey((KeyCode)key);
+        public bool KeyboardKey(int port, int key) => _controls.ContainsKey(port) && _controls[port].KeyboardKeys[key];
 
         public float AnalogLeftValueX(int port)  => _controls.ContainsKey(port) ?  _controls[port].AnalogLeft.x  : 0f;
         public float AnalogLeftValueY(int port)  => _controls.ContainsKey(port) ? -_controls[port].AnalogLeft.y  : 0f;

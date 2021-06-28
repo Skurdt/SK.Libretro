@@ -114,22 +114,20 @@ namespace SK.Libretro
             }
         }
         public bool DoRewind { get; set; } = false;
-        public bool HwRenderHasDepth => HwRenderInterface.depth;
-        public bool HwRenderHasStencil => HwRenderInterface.stencil;
 
         public static readonly retro_log_level LogLevel = retro_log_level.RETRO_LOG_WARN;
 
         public static LibretroCoreOptionsList CoreOptionsList = null;
 
-        public readonly LibretroGraphics Graphics;
-        public readonly LibretroAudio Audio;
-        public readonly LibretroInput Input;
+        public readonly LibretroTargetPlatform TargetPlatform;
 
         public readonly LibretroCore Core;
         public readonly LibretroGame Game;
 
-        public readonly LibretroTargetPlatform TargetPlatform;
         public readonly LibretroEnvironment Environment;
+        public readonly LibretroGraphics Graphics;
+        public readonly LibretroAudio Audio;
+        public readonly LibretroInput Input;
 
         public readonly retro_environment_t EnvironmentCallback;
         public readonly retro_video_refresh_t VideoRefreshCallback;
@@ -139,9 +137,11 @@ namespace SK.Libretro
         public readonly retro_input_state_t InputStateCallback;
         public readonly retro_log_printf_t LogPrintfCallback;
 
-        public retro_frame_time_callback FrameTimeInterface           = default;
-        public retro_frame_time_callback_t FrameTimeInterfaceCallback = null;
-        public retro_hw_render_callback HwRenderInterface             = default;
+        public LibretroOpenGL OpenGL;
+        public retro_hw_render_callback HwRenderInterface;
+
+        public retro_frame_time_callback FrameTimeInterface;
+        public retro_frame_time_callback_t FrameTimeInterfaceCallback;
 
         private Language _optionLanguage = Language.English;
         private string _optionUserName   = "LibretroUnityFE's Awesome User";
@@ -161,13 +161,13 @@ namespace SK.Libretro
 
         private const int MAX_STATES_COUNT                     = 2048;
         private const int REWIND_FRAMES_INTERVAL               = 10;
-        private readonly List<IntPtr> _unsafePointers          = new List<IntPtr>();
         private readonly List<SaveStateData> _rewindSaveStates = new List<SaveStateData>(MAX_STATES_COUNT);
 
-        private LibretroPlugin.InteropInterface _interopInterface = default;
-        private long _frameTimeLast                               = 0;
-        private uint _totalFrameCount                             = 0;
-        private bool _rewindEnabled                               = false;
+        private readonly List<IntPtr> _unsafePointers          = new List<IntPtr>();
+
+        private long _frameTimeLast   = 0;
+        private uint _totalFrameCount = 0;
+        private bool _rewindEnabled   = false;
 
         public unsafe LibretroWrapper(LibretroTargetPlatform targetPlatform, string baseDirectory = null)
         {
@@ -226,23 +226,24 @@ namespace SK.Libretro
             LoadCoreOptionsFile();
 
             if (!Core.Start(coreName))
+            {
+                StopGame();
                 return false;
+            }
 
             if (FrameTimeInterface.callback != IntPtr.Zero)
                 FrameTimeInterfaceCallback = Marshal.GetDelegateForFunctionPointer<retro_frame_time_callback_t>(FrameTimeInterface.callback);
 
             if (!Game.Start(gameDirectory, gameName))
-                return false;
-
-            if (Core.HwAccelerated)
             {
-                _interopInterface = new LibretroPlugin.InteropInterface
-                {
-                    context_reset   = HwRenderInterface.context_reset,
-                    context_destroy = HwRenderInterface.context_destroy,
-                    retro_run       = Marshal.GetFunctionPointerForDelegate(Core.retro_run)
-                };
-                LibretroPlugin.SetupInteropInterface(ref _interopInterface);
+                StopGame();
+                return false;
+            }
+
+            if (Core.HwAccelerated && OpenGL is null)
+            {
+                StopGame();
+                return false;
             }
 
             FrameTimeRestart();
@@ -261,6 +262,8 @@ namespace SK.Libretro
 
             FreeUnsafePointers();
         }
+
+        public void InitHardwareContext() => Marshal.GetDelegateForFunctionPointer<retro_hw_context_reset_t>(HwRenderInterface.context_reset).Invoke();
 
         public void FrameTimeRestart() => _frameTimeLast = System.Diagnostics.Stopwatch.GetTimestamp();
 
@@ -283,6 +286,9 @@ namespace SK.Libretro
             if (!Game.Running || !Core.Initialized)
                 return;
 
+            if (Core.HwAccelerated)
+                OpenGL.PollEvents();
+
             _totalFrameCount++;
 
             if (RewindEnabled)
@@ -300,8 +306,7 @@ namespace SK.Libretro
                 }
             }
 
-            if (!Core.HwAccelerated)
-                Core.retro_run();
+            Core.retro_run();
         }
 
         public void ActivateGraphics(IGraphicsProcessor graphicsProcessor) => Graphics.Processor = graphicsProcessor;

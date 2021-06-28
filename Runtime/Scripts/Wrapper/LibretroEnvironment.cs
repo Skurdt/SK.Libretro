@@ -78,7 +78,7 @@ namespace SK.Libretro
                 case retro_environment.RETRO_ENVIRONMENT_GET_TARGET_REFRESH_RATE:                     return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_INPUT_BITMASKS:                          return GetInputBitmasks();
                 case retro_environment.RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION:                    return GetCoreOptionsVersion();
-                case retro_environment.RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER:                     return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER:                     return GetPreferredHwRender();
                 case retro_environment.RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION:          return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_MESSAGE_INTERFACE_VERSION:               return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_INPUT_MAX_USERS:                         return ENVIRONMENT_NOT_IMPLEMENTED();
@@ -308,6 +308,15 @@ namespace SK.Libretro
                              : 0;
                 return true;
             }
+
+            bool GetPreferredHwRender()
+            {
+                //*(uint*)data = (uint)retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL;
+                //return true;
+
+                *(uint*)data = (uint)retro_hw_context_type.RETRO_HW_CONTEXT_NONE;
+                return true;
+            }
             #endregion
 
             /************************************************************************************************
@@ -440,7 +449,7 @@ namespace SK.Libretro
 
             bool SetHwRender()
             {
-                if (data == null)
+                if (data == null || _wrapper.Core.HwAccelerated)
                     return false;
 
                 retro_hw_render_callback* inCallback = (retro_hw_render_callback*)data;
@@ -448,8 +457,12 @@ namespace SK.Libretro
                 if (inCallback->context_type != retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL && inCallback->context_type != retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE)
                     return false;
 
-                inCallback->get_current_framebuffer = Marshal.GetFunctionPointerForDelegate<retro_hw_get_current_framebuffer_t>(LibretroPlugin.GetCurrentFramebuffer);
-                inCallback->get_proc_address        = Marshal.GetFunctionPointerForDelegate<retro_hw_get_proc_address_t>(LibretroPlugin.GetHwProcAddress);
+                _wrapper.OpenGL = new LibretroOpenGL();
+                if (!_wrapper.OpenGL.Init())
+                    return false;
+
+                inCallback->get_current_framebuffer = Marshal.GetFunctionPointerForDelegate(_wrapper.OpenGL.GetCurrentFrameBufferCallback);
+                inCallback->get_proc_address        = Marshal.GetFunctionPointerForDelegate(_wrapper.OpenGL.GetProcAddressCallback);
 
                 _wrapper.HwRenderInterface = Marshal.PtrToStructure<retro_hw_render_callback>((IntPtr)data);
 

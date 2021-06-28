@@ -26,6 +26,7 @@ namespace SK.Libretro
     {
         unsafe void ProcessFrame0RGB1555(ushort* data, int width, int height, int pitch);
         unsafe void ProcessFrameXRGB8888(uint* data, int width, int height, int pitch);
+        unsafe void ProcessFrameXRGB8888VFlip(uint* data, int width, int height, int pitch);
         unsafe void ProcessFrameRGB565(ushort* data, int width, int height, int pitch);
         void DeInit();
     }

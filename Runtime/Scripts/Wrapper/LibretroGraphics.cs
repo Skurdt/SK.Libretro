@@ -35,16 +35,28 @@ namespace SK.Libretro
 
         public unsafe void Callback(void* data, uint width, uint height, ulong pitch)
         {
-            if (Processor is null)
+            if (Processor is null || data == null)
                 return;
 
             if (_wrapper.Core.HwAccelerated)
-                return;
+                ProcessFrameHardware(width, height);
+            else
+                ProcessFrameSoftware(data, width, height, pitch);
+        }
 
-            // TODO(Tom): Send previous dupped frame ?
-            if (data == null)
-                return;
+        private unsafe void ProcessFrameHardware(uint width, uint height)
+        {
+            byte[] bufferSrc = new byte[width * height * 4];
+            fixed (byte* bufferSrcPtr = bufferSrc)
+            {
+                _wrapper.OpenGL.glReadPixels(0, 0, (int)width, (int)height, LibretroOpenGL.GL_BGRA, LibretroOpenGL.GL_UNSIGNED_BYTE, bufferSrcPtr);
+                Processor.ProcessFrameXRGB8888VFlip((uint*)bufferSrcPtr, (int)width, (int)height, (int)width * 4);
+            }
+            _wrapper.OpenGL.SwapBuffers();
+        }
 
+        private unsafe void ProcessFrameSoftware(void* data, uint width, uint height, ulong pitch)
+        {
             switch (_wrapper.Game.PixelFormat)
             {
                 case retro_pixel_format.RETRO_PIXEL_FORMAT_0RGB1555:

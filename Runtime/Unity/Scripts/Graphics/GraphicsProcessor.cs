@@ -29,75 +29,121 @@ using UnityEngine;
 
 namespace SK.Libretro.Unity
 {
-    public sealed class GraphicsProcessorSoftware : IGraphicsProcessor
+    public sealed class GraphicsProcessor : IGraphicsProcessor
     {
         public Action<Texture> OnTextureRecreated;
 
         public Texture2D Texture { get; private set; }
 
-        public GraphicsProcessorSoftware(int width, int height, Action<Texture> textureRecreatedCallback, FilterMode filterMode = FilterMode.Point)
+        public GraphicsProcessor(int width, int height, Action<Texture> textureRecreatedCallback, FilterMode filterMode = FilterMode.Point)
         {
             OnTextureRecreated = textureRecreatedCallback;
-            CreateTexture(width, height, filterMode);
+
+            MainThreadDispatcher mainThreadDispatcher = MainThreadDispatcher.Instance;
+            if (mainThreadDispatcher != null)
+                mainThreadDispatcher.Enqueue(() => CreateTexture(width, height, filterMode));
         }
 
         public unsafe void ProcessFrame0RGB1555(ushort* data, int width, int height, int pitch)
         {
-            CreateTexture(width, height);
+            MainThreadDispatcher mainThreadDispatcher = MainThreadDispatcher.Instance;
+            if (mainThreadDispatcher == null)
+                return;
 
-            new ProcessFrame0RGB1555Job
+            mainThreadDispatcher.Enqueue(() =>
             {
-                SourceData  = data,
-                Width       = width,
-                Height      = height,
-                PitchPixels = pitch / sizeof(ushort),
-                TextureData = Texture.GetRawTextureData<uint>()
-            }.Schedule().Complete();
+                CreateTexture(width, height);
 
-            Texture.Apply();
+                new ProcessFrame0RGB1555Job
+                {
+                    SourceData  = data,
+                    Width       = width,
+                    Height      = height,
+                    PitchPixels = pitch / sizeof(ushort),
+                    TextureData = Texture.GetRawTextureData<uint>()
+                }.Schedule().Complete();
+
+                Texture.Apply();
+            });
         }
 
         public unsafe void ProcessFrameXRGB8888(uint* data, int width, int height, int pitch)
         {
-            CreateTexture(width, height);
+            MainThreadDispatcher mainThreadDispatcher = MainThreadDispatcher.Instance;
+            if (mainThreadDispatcher == null)
+                return;
 
-            new ProcessFrameXRGB8888Job
+            mainThreadDispatcher.Enqueue(() =>
             {
-                SourceData  = data,
-                Width       = width,
-                Height      = height,
-                PitchPixels = pitch / sizeof(uint),
-                TextureData = Texture.GetRawTextureData<uint>()
-            }.Schedule().Complete();
+                CreateTexture(width, height);
 
-            Texture.Apply();
+                new ProcessFrameXRGB8888Job
+                {
+                    SourceData  = data,
+                    Width       = width,
+                    Height      = height,
+                    PitchPixels = pitch / sizeof(uint),
+                    TextureData = Texture.GetRawTextureData<uint>()
+                }.Schedule().Complete();
+
+                Texture.Apply();
+            });
+        }
+
+        public unsafe void ProcessFrameXRGB8888VFlip(uint* data, int width, int height, int pitch)
+        {
+            MainThreadDispatcher mainThreadDispatcher = MainThreadDispatcher.Instance;
+            if (mainThreadDispatcher == null)
+                return;
+
+            mainThreadDispatcher.Enqueue(() =>
+            {
+                CreateTexture(width, height);
+
+                new ProcessFrameXRGB8888VFlipJob
+                {
+                    SourceData  = data,
+                    Width       = width,
+                    Height      = height,
+                    PitchPixels = pitch / sizeof(uint),
+                    TextureData = Texture.GetRawTextureData<uint>()
+                }.Schedule().Complete();
+
+                Texture.Apply();
+            });
         }
 
         public unsafe void ProcessFrameRGB565(ushort* data, int width, int height, int pitch)
         {
-            CreateTexture(width, height);
+            MainThreadDispatcher mainThreadDispatcher = MainThreadDispatcher.Instance;
+            if (mainThreadDispatcher == null)
+                return;
 
-            new ProcessFrameRGB565Job
+            mainThreadDispatcher.Enqueue(() =>
             {
-                SourceData  = data,
-                Width       = width,
-                Height      = height,
-                PitchPixels = pitch / sizeof(ushort),
-                TextureData = Texture.GetRawTextureData<uint>()
-            }.Schedule().Complete();
+                CreateTexture(width, height);
 
-            Texture.Apply();
+                new ProcessFrameRGB565Job
+                {
+                    SourceData  = data,
+                    Width       = width,
+                    Height      = height,
+                    PitchPixels = pitch / sizeof(ushort),
+                    TextureData = Texture.GetRawTextureData<uint>()
+                }.Schedule().Complete();
+
+                Texture.Apply();
+            });
         }
 
         public void DeInit()
         {
             if (Texture == null)
                 return;
-#if UNITY_EDITOR
-            UnityEngine.Object.DestroyImmediate(Texture);
-#else
-            UnityEngine.Object.Destroy(Texture);
-#endif
+
+            MainThreadDispatcher mainThreadDispatcher = MainThreadDispatcher.Instance;
+            if (mainThreadDispatcher != null)
+                mainThreadDispatcher.Enqueue(() => UnityEngine.Object.Destroy(Texture));
         }
 
         private void CreateTexture(int width, int height, FilterMode filterMode = FilterMode.Point)
@@ -147,6 +193,27 @@ namespace SK.Libretro.Unity
             {
                 uint* line = SourceData;
                 for (int y = Height - 1; y >= 0; --y)
+                {
+                    for (int x = 0; x < Width; ++x)
+                        TextureData[(y * Width) + x] = line[x];
+                    line += PitchPixels;
+                }
+            }
+        }
+
+        [BurstCompile]
+        private unsafe struct ProcessFrameXRGB8888VFlipJob : IJob
+        {
+            [ReadOnly, NativeDisableUnsafePtrRestriction] public uint* SourceData;
+            public int Width;
+            public int Height;
+            public int PitchPixels;
+            [WriteOnly] public NativeArray<uint> TextureData;
+
+            public void Execute()
+            {
+                uint* line = SourceData;
+                for (int y = 0; y < Height; ++y)
                 {
                     for (int x = 0; x < Width; ++x)
                         TextureData[(y * Width) + x] = line[x];

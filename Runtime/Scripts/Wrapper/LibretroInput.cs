@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using Unity.Mathematics;
+using SK.Utilities;
 using static SK.Libretro.LibretroHeader;
 
 namespace SK.Libretro
@@ -122,7 +122,6 @@ namespace SK.Libretro
         {
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "target-typed is C#9+")]
         public short StateCallback(uint port, uint device, uint index, uint id)
         {
             if (Processor is null)
@@ -169,8 +168,8 @@ namespace SK.Libretro
                 case RETRO_DEVICE_INDEX_ANALOG_LEFT:
                     switch (axis)
                     {
-                        case RETRO_DEVICE_ID_ANALOG_X: return FloatToShort(Processor.AnalogLeftValueX((int)port) * 0x8000);
-                        case RETRO_DEVICE_ID_ANALOG_Y: return FloatToShort(Processor.AnalogLeftValueY((int)port) * 0x8000);
+                        case RETRO_DEVICE_ID_ANALOG_X: return FloatToShort(Processor.AnalogLeftValueX((int)port) * 0x7fff);
+                        case RETRO_DEVICE_ID_ANALOG_Y: return FloatToShort(Processor.AnalogLeftValueY((int)port) * 0x7fff);
                         default:
                             break;
                     }
@@ -178,8 +177,8 @@ namespace SK.Libretro
                 case RETRO_DEVICE_INDEX_ANALOG_RIGHT:
                     switch (axis)
                     {
-                        case RETRO_DEVICE_ID_ANALOG_X: return FloatToShort(Processor.AnalogRightValueX((int)port) * 0x8000);
-                        case RETRO_DEVICE_ID_ANALOG_Y: return FloatToShort(Processor.AnalogRightValueY((int)port) * 0x8000);
+                        case RETRO_DEVICE_ID_ANALOG_X: return FloatToShort(Processor.AnalogRightValueX((int)port) * 0x7fff);
+                        case RETRO_DEVICE_ID_ANALOG_Y: return FloatToShort(Processor.AnalogRightValueY((int)port) * 0x7fff);
                         default:
                             break;
                     }
@@ -194,6 +193,6 @@ namespace SK.Libretro
 
         private static short BoolToShort(bool boolValue) => (short)(boolValue ? 1 : 0);
 
-        private static short FloatToShort(float floatValue) => (short)math.clamp(math.round(floatValue), short.MinValue, short.MaxValue);
+        private static short FloatToShort(float floatValue) => (short)MathUtils.Clamp(System.Math.Round(floatValue), short.MinValue, short.MaxValue);
     }
 }

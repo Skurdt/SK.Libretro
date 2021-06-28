@@ -29,19 +29,27 @@ namespace SK.Libretro.Unity
     [RequireComponent(typeof(PlayerInput))]
     public sealed class PlayerInputProcessor : MonoBehaviour
     {
+        private const int NUM_JOYPAD_BUTTONS = 16;
+        private const int NUM_KEYBOARD_KEYS  = 324;
+        private const int NUM_MOUSE_BUTTONS  = 5;
+
         public bool AnalogDirectionsToDigital { get; set; }
 
         public readonly bool[] JoypadButtons = new bool[NUM_JOYPAD_BUTTONS];
+        public readonly bool[] KeyboardKeys  = new bool[NUM_KEYBOARD_KEYS];
+        public readonly bool[] MouseButtons = new bool[NUM_MOUSE_BUTTONS];
 
         public Vector2 MousePositionDelta { get; private set; } = Vector2.zero;
         public Vector2 MouseWheelDelta    { get; private set; } = Vector2.zero;
-        public readonly bool[] MouseButtons = new bool[NUM_MOUSE_BUTTONS];
 
         public Vector2 AnalogLeft  { get; private set; } = Vector2.zero;
         public Vector2 AnalogRight { get; private set; } = Vector2.zero;
 
-        private const int NUM_JOYPAD_BUTTONS = 16;
-        private const int NUM_MOUSE_BUTTONS  = 5;
+        private void Update()
+        {
+            for (int i = 0; i < KeyboardKeys.Length; ++i)
+                KeyboardKeys[i] = Input.GetKey((KeyCode)i);
+        }
 
         public void OnDeviceLost(PlayerInput player) => Utilities.Logger.Instance.LogInfo($"Player #{player.playerIndex} device lost ({player.devices.Count}).");
 
