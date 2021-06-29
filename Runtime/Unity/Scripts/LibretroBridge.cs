@@ -41,6 +41,8 @@ namespace SK.Libretro.Unity
             public bool AnalogDirectionsToDigital       = false;
         }
 
+        public bool Paused { get; private set; }
+
         private struct SaveStateStatus
         {
             public bool InProgress;
@@ -71,8 +73,6 @@ namespace SK.Libretro.Unity
 
         private Thread _thread;
         private bool _running;
-        private bool _paused;
-
         private Texture2D _texture;
         private SaveStateStatus _saveStateStatus;
         private LoadStateStatus _loadStateStatus;
@@ -153,18 +153,18 @@ namespace SK.Libretro.Unity
 
         public void Pause()
         {
-            if (!_running || _paused)
+            if (!_running || Paused)
                 return;
 
-            _paused = true;
+            Paused = true;
         }
 
         public void Resume()
         {
-            if (!_running || !_paused)
+            if (!_running || !Paused)
                 return;
 
-            _paused = false;
+            Paused = false;
             _thread.Interrupt();
         }
 
@@ -173,7 +173,7 @@ namespace SK.Libretro.Unity
             if (!_running)
                 return;
 
-            if (_paused)
+            if (Paused)
                 Resume();
 
             _running = false;
@@ -244,7 +244,7 @@ namespace SK.Libretro.Unity
             _running = true;
             while (_running)
             {
-                if (_paused)
+                if (Paused)
                 {
                     try
                     {
