@@ -115,10 +115,7 @@ namespace SK.Libretro.Unity
 
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
             AudioProcessor unityAudio = _screenRenderer.GetComponentInChildren<AudioProcessor>();
-            if (unityAudio != null)
-                _audioProcessor = unityAudio;
-            else
-                _audioProcessor = new NAudio.AudioProcessor();
+            _audioProcessor = unityAudio != null ? unityAudio : (IAudioProcessor)new NAudio.AudioProcessor();
 #else
             AudioProcessor unityAudio = _screenRenderer.GetComponentInChildren<AudioProcessor>(true);
             if (unityAudio != null)
@@ -252,7 +249,6 @@ namespace SK.Libretro.Unity
                     }
                     catch (ThreadInterruptedException)
                     {
-                        Debug.Log($"[Paused] Thread '{Thread.CurrentThread.Name}' awoken.");
                         if (!_running)
                             break;
                     }
