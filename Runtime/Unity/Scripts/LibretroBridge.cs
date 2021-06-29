@@ -277,7 +277,6 @@ namespace SK.Libretro.Unity
                     wrapper.Update();
                     accumulator = 0.0;
                 }
-                Thread.Sleep(1);
             }
 
             wrapper.StopGame();
