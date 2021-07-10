@@ -36,6 +36,7 @@ namespace SK.Libretro
 
         private readonly LibretroWrapper _wrapper;
         private readonly retro_perf_callback _perfInterface;
+        private readonly retro_led_interface _ledInterface;
 
         // TEMP_HACK
         private sealed class CoresUsingOptionsIntlList
@@ -55,6 +56,10 @@ namespace SK.Libretro
                 perf_start       = (ref retro_perf_counter counter) => {},
                 perf_stop        = (ref retro_perf_counter counter) => {},
                 perf_log         = () => {}
+            };
+            _ledInterface = new retro_led_interface
+            {
+                set_led_state = (int led, int state) => { }
             };
         }
 
@@ -85,7 +90,7 @@ namespace SK.Libretro
                 case retro_environment.RETRO_ENVIRONMENT_GET_CURRENT_SOFTWARE_FRAMEBUFFER:            return GetCurrentSoftwareFramebuffer();
                 case retro_environment.RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE:                     return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_VFS_INTERFACE:                           return ENVIRONMENT_NOT_IMPLEMENTED();
-                case retro_environment.RETRO_ENVIRONMENT_GET_LED_INTERFACE:                           return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_GET_LED_INTERFACE:                           return GetLedInterface();
                 case retro_environment.RETRO_ENVIRONMENT_GET_AUDIO_VIDEO_ENABLE:                      return GetAudioVideoEnable();
                 case retro_environment.RETRO_ENVIRONMENT_GET_MIDI_INTERFACE:                          return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_FASTFORWARDING:                          return ENVIRONMENT_NOT_IMPLEMENTED();
@@ -294,6 +299,12 @@ namespace SK.Libretro
             }
 
             bool GetCurrentSoftwareFramebuffer() => false;
+
+            bool GetLedInterface()
+            {
+                Marshal.StructureToPtr(_ledInterface, (IntPtr)data, true);
+                return true;
+            }
 
             bool GetAudioVideoEnable()
             {
