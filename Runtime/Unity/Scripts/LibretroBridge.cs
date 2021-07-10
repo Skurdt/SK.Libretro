@@ -280,7 +280,6 @@ namespace SK.Libretro.Unity
             }
 
             wrapper.StopGame();
-            Thread.Sleep(200);
         }
 
         //  public void Rewind(bool rewind) => _wrapper.DoRewind = rewind;

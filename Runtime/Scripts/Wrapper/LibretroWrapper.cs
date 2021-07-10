@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using static SK.Libretro.LibretroHeader;
 
 namespace SK.Libretro
@@ -261,6 +262,7 @@ namespace SK.Libretro
             Core.Stop();
 
             FreeUnsafePointers();
+            Thread.Sleep(200);
         }
 
         public void InitHardwareContext() => Marshal.GetDelegateForFunctionPointer<retro_hw_context_reset_t>(HwRenderInterface.context_reset).Invoke();

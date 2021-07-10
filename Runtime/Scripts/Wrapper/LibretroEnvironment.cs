@@ -35,6 +35,7 @@ namespace SK.Libretro
         public bool UpdateVariables = false;
 
         private readonly LibretroWrapper _wrapper;
+        private readonly retro_perf_callback _perfInterface;
 
         // TEMP_HACK
         private sealed class CoresUsingOptionsIntlList
@@ -42,7 +43,20 @@ namespace SK.Libretro
             public List<string> Cores = null;
         }
 
-        public LibretroEnvironment(LibretroWrapper wrapper) => _wrapper = wrapper;
+        public LibretroEnvironment(LibretroWrapper wrapper)
+        {
+            _wrapper       = wrapper;
+            _perfInterface = new retro_perf_callback
+            {
+                get_time_usec    = () => 0,
+                get_cpu_features = () => 0,
+                get_perf_counter = () => 0,
+                perf_register    = (ref retro_perf_counter counter) => {},
+                perf_start       = (ref retro_perf_counter counter) => {},
+                perf_stop        = (ref retro_perf_counter counter) => {},
+                perf_log         = () => {}
+            };
+        }
 
         public unsafe bool Callback(retro_environment cmd, void* data)
         {
@@ -62,7 +76,7 @@ namespace SK.Libretro
                 case retro_environment.RETRO_ENVIRONMENT_GET_SENSOR_INTERFACE:                        return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_CAMERA_INTERFACE:                        return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_LOG_INTERFACE:                           return GetLogInterface();
-                case retro_environment.RETRO_ENVIRONMENT_GET_PERF_INTERFACE:                          return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_GET_PERF_INTERFACE:                          return GetPerfInterface();
                 case retro_environment.RETRO_ENVIRONMENT_GET_LOCATION_INTERFACE:                      return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_CORE_ASSETS_DIRECTORY:                   return GetCoreAssetsDirectory();
                 case retro_environment.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY:                          return GetSaveDirectory();
@@ -232,6 +246,12 @@ namespace SK.Libretro
             {
                 if (data != null)
                     ((retro_log_callback*)data)->log = Marshal.GetFunctionPointerForDelegate<retro_log_printf_t>(LibretroLog.RetroLogPrintf);
+                return true;
+            }
+
+            bool GetPerfInterface()
+            {
+                Marshal.StructureToPtr(_perfInterface, (IntPtr)data, true);
                 return true;
             }
 
