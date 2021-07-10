@@ -881,7 +881,7 @@ namespace SK.Libretro
         [StructLayout(LayoutKind.Sequential)]
         public struct retro_keyboard_callback
         {
-            public retro_keyboard_event_t callback;
+            public IntPtr callback; // retro_keyboard_event_t
         }
 
         //typedef bool (RETRO_CALLCONV *retro_set_eject_state_t)(bool ejected);

@@ -35,8 +35,15 @@ namespace SK.Libretro
         public bool UpdateVariables = false;
 
         private readonly LibretroWrapper _wrapper;
+
+        // TODO(Tom): Should probably not be here...
         private readonly retro_perf_callback _perfInterface;
         private readonly retro_led_interface _ledInterface;
+        private retro_keyboard_callback _keyboardInterface;
+        private retro_disk_control_ext_callback _diskControlExtInterface;
+        private retro_memory_map _memoryMap;
+        private ulong _serializationQuirks;
+        private bool _supportsAchievements;
 
         // TEMP_HACK
         private sealed class CoresUsingOptionsIntlList
@@ -98,7 +105,7 @@ namespace SK.Libretro
                 case retro_environment.RETRO_ENVIRONMENT_GET_INPUT_BITMASKS:                          return GetInputBitmasks();
                 case retro_environment.RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION:                    return GetCoreOptionsVersion();
                 case retro_environment.RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER:                     return GetPreferredHwRender();
-                case retro_environment.RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION:          return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION:          return GetDiskControlInterfaceVersion();
                 case retro_environment.RETRO_ENVIRONMENT_GET_MESSAGE_INTERFACE_VERSION:               return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_INPUT_MAX_USERS:                         return ENVIRONMENT_NOT_IMPLEMENTED();
 
@@ -110,8 +117,8 @@ namespace SK.Libretro
                 case retro_environment.RETRO_ENVIRONMENT_SET_PERFORMANCE_LEVEL:                       return SetPerformanceLevel();
                 case retro_environment.RETRO_ENVIRONMENT_SET_PIXEL_FORMAT:                            return SetPixelFormat();
                 case retro_environment.RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS:                       return SetInputDescriptors();
-                case retro_environment.RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK:                       return ENVIRONMENT_NOT_IMPLEMENTED();
-                case retro_environment.RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE:                  return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK:                       return SetKeyboardCallback();
+                case retro_environment.RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE:                  return SetDiskControlInterface();
                 case retro_environment.RETRO_ENVIRONMENT_SET_HW_RENDER:                               return SetHwRender();
                 case retro_environment.RETRO_ENVIRONMENT_SET_VARIABLES:                               return SetVariables();
                 case retro_environment.RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME:                         return SetSupportNoGame();
@@ -121,16 +128,16 @@ namespace SK.Libretro
                 case retro_environment.RETRO_ENVIRONMENT_SET_PROC_ADDRESS_CALLBACK:                   return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_SET_SUBSYSTEM_INFO:                          return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_SET_CONTROLLER_INFO:                         return SetControllerInfo();
-                case retro_environment.RETRO_ENVIRONMENT_SET_MEMORY_MAPS:                             return ENVIRONMENT_NOT_IMPLEMENTED(true);
+                case retro_environment.RETRO_ENVIRONMENT_SET_MEMORY_MAPS:                             return SetMemoryMaps();
                 case retro_environment.RETRO_ENVIRONMENT_SET_GEOMETRY:                                return SetGeometry();
-                case retro_environment.RETRO_ENVIRONMENT_SET_SUPPORT_ACHIEVEMENTS:                    return ENVIRONMENT_NOT_IMPLEMENTED(true);
+                case retro_environment.RETRO_ENVIRONMENT_SET_SUPPORT_ACHIEVEMENTS:                    return SetSupportAchievements();
                 case retro_environment.RETRO_ENVIRONMENT_SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE: return ENVIRONMENT_NOT_IMPLEMENTED();
-                case retro_environment.RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS:                    return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS:                    return SetSerializationQuirks();
                 case retro_environment.RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT:                       return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_SET_CORE_OPTIONS:                            return SetCoreOptions();
                 case retro_environment.RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL:                       return SetCoreOptionsIntl();
-                case retro_environment.RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY:                    return ENVIRONMENT_NOT_IMPLEMENTED(true);
-                case retro_environment.RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE:              return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY:                    return ENVIRONMENT_NOT_IMPLEMENTED(true, false);
+                case retro_environment.RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE:              return SetDiskControlExtInterface();
                 case retro_environment.RETRO_ENVIRONMENT_SHUTDOWN:                                    return Shutdown();
                 case retro_environment.RETRO_ENVIRONMENT_SET_MESSAGE_EXT:                             return ENVIRONMENT_NOT_IMPLEMENTED();
 
@@ -151,8 +158,11 @@ namespace SK.Libretro
             /************************************************************************************************
              * Temporary placeholder... hopefully...
              */
-            bool ENVIRONMENT_NOT_IMPLEMENTED(bool defaultReturns = false)
+            bool ENVIRONMENT_NOT_IMPLEMENTED(bool defaultReturns = false, bool log = true)
             {
+                if (!log)
+                    return defaultReturns;
+
                 if (defaultReturns)
                     Logger.Instance.LogWarning("Environment not implemented!", cmd.ToString());
                 else
@@ -187,7 +197,7 @@ namespace SK.Libretro
                     _ = Directory.CreateDirectory(path);
                 if (data != null)
                     *(char**)data = _wrapper.GetUnsafeString(path);
-                Logger.Instance.LogInfo($"-> SystemDirectory: {path}", $"{cmd}");
+                //Logger.Instance.LogInfo($"-> SystemDirectory: {path}", $"{cmd}");
                 return true;
             }
 
@@ -267,7 +277,7 @@ namespace SK.Libretro
                     _ = Directory.CreateDirectory(path);
                 if (data != null)
                     *(char**)data = _wrapper.GetUnsafeString(path);
-                Logger.Instance.LogInfo($"-> CoreAssetsDirectory: {path}", $"{cmd}");
+                //Logger.Instance.LogInfo($"-> CoreAssetsDirectory: {path}", $"{cmd}");
                 return true;
             }
 
@@ -278,7 +288,7 @@ namespace SK.Libretro
                     _ = Directory.CreateDirectory(path);
                 if (data != null)
                     *(char**)data = _wrapper.GetUnsafeString(path);
-                Logger.Instance.LogInfo($"-> SaveDirectory: {path}", $"{cmd}");
+                //Logger.Instance.LogInfo($"-> SaveDirectory: {path}", $"{cmd}");
                 return true;
             }
 
@@ -346,6 +356,12 @@ namespace SK.Libretro
                 //return true;
 
                 *(uint*)data = (uint)retro_hw_context_type.RETRO_HW_CONTEXT_NONE;
+                return true;
+            }
+
+            bool GetDiskControlInterfaceVersion()
+            {
+                *(uint*)data = 1;
                 return true;
             }
             #endregion
@@ -478,6 +494,37 @@ namespace SK.Libretro
                 return true;
             }
 
+            bool SetKeyboardCallback()
+            {
+                retro_keyboard_callback* inCallback = (retro_keyboard_callback*)data;
+                _keyboardInterface = new retro_keyboard_callback
+                {
+                    callback = inCallback->callback
+                };
+                return true;
+            }
+
+            bool SetDiskControlInterface()
+            {
+                retro_disk_control_callback inCallback = Marshal.PtrToStructure<retro_disk_control_callback>((IntPtr)data);
+
+                _diskControlExtInterface = new retro_disk_control_ext_callback
+                {
+                    set_eject_state     = inCallback.set_eject_state     ?? ((bool ejected) => false),
+                    get_eject_state     = inCallback.get_eject_state     ?? (() => false),
+                    get_image_index     = inCallback.get_image_index     ?? (() => 0),
+                    set_image_index     = inCallback.set_image_index     ?? ((uint index) => false),
+                    get_num_images      = inCallback.get_num_images      ?? (() => 0),
+                    replace_image_index = inCallback.replace_image_index ?? ((uint index, ref retro_game_info info) => false),
+                    add_image_index     = inCallback.add_image_index     ?? (() => false),
+                    set_initial_image   = (uint index, char* path) => false,
+                    get_image_path      = (uint index, char* path, ulong len) => false,
+                    get_image_label     = (uint index, char* label, ulong len) => false
+                };
+
+                return true;
+            }
+
             bool SetHwRender()
             {
                 if (data == null || _wrapper.Core.HwAccelerated)
@@ -576,19 +623,26 @@ namespace SK.Libretro
                 int numPorts;
                 for (numPorts = 0; inControllerInfo[numPorts].types != null; ++numPorts)
                 {
-                    Logger.Instance.LogInfo($"# Controller port: {numPorts + 1}", $"{cmd}");
-                    for (int j = 0; j < inControllerInfo[numPorts].num_types; ++j)
-                    {
-                        string desc = UnsafeStringUtils.CharsToString(inControllerInfo[numPorts].types[j].desc);
-                        uint id     = inControllerInfo[numPorts].types[j].id;
-                        Logger.Instance.LogInfo($"    {desc} (ID: {id})", $"{cmd}");
-                    }
+                    //Logger.Instance.LogInfo($"# Controller port: {numPorts + 1}", $"{cmd}");
+                    //for (int j = 0; j < inControllerInfo[numPorts].num_types; ++j)
+                    //{
+                    //    string desc = UnsafeStringUtils.CharsToString(inControllerInfo[numPorts].types[j].desc);
+                    //    uint id     = inControllerInfo[numPorts].types[j].id;
+                        //Logger.Instance.LogInfo($"    {desc} (ID: {id})", $"{cmd}");
+                    //}
                 }
 
                 _wrapper.Core.ControllerPorts = new retro_controller_info[numPorts];
                 for (int j = 0; j < numPorts; ++j)
                     _wrapper.Core.ControllerPorts[j] = inControllerInfo[j];
 
+                return true;
+            }
+
+            bool SetMemoryMaps()
+            {
+                retro_memory_map* inMemoryMap = (retro_memory_map*)data;
+                _memoryMap = *inMemoryMap;
                 return true;
             }
 
@@ -610,16 +664,35 @@ namespace SK.Libretro
                 return true;
             }
 
+            bool SetSupportAchievements()
+            {
+                _supportsAchievements = *(bool*)data;
+                return false;
+            }
+
+            bool SetSerializationQuirks()
+            {
+                _serializationQuirks = *(ulong*)data;
+                return true;
+            }
+
             bool SetCoreOptions() => data != null && SetCoreOptionsInternal((long)data);
 
-            // FIXME: I can't read into the pointer to the retro_core_options_intl.us array at this time.
+            // FIXME: Figure out why retro_core_options_intl.us isn't providing proper addresses...
             bool SetCoreOptionsIntl()
             {
                 if (data == null)
                     return false;
 
-                retro_core_options_intl inOptionsIntl = Marshal.PtrToStructure<retro_core_options_intl>((IntPtr)data);
-                return SetCoreOptionsInternal(inOptionsIntl.us.ToInt64());
+                //retro_core_options_intl inOptionsIntl = Marshal.PtrToStructure<retro_core_options_intl>((IntPtr)data);
+                //return SetCoreOptionsInternal(inOptionsIntl.us.ToInt64());
+                return false;
+            }
+
+            bool SetDiskControlExtInterface()
+            {
+                _diskControlExtInterface = Marshal.PtrToStructure<retro_disk_control_ext_callback>((IntPtr)data);
+                return true;
             }
 
             bool Shutdown() => true;
