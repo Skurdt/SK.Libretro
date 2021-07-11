@@ -37,10 +37,11 @@ namespace SK.Libretro
         private readonly LibretroWrapper _wrapper;
 
         // TODO(Tom): Should probably not be here...
-        private readonly retro_perf_callback _perfInterface;
+        private readonly retro_perf_callback _perfCallback;
         private readonly retro_led_interface _ledInterface;
-        private retro_keyboard_callback _keyboardInterface;
-        private retro_disk_control_ext_callback _diskControlExtInterface;
+        private retro_keyboard_callback _keyboardCallback;
+        private retro_audio_callback _audioCallback;
+        private retro_disk_control_ext_callback _diskControlExtCallback;
         private retro_memory_map _memoryMap;
         private ulong _serializationQuirks;
         private bool _supportsAchievements;
@@ -53,8 +54,8 @@ namespace SK.Libretro
 
         public LibretroEnvironment(LibretroWrapper wrapper)
         {
-            _wrapper       = wrapper;
-            _perfInterface = new retro_perf_callback
+            _wrapper      = wrapper;
+            _perfCallback = new retro_perf_callback
             {
                 get_time_usec    = () => 0,
                 get_cpu_features = () => 0,
@@ -83,7 +84,7 @@ namespace SK.Libretro
                 case retro_environment.RETRO_ENVIRONMENT_GET_VARIABLE:                                return GetVariable();
                 case retro_environment.RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE:                         return GetVariableUpdate();
                 case retro_environment.RETRO_ENVIRONMENT_GET_LIBRETRO_PATH:                           return GetLibretroPath();
-                case retro_environment.RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE:                        return ENVIRONMENT_NOT_IMPLEMENTED(true);
+                case retro_environment.RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE:                        return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_INPUT_DEVICE_CAPABILITIES:               return GetInputDeviceCapabilities();
                 case retro_environment.RETRO_ENVIRONMENT_GET_SENSOR_INTERFACE:                        return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_CAMERA_INTERFACE:                        return ENVIRONMENT_NOT_IMPLEMENTED();
@@ -94,7 +95,7 @@ namespace SK.Libretro
                 case retro_environment.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY:                          return GetSaveDirectory();
                 case retro_environment.RETRO_ENVIRONMENT_GET_USERNAME:                                return GetUsername();
                 case retro_environment.RETRO_ENVIRONMENT_GET_LANGUAGE:                                return GetLanguage();
-                case retro_environment.RETRO_ENVIRONMENT_GET_CURRENT_SOFTWARE_FRAMEBUFFER:            return GetCurrentSoftwareFramebuffer();
+                case retro_environment.RETRO_ENVIRONMENT_GET_CURRENT_SOFTWARE_FRAMEBUFFER:            return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE:                     return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_VFS_INTERFACE:                           return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_LED_INTERFACE:                           return GetLedInterface();
@@ -123,7 +124,7 @@ namespace SK.Libretro
                 case retro_environment.RETRO_ENVIRONMENT_SET_VARIABLES:                               return SetVariables();
                 case retro_environment.RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME:                         return SetSupportNoGame();
                 case retro_environment.RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK:                     return SetFrameTimeCallback();
-                case retro_environment.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK:                          return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK:                          return SetAudioCallback();
                 case retro_environment.RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO:                          return SetSystemAvInfo();
                 case retro_environment.RETRO_ENVIRONMENT_SET_PROC_ADDRESS_CALLBACK:                   return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_SET_SUBSYSTEM_INFO:                          return ENVIRONMENT_NOT_IMPLEMENTED();
@@ -205,7 +206,7 @@ namespace SK.Libretro
             {
                 if (data == null)
                 {
-                    Logger.Instance.LogWarning($"Variable data == null.", $"{cmd}");
+                    Logger.Instance.LogWarning($"Variable data is null.", $"{cmd}");
                     return false;
                 }
 
@@ -232,10 +233,8 @@ namespace SK.Libretro
             bool GetVariableUpdate()
             {
                 if (data != null)
-                {
-                    *(bool*)data    = UpdateVariables;
-                    UpdateVariables = false;
-                }
+                    *(bool*)data = UpdateVariables;
+                UpdateVariables = false;
                 return true;
             }
 
@@ -246,7 +245,7 @@ namespace SK.Libretro
                     _ = Directory.CreateDirectory(path);
                 if (data != null)
                     *(char**)data = _wrapper.GetUnsafeString(path);
-                Logger.Instance.LogInfo($"-> LibretroPath: {path}", $"{cmd}");
+                //Logger.Instance.LogInfo($"-> LibretroPath: {path}", $"{cmd}");
                 return true;
             }
 
@@ -266,7 +265,7 @@ namespace SK.Libretro
 
             bool GetPerfInterface()
             {
-                Marshal.StructureToPtr(_perfInterface, (IntPtr)data, true);
+                Marshal.StructureToPtr(_perfCallback, (IntPtr)data, true);
                 return true;
             }
 
@@ -308,8 +307,6 @@ namespace SK.Libretro
                 return true;
             }
 
-            bool GetCurrentSoftwareFramebuffer() => false;
-
             bool GetLedInterface()
             {
                 Marshal.StructureToPtr(_ledInterface, (IntPtr)data, true);
@@ -338,30 +335,32 @@ namespace SK.Libretro
 
             bool GetCoreOptionsVersion()
             {
-                if (data == null)
-                    return false;
-
-                // TEMP_HACK
-                string filePath = Path.GetFullPath(Path.Combine(LibretroWrapper.MainDirectory, "cores_using_options_intl.json"));
-                CoresUsingOptionsIntlList coresUsingOptionsIntl = FileSystem.DeserializeFromJson<CoresUsingOptionsIntlList>(filePath);
-                *(uint*)data = coresUsingOptionsIntl is null || coresUsingOptionsIntl.Cores is null || !coresUsingOptionsIntl.Cores.Contains(_wrapper.Core.Name)
-                             ? RETRO_API_VERSION
-                             : 0;
+                if (data != null)
+                {
+                    // TEMP_HACK
+                    string filePath = Path.GetFullPath(Path.Combine(LibretroWrapper.MainDirectory, "cores_using_options_intl.json"));
+                    CoresUsingOptionsIntlList coresUsingOptionsIntl = FileSystem.DeserializeFromJson<CoresUsingOptionsIntlList>(filePath);
+                    *(uint*)data = coresUsingOptionsIntl is null || coresUsingOptionsIntl.Cores is null || !coresUsingOptionsIntl.Cores.Contains(_wrapper.Core.Name)
+                                 ? RETRO_API_VERSION
+                                 : 0;
+                }
                 return true;
             }
 
             bool GetPreferredHwRender()
             {
-                //*(uint*)data = (uint)retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL;
-                //return true;
-
-                *(uint*)data = (uint)retro_hw_context_type.RETRO_HW_CONTEXT_NONE;
+                if (data != null)
+                {
+                    //*(uint*)data = (uint)retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL;
+                    *(uint*)data = (uint)retro_hw_context_type.RETRO_HW_CONTEXT_NONE;
+                }
                 return true;
             }
 
             bool GetDiskControlInterfaceVersion()
             {
-                *(uint*)data = 1;
+                if (data != null)
+                    *(uint*)data = 1;
                 return true;
             }
             #endregion
@@ -496,8 +495,11 @@ namespace SK.Libretro
 
             bool SetKeyboardCallback()
             {
+                if (data == null)
+                    return false;
+
                 retro_keyboard_callback* inCallback = (retro_keyboard_callback*)data;
-                _keyboardInterface = new retro_keyboard_callback
+                _keyboardCallback = new retro_keyboard_callback
                 {
                     callback = inCallback->callback
                 };
@@ -506,9 +508,12 @@ namespace SK.Libretro
 
             bool SetDiskControlInterface()
             {
+                if (data == null)
+                    return false;
+
                 retro_disk_control_callback inCallback = Marshal.PtrToStructure<retro_disk_control_callback>((IntPtr)data);
 
-                _diskControlExtInterface = new retro_disk_control_ext_callback
+                _diskControlExtCallback = new retro_disk_control_ext_callback
                 {
                     set_eject_state     = inCallback.set_eject_state     ?? ((bool ejected) => false),
                     get_eject_state     = inCallback.get_eject_state     ?? (() => false),
@@ -581,15 +586,15 @@ namespace SK.Libretro
                         }
                         ++inVariable;
                     }
+
+                    LibretroWrapper.SaveCoreOptionsFile();
+                    return true;
                 }
                 catch (Exception e)
                 {
                     Logger.Instance.LogException(e);
+                    return false;
                 }
-
-                LibretroWrapper.SaveCoreOptionsFile();
-
-                return true;
             }
 
             bool SetSupportNoGame()
@@ -603,6 +608,13 @@ namespace SK.Libretro
             {
                 if (data != null)
                     _wrapper.FrameTimeInterface = *(retro_frame_time_callback*)data;
+                return true;
+            }
+
+            bool SetAudioCallback()
+            {
+                if (data != null)
+                    _audioCallback = Marshal.PtrToStructure<retro_audio_callback>((IntPtr)data);
                 return true;
             }
 
@@ -641,8 +653,11 @@ namespace SK.Libretro
 
             bool SetMemoryMaps()
             {
-                retro_memory_map* inMemoryMap = (retro_memory_map*)data;
-                _memoryMap = *inMemoryMap;
+                if (data != null)
+                {
+                    retro_memory_map* inMemoryMap = (retro_memory_map*)data;
+                    _memoryMap = *inMemoryMap;
+                }
                 return true;
             }
 
@@ -660,19 +675,20 @@ namespace SK.Libretro
                         // TODO: Set video aspect ratio
                     }
                 }
-
                 return true;
             }
 
             bool SetSupportAchievements()
             {
-                _supportsAchievements = *(bool*)data;
+                if (data != null)
+                    _supportsAchievements = *(bool*)data;
                 return false;
             }
 
             bool SetSerializationQuirks()
             {
-                _serializationQuirks = *(ulong*)data;
+                if (data != null)
+                    _serializationQuirks = *(ulong*)data;
                 return true;
             }
 
@@ -691,7 +707,8 @@ namespace SK.Libretro
 
             bool SetDiskControlExtInterface()
             {
-                _diskControlExtInterface = Marshal.PtrToStructure<retro_disk_control_ext_callback>((IntPtr)data);
+                if (data != null)
+                    _diskControlExtCallback = Marshal.PtrToStructure<retro_disk_control_ext_callback>((IntPtr)data);
                 return true;
             }
 

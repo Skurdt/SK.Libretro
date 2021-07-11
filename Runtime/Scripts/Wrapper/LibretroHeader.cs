@@ -417,9 +417,9 @@ namespace SK.Libretro
         public const int RETRO_VFS_STAT_IS_CHARACTER_SPECIAL = 1 << 2;
 
         // typedef const char *(RETRO_CALLCONV *retro_vfs_get_path_t)(struct retro_vfs_file_handle *stream);
-        public delegate string retro_vfs_get_path_t(IntPtr stream);
+        public delegate IntPtr retro_vfs_get_path_t(IntPtr stream);
         // typedef struct retro_vfs_file_handle *(RETRO_CALLCONV *retro_vfs_open_t)(const char* path, unsigned mode, unsigned hints);
-        public delegate IntPtr retro_vfs_open_t(string path, uint mode, uint hints);
+        public delegate IntPtr retro_vfs_open_t(IntPtr path, uint mode, uint hints);
         // typedef int (RETRO_CALLCONV *retro_vfs_close_t) (struct retro_vfs_file_handle *stream);
         public delegate int retro_vfs_close_t(IntPtr stream);
         // typedef int64_t (RETRO_CALLCONV *retro_vfs_size_t)(struct retro_vfs_file_handle *stream);
@@ -437,19 +437,19 @@ namespace SK.Libretro
         // typedef int (RETRO_CALLCONV *retro_vfs_flush_t)(struct retro_vfs_file_handle *stream);
         public delegate int retro_vfs_flush_t(IntPtr stream);
         // typedef int (RETRO_CALLCONV *retro_vfs_remove_t)(const char* path);
-        public delegate int retro_vfs_remove_t(string path);
+        public delegate int retro_vfs_remove_t(IntPtr path);
         // typedef int (RETRO_CALLCONV *retro_vfs_rename_t)(const char* old_path, const char* new_path);
-        public delegate int retro_vfs_rename_t(string old_path, string new_path);
+        public delegate int retro_vfs_rename_t(IntPtr old_path, IntPtr new_path);
         // typedef int (RETRO_CALLCONV *retro_vfs_stat_t)(const char* path, int32_t *size);
-        public delegate int retro_vfs_stat_t(string path, ref int32_t size);
+        public delegate int retro_vfs_stat_t(IntPtr path, ref int32_t size);
         // typedef int (RETRO_CALLCONV *retro_vfs_mkdir_t)(const char* dir);
-        public delegate int retro_vfs_mkdir_t(string dir);
+        public delegate int retro_vfs_mkdir_t(IntPtr dir);
         // typedef struct retro_vfs_dir_handle *(RETRO_CALLCONV *retro_vfs_opendir_t)(const char* dir, bool include_hidden);
-        public delegate IntPtr retro_vfs_opendir_t(string dir, bool include_hidden);
+        public delegate IntPtr retro_vfs_opendir_t(IntPtr dir, bool include_hidden);
         // typedef bool (RETRO_CALLCONV *retro_vfs_readdir_t)(struct retro_vfs_dir_handle *dirstream);
         public delegate bool retro_vfs_readdir_t(IntPtr dirstream);
         // typedef const char*(RETRO_CALLCONV *retro_vfs_dirent_get_name_t)(struct retro_vfs_dir_handle *dirstream);
-        public delegate string retro_vfs_dirent_get_name_t(IntPtr dirstream);
+        public delegate IntPtr retro_vfs_dirent_get_name_t(IntPtr dirstream);
         // typedef bool (RETRO_CALLCONV *retro_vfs_dirent_is_dir_t)(struct retro_vfs_dir_handle *dirstream);
         public delegate bool retro_vfs_dirent_is_dir_t(IntPtr dirstream);
         // typedef int (RETRO_CALLCONV *retro_vfs_closedir_t)(struct retro_vfs_dir_handle *dirstream);
@@ -458,27 +458,25 @@ namespace SK.Libretro
         [StructLayout(LayoutKind.Sequential)]
         public struct retro_vfs_interface
         {
-            public retro_vfs_get_path_t get_path;
-            public retro_vfs_open_t open;
-            public retro_vfs_close_t close;
-            public retro_vfs_size_t size;
-            public retro_vfs_tell_t tell;
-            public retro_vfs_seek_t seek;
-            public retro_vfs_read_t read;
-            public retro_vfs_write_t write;
-            public retro_vfs_flush_t flush;
-            public retro_vfs_remove_t remove;
-            public retro_vfs_rename_t rename;
-
-            public retro_vfs_truncate_t truncate;
-
-            public retro_vfs_stat_t stat;
-            public retro_vfs_mkdir_t mkdir;
-            public retro_vfs_opendir_t opendir;
-            public retro_vfs_readdir_t readdir;
-            public retro_vfs_dirent_get_name_t dirent_get_name;
-            public retro_vfs_dirent_is_dir_t dirent_is_dir;
-            public retro_vfs_closedir_t closedir;
+            public IntPtr get_path;
+            public IntPtr open;
+            public IntPtr close;
+            public IntPtr size;
+            public IntPtr tell;
+            public IntPtr seek;
+            public IntPtr read;
+            public IntPtr write;
+            public IntPtr flush;
+            public IntPtr remove;
+            public IntPtr rename;
+            public IntPtr truncate;
+            public IntPtr stat;
+            public IntPtr mkdir;
+            public IntPtr opendir;
+            public IntPtr readdir;
+            public IntPtr dirent_get_name;
+            public IntPtr dirent_is_dir;
+            public IntPtr closedir;
         }
 
         [StructLayout(LayoutKind.Sequential)]

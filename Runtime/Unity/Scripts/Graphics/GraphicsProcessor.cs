@@ -138,12 +138,13 @@ namespace SK.Libretro.Unity
 
         public void DeInit()
         {
-            if (Texture == null)
-                return;
-
             MainThreadDispatcher mainThreadDispatcher = MainThreadDispatcher.Instance;
             if (mainThreadDispatcher != null)
-                mainThreadDispatcher.Enqueue(() => UnityEngine.Object.Destroy(Texture));
+                mainThreadDispatcher.Enqueue(() =>
+                {
+                    if (Texture != null)
+                        UnityEngine.Object.Destroy(Texture);
+                });
         }
 
         private void CreateTexture(int width, int height, FilterMode filterMode = FilterMode.Point)
