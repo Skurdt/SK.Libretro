@@ -20,11 +20,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-//using UnityEngine;
+using System;
+using System.Runtime.InteropServices;
+using static SK.Libretro.LibretroHeader;
 
-//namespace SK.Libretro.Unity
-//{
-//    public sealed class LibretroScreenNode : MonoBehaviour
-//    {
-//    }
-//}
+namespace SK.Libretro
+{
+    internal sealed class LibretroLedInterface
+    {
+        private readonly retro_led_interface _interface = new retro_led_interface
+        {
+            set_led_state = (int led, int state) => { }
+        };
+
+        public LibretroLedInterface(IntPtr data) => Marshal.StructureToPtr(_interface, data, true);
+    }
+}

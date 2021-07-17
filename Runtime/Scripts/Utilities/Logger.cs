@@ -87,6 +87,10 @@ namespace SK.Libretro.Utilities
         public void LogInfo(string message, string caller = null) => LogInternal(LogLevel.Info, message, caller);
         public void LogWarning(string message, string caller = null) => LogInternal(LogLevel.Warning, message, caller);
         public void LogError(string message, string caller = null) => LogInternal(LogLevel.Error, message, caller);
+        public void LogDebug(object message, string caller = null) => LogInternal(LogLevel.Debug, message.ToString(), caller);
+        public void LogInfo(object message, string caller = null) => LogInternal(LogLevel.Info, message.ToString(), caller);
+        public void LogWarning(object message, string caller = null) => LogInternal(LogLevel.Warning, message.ToString(), caller);
+        public void LogError(object message, string caller = null) => LogInternal(LogLevel.Error, message.ToString(), caller);
         public void LogException(Exception exception) => LogInternal(exception);
 
         private void AddHandler(LogLevel logLevel, Action<string> function, bool colorSupport)

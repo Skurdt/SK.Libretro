@@ -21,6 +21,7 @@
  * SOFTWARE. */
 
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;
@@ -32,7 +33,7 @@ namespace SK.Libretro.NAudio
     {
         private const int AUDIO_BUFFER_SIZE = 65536;
 
-        private WaveOutEvent _audioDevice;
+        private IWavePlayer _audioDevice;
         private BufferedWaveProvider _bufferedWaveProvider;
         private VolumeSampleProvider _volumeProvider;
 
@@ -56,7 +57,7 @@ namespace SK.Libretro.NAudio
 
                 _audioDevice = new WaveOutEvent
                 {
-                    DesiredLatency = 140
+                    DesiredLatency = 110
                 };
 
                 _audioDevice.Init(_volumeProvider);

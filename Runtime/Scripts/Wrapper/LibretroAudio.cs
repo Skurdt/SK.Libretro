@@ -21,12 +21,14 @@
  * SOFTWARE. */
 
 using System;
+using static SK.Libretro.LibretroHeader;
 
 namespace SK.Libretro
 {
     internal sealed class LibretroAudio
     {
         public IAudioProcessor Processor;
+        public retro_audio_callback AudioCallback;
 
         private const float AUDIO_GAIN = 1f;
 
@@ -34,9 +36,17 @@ namespace SK.Libretro
 
         public LibretroAudio(LibretroWrapper wrapper) => _wrapper = wrapper;
 
-        public void Init() => Processor?.Init(Convert.ToInt32(_wrapper.Game.SystemAVInfo.timing.sample_rate));
+        public void Enable(IAudioProcessor audioProcessor)
+        {
+            Processor = audioProcessor;
+            Processor?.Init(Convert.ToInt32(_wrapper.Game.SystemAVInfo.timing.sample_rate));
+        }
 
-        public void DeInit() => Processor?.DeInit();
+        public void Disable()
+        {
+            Processor?.DeInit();
+            Processor = null;
+        }
 
         public void SampleCallback(short left, short right)
         {

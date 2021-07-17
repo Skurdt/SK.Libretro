@@ -20,6 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using SK.Libretro.Utilities;
 using SK.Utilities;
 using static SK.Libretro.LibretroHeader;
 
@@ -27,14 +28,11 @@ namespace SK.Libretro
 {
     internal sealed class LibretroInput
     {
-        public IInputProcessor Processor;
-
-        public const int MAX_USERS         = 16;
-        public const int FIRST_CUSTOM_BIND = 16;
-        public const int FIRST_META_KEY    = (int)CustomBinds.CUSTOM_BIND_LIST_END;
-
-        private const int FIRST_LIGHTGUN_BIND    = (int)CustomBinds.ANALOG_BIND_LIST_END;
-        private const int FIRST_MISC_CUSTOM_BIND = (int)CustomBinds.LIGHTGUN_BIND_LIST_END;
+        public const int MAX_USERS              = 16;
+        public const int FIRST_CUSTOM_BIND      = 16;
+        public const int FIRST_LIGHTGUN_BIND    = (int)CustomBinds.ANALOG_BIND_LIST_END;
+        public const int FIRST_MISC_CUSTOM_BIND = (int)CustomBinds.LIGHTGUN_BIND_LIST_END;
+        public const int FIRST_META_KEY         = (int)CustomBinds.CUSTOM_BIND_LIST_END;
 
         public enum CustomBinds : uint
         {
@@ -118,6 +116,26 @@ namespace SK.Libretro
             BIND_LIST_END_NULL
         };
 
+
+        public readonly retro_rumble_interface RumbleInterface = new retro_rumble_interface
+        {
+            set_rumble_state = (uint port, retro_rumble_effect effect, ushort strength) =>
+            {
+                Logger.Instance.LogDebug($"[Rumble] Port: {port} Effect: {effect} Strength: {strength}");
+                return true;
+            }
+        };
+
+        public retro_keyboard_callback KeyboardCallback;
+
+        public IInputProcessor Processor;
+
+        private const int NUM_JOYPAD_BUTTONS = 16;
+
+        public void Enable(IInputProcessor inputProcessor) => Processor = inputProcessor;
+
+        public void Disable() => Processor = null;
+
         public void PollCallback()
         {
         }
@@ -137,7 +155,19 @@ namespace SK.Libretro
             };
         }
 
-        private short ProcessJoypadDeviceState(uint port, uint button) => BoolToShort(Processor.JoypadButton((int)port, (int)button));
+        private short ProcessJoypadDeviceState(uint port, uint button)
+        {
+            if (button == RETRO_DEVICE_ID_JOYPAD_MASK)
+            {
+                int result = 0;
+                bool[] buttons = Processor.JoypadButtons((int)port);
+                for (int i = 0; i < NUM_JOYPAD_BUTTONS; ++i)
+                    if (buttons[i])
+                        result |= 1 << (i & (int)0xFFu);
+                return (short)result;
+            }
+            return BoolToShort(Processor.JoypadButton((int)port, (int)button));
+        }
 
         private short ProcessMouseDeviceState(uint port, uint command)
         {

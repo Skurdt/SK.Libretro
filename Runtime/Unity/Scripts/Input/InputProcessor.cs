@@ -30,7 +30,7 @@ namespace SK.Libretro.Unity
     [RequireComponent(typeof(PlayerInputManager))]
     public sealed class InputProcessor : MonoBehaviour, IInputProcessor
     {
-        public bool AnalogDirectionsToDigital { get; set; }
+        public bool AnalogToDigital { get; set; }
 
         private readonly ConcurrentDictionary<int, PlayerInputProcessor> _controls = new ConcurrentDictionary<int, PlayerInputProcessor>();
 
@@ -45,7 +45,7 @@ namespace SK.Libretro.Unity
                 PlayerInputProcessor processor = player.GetComponent<PlayerInputProcessor>();
                 if (processor != null)
                 {
-                    processor.AnalogDirectionsToDigital = AnalogDirectionsToDigital;
+                    processor.AnalogDirectionsToDigital = AnalogToDigital;
                     _ = _controls.TryAdd(player.playerIndex, processor);
                 }
             }
@@ -60,6 +60,7 @@ namespace SK.Libretro.Unity
         }
 
         public bool JoypadButton(int port, int button) => _controls.ContainsKey(port) && _controls[port].JoypadButtons[button];
+        public bool[] JoypadButtons(int port) => _controls.ContainsKey(port) ? _controls[port].JoypadButtons : PlayerInputProcessor.EmptyArray;
 
         public float MouseDeltaX(int port)            => _controls.ContainsKey(port) ?  _controls[port].MousePositionDelta.x : 0f;
         public float MouseDeltaY(int port)            => _controls.ContainsKey(port) ? -_controls[port].MousePositionDelta.y : 0f;

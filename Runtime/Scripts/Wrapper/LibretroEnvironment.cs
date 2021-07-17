@@ -23,7 +23,6 @@
 using SK.Libretro.Utilities;
 using SK.Utilities;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using static SK.Libretro.LibretroHeader;
@@ -37,38 +36,11 @@ namespace SK.Libretro
         private readonly LibretroWrapper _wrapper;
 
         // TODO(Tom): Should probably not be here...
-        private readonly retro_perf_callback _perfCallback;
-        private readonly retro_led_interface _ledInterface;
-        private retro_keyboard_callback _keyboardCallback;
-        private retro_audio_callback _audioCallback;
-        private retro_disk_control_ext_callback _diskControlExtCallback;
-        private retro_memory_map _memoryMap;
-        private ulong _serializationQuirks;
         private bool _supportsAchievements;
-
-        // TEMP_HACK
-        private sealed class CoresUsingOptionsIntlList
-        {
-            public List<string> Cores = null;
-        }
 
         public LibretroEnvironment(LibretroWrapper wrapper)
         {
-            _wrapper      = wrapper;
-            _perfCallback = new retro_perf_callback
-            {
-                get_time_usec    = () => 0,
-                get_cpu_features = () => 0,
-                get_perf_counter = () => 0,
-                perf_register    = (ref retro_perf_counter counter) => {},
-                perf_start       = (ref retro_perf_counter counter) => {},
-                perf_stop        = (ref retro_perf_counter counter) => {},
-                perf_log         = () => {}
-            };
-            _ledInterface = new retro_led_interface
-            {
-                set_led_state = (int led, int state) => { }
-            };
+            _wrapper = wrapper;
         }
 
         public unsafe bool Callback(retro_environment cmd, void* data)
@@ -84,7 +56,7 @@ namespace SK.Libretro
                 case retro_environment.RETRO_ENVIRONMENT_GET_VARIABLE:                                return GetVariable();
                 case retro_environment.RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE:                         return GetVariableUpdate();
                 case retro_environment.RETRO_ENVIRONMENT_GET_LIBRETRO_PATH:                           return GetLibretroPath();
-                case retro_environment.RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE:                        return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE:                        return GetRumbleInterface();
                 case retro_environment.RETRO_ENVIRONMENT_GET_INPUT_DEVICE_CAPABILITIES:               return GetInputDeviceCapabilities();
                 case retro_environment.RETRO_ENVIRONMENT_GET_SENSOR_INTERFACE:                        return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_CAMERA_INTERFACE:                        return ENVIRONMENT_NOT_IMPLEMENTED();
@@ -95,19 +67,19 @@ namespace SK.Libretro
                 case retro_environment.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY:                          return GetSaveDirectory();
                 case retro_environment.RETRO_ENVIRONMENT_GET_USERNAME:                                return GetUsername();
                 case retro_environment.RETRO_ENVIRONMENT_GET_LANGUAGE:                                return GetLanguage();
-                case retro_environment.RETRO_ENVIRONMENT_GET_CURRENT_SOFTWARE_FRAMEBUFFER:            return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_GET_CURRENT_SOFTWARE_FRAMEBUFFER:            return ENVIRONMENT_NOT_IMPLEMENTED(false, false);
                 case retro_environment.RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE:                     return ENVIRONMENT_NOT_IMPLEMENTED();
-                case retro_environment.RETRO_ENVIRONMENT_GET_VFS_INTERFACE:                           return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_GET_VFS_INTERFACE:                           return GetVfsInterface();
                 case retro_environment.RETRO_ENVIRONMENT_GET_LED_INTERFACE:                           return GetLedInterface();
                 case retro_environment.RETRO_ENVIRONMENT_GET_AUDIO_VIDEO_ENABLE:                      return GetAudioVideoEnable();
                 case retro_environment.RETRO_ENVIRONMENT_GET_MIDI_INTERFACE:                          return ENVIRONMENT_NOT_IMPLEMENTED();
-                case retro_environment.RETRO_ENVIRONMENT_GET_FASTFORWARDING:                          return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_GET_FASTFORWARDING:                          return GetFastForwarding();
                 case retro_environment.RETRO_ENVIRONMENT_GET_TARGET_REFRESH_RATE:                     return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_GET_INPUT_BITMASKS:                          return GetInputBitmasks();
                 case retro_environment.RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION:                    return GetCoreOptionsVersion();
                 case retro_environment.RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER:                     return GetPreferredHwRender();
                 case retro_environment.RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION:          return GetDiskControlInterfaceVersion();
-                case retro_environment.RETRO_ENVIRONMENT_GET_MESSAGE_INTERFACE_VERSION:               return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_GET_MESSAGE_INTERFACE_VERSION:               return GetMessageInterfaceVersion();
                 case retro_environment.RETRO_ENVIRONMENT_GET_INPUT_MAX_USERS:                         return ENVIRONMENT_NOT_IMPLEMENTED();
 
                 /************************************************************************************************
@@ -127,7 +99,7 @@ namespace SK.Libretro
                 case retro_environment.RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK:                          return SetAudioCallback();
                 case retro_environment.RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO:                          return SetSystemAvInfo();
                 case retro_environment.RETRO_ENVIRONMENT_SET_PROC_ADDRESS_CALLBACK:                   return ENVIRONMENT_NOT_IMPLEMENTED();
-                case retro_environment.RETRO_ENVIRONMENT_SET_SUBSYSTEM_INFO:                          return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_SET_SUBSYSTEM_INFO:                          return SetSubsystemInfo();
                 case retro_environment.RETRO_ENVIRONMENT_SET_CONTROLLER_INFO:                         return SetControllerInfo();
                 case retro_environment.RETRO_ENVIRONMENT_SET_MEMORY_MAPS:                             return SetMemoryMaps();
                 case retro_environment.RETRO_ENVIRONMENT_SET_GEOMETRY:                                return SetGeometry();
@@ -135,12 +107,12 @@ namespace SK.Libretro
                 case retro_environment.RETRO_ENVIRONMENT_SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE: return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS:                    return SetSerializationQuirks();
                 case retro_environment.RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT:                       return ENVIRONMENT_NOT_IMPLEMENTED();
-                case retro_environment.RETRO_ENVIRONMENT_SET_CORE_OPTIONS:                            return SetCoreOptions();
-                case retro_environment.RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL:                       return SetCoreOptionsIntl();
+                case retro_environment.RETRO_ENVIRONMENT_SET_CORE_OPTIONS:                            return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL:                       return ENVIRONMENT_NOT_IMPLEMENTED();
                 case retro_environment.RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY:                    return ENVIRONMENT_NOT_IMPLEMENTED(true, false);
                 case retro_environment.RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE:              return SetDiskControlExtInterface();
                 case retro_environment.RETRO_ENVIRONMENT_SHUTDOWN:                                    return Shutdown();
-                case retro_environment.RETRO_ENVIRONMENT_SET_MESSAGE_EXT:                             return ENVIRONMENT_NOT_IMPLEMENTED();
+                case retro_environment.RETRO_ENVIRONMENT_SET_MESSAGE_EXT:                             return SetMessageExt();
 
                 /************************************************************************************************
                  * RetroArch Extensions
@@ -179,7 +151,7 @@ namespace SK.Libretro
             {
                 if (data != null)
                     *(bool*)data = _wrapper.OptionCropOverscan;
-                Logger.Instance.LogInfo($"-> Crop Overscan: {_wrapper.OptionCropOverscan}", $"{cmd}");
+                //Logger.Instance.LogInfo($"-> Crop Overscan: {_wrapper.OptionCropOverscan}", $"{cmd}");
                 return true;
             }
 
@@ -187,7 +159,7 @@ namespace SK.Libretro
             {
                 if (data != null)
                     *(bool*)data = true;
-                Logger.Instance.LogInfo("-> CanDupe: true", $"{cmd}");
+                //Logger.Instance.LogInfo($"-> Can Dupe: True", $"{cmd}");
                 return true;
             }
 
@@ -249,6 +221,12 @@ namespace SK.Libretro
                 return true;
             }
 
+            bool GetRumbleInterface()
+            {
+                Marshal.StructureToPtr(_wrapper.Input.RumbleInterface, (IntPtr)data, true);
+                return true;
+            }
+
             bool GetInputDeviceCapabilities()
             {
                 if (data != null)
@@ -265,7 +243,7 @@ namespace SK.Libretro
 
             bool GetPerfInterface()
             {
-                Marshal.StructureToPtr(_perfCallback, (IntPtr)data, true);
+                _wrapper.Perf = new LibretroPerfInterface((IntPtr)data);
                 return true;
             }
 
@@ -295,7 +273,7 @@ namespace SK.Libretro
             {
                 if (data != null)
                     *(char**)data = _wrapper.GetUnsafeString(_wrapper.OptionUserName);
-                Logger.Instance.LogInfo($"-> UserName: {_wrapper.OptionUserName}", $"{cmd}");
+                //Logger.Instance.LogInfo($"-> UserName: {_wrapper.OptionUserName}", $"{cmd}");
                 return true;
             }
 
@@ -303,13 +281,24 @@ namespace SK.Libretro
             {
                 if (data != null)
                     *(char**)data = _wrapper.GetUnsafeString(_wrapper.OptionLanguage.ToString());
-                Logger.Instance.LogInfo($"-> Language: {_wrapper.OptionLanguage}", $"{cmd}");
+                //Logger.Instance.LogInfo($"-> Language: {_wrapper.OptionLanguage}", $"{cmd}");
                 return true;
+            }
+
+            bool GetVfsInterface()
+            {
+                if (data != null)
+                {
+                    retro_vfs_interface_info* interfaceInfo = (retro_vfs_interface_info*)data;
+                    interfaceInfo->iface = IntPtr.Zero;
+                    Logger.Instance.LogWarning($"VFS not implemented (Core asked for VFS API v{interfaceInfo->required_interface_version}).");
+                }
+                return false;
             }
 
             bool GetLedInterface()
             {
-                Marshal.StructureToPtr(_ledInterface, (IntPtr)data, true);
+                _wrapper.Led = new LibretroLedInterface((IntPtr)data);
                 return true;
             }
 
@@ -325,25 +314,25 @@ namespace SK.Libretro
                 return true;
             }
 
-            bool GetInputBitmasks()
+            bool GetFastForwarding()
             {
                 if (data != null)
                     *(bool*)data = false;
-                Logger.Instance.LogInfo("-> Input Bitmasks: False", $"{cmd}");
                 return false;
+            }
+
+            bool GetInputBitmasks()
+            {
+                if (data != null)
+                    *(bool*)data = true;
+                return true;
             }
 
             bool GetCoreOptionsVersion()
             {
                 if (data != null)
-                {
-                    // TEMP_HACK
-                    string filePath = Path.GetFullPath(Path.Combine(LibretroWrapper.MainDirectory, "cores_using_options_intl.json"));
-                    CoresUsingOptionsIntlList coresUsingOptionsIntl = FileSystem.DeserializeFromJson<CoresUsingOptionsIntlList>(filePath);
-                    *(uint*)data = coresUsingOptionsIntl is null || coresUsingOptionsIntl.Cores is null || !coresUsingOptionsIntl.Cores.Contains(_wrapper.Core.Name)
-                                 ? RETRO_API_VERSION
-                                 : 0;
-                }
+                    *(uint*)data = 0;
+
                 return true;
             }
 
@@ -357,10 +346,17 @@ namespace SK.Libretro
                 return true;
             }
 
+            bool GetMessageInterfaceVersion()
+            {
+                if (data != null)
+                    *(uint*)data = LibretroMessageInterface.VERSION;
+                return true;
+            }
+
             bool GetDiskControlInterfaceVersion()
             {
                 if (data != null)
-                    *(uint*)data = 1;
+                    *(uint*)data = LibretroDiskInterface.VERSION;
                 return true;
             }
             #endregion
@@ -384,7 +380,7 @@ namespace SK.Libretro
             bool SetMessage()
             {
                 if (data != null)
-                    Logger.Instance.LogWarning($"<- Message: {UnsafeStringUtils.CharsToString(((retro_message*)data)->msg)}", $"{cmd}");
+                    Logger.Instance.LogInfo($"<- Message: {UnsafeStringUtils.CharsToString(((retro_message*)data)->msg)}", $"{cmd}");
                 return true;
             }
 
@@ -392,7 +388,6 @@ namespace SK.Libretro
             {
                 if (data != null)
                     _wrapper.Core.PerformanceLevel = *(int*)data;
-                Logger.Instance.LogInfo($"<- PerformanceLevel: {_wrapper.Core.PerformanceLevel}", $"{cmd}");
                 return true;
             }
 
@@ -409,7 +404,7 @@ namespace SK.Libretro
                     case retro_pixel_format.RETRO_PIXEL_FORMAT_RGB565:
                     {
                         _wrapper.Game.PixelFormat = *inPixelFormat;
-                        Logger.Instance.LogInfo($"<- PixelFormat: {_wrapper.Game.PixelFormat}", $"{cmd}");
+                        //Logger.Instance.LogInfo($"<- PixelFormat: {_wrapper.Game.PixelFormat}", $"{cmd}");
                         return true;
                     }
                 }
@@ -498,11 +493,7 @@ namespace SK.Libretro
                 if (data == null)
                     return false;
 
-                retro_keyboard_callback* inCallback = (retro_keyboard_callback*)data;
-                _keyboardCallback = new retro_keyboard_callback
-                {
-                    callback = inCallback->callback
-                };
+                _wrapper.Input.KeyboardCallback = Marshal.PtrToStructure<retro_keyboard_callback>((IntPtr)data);
                 return true;
             }
 
@@ -512,21 +503,7 @@ namespace SK.Libretro
                     return false;
 
                 retro_disk_control_callback inCallback = Marshal.PtrToStructure<retro_disk_control_callback>((IntPtr)data);
-
-                _diskControlExtCallback = new retro_disk_control_ext_callback
-                {
-                    set_eject_state     = inCallback.set_eject_state     ?? ((bool ejected) => false),
-                    get_eject_state     = inCallback.get_eject_state     ?? (() => false),
-                    get_image_index     = inCallback.get_image_index     ?? (() => 0),
-                    set_image_index     = inCallback.set_image_index     ?? ((uint index) => false),
-                    get_num_images      = inCallback.get_num_images      ?? (() => 0),
-                    replace_image_index = inCallback.replace_image_index ?? ((uint index, ref retro_game_info info) => false),
-                    add_image_index     = inCallback.add_image_index     ?? (() => false),
-                    set_initial_image   = (uint index, char* path) => false,
-                    get_image_path      = (uint index, char* path, ulong len) => false,
-                    get_image_label     = (uint index, char* label, ulong len) => false
-                };
-
+                _wrapper.Disk = new LibretroDiskInterface(inCallback);
                 return true;
             }
 
@@ -563,11 +540,11 @@ namespace SK.Libretro
                 {
                     retro_variable* inVariable = (retro_variable*)data;
 
-                    _wrapper.Core.CoreOptions = LibretroWrapper.CoreOptionsList.Cores.Find(x => x.CoreName.Equals(_wrapper.Core.Name, StringComparison.OrdinalIgnoreCase));
+                    _wrapper.Core.CoreOptions = LibretroCoreOptions.CoreOptionsList.Cores.Find(x => x.CoreName.Equals(_wrapper.Core.Name, StringComparison.OrdinalIgnoreCase));
                     if (_wrapper.Core.CoreOptions is null)
                     {
                         _wrapper.Core.CoreOptions = new LibretroCoreOptions { CoreName = _wrapper.Core.Name };
-                        LibretroWrapper.CoreOptionsList.Cores.Add(_wrapper.Core.CoreOptions);
+                        LibretroCoreOptions.CoreOptionsList.Cores.Add(_wrapper.Core.CoreOptions);
                     }
 
                     while (inVariable->key != null)
@@ -587,7 +564,7 @@ namespace SK.Libretro
                         ++inVariable;
                     }
 
-                    LibretroWrapper.SaveCoreOptionsFile();
+                    LibretroCoreOptions.SaveCoreOptionsFile();
                     return true;
                 }
                 catch (Exception e)
@@ -606,6 +583,7 @@ namespace SK.Libretro
 
             bool SetFrameTimeCallback()
             {
+                Logger.Instance.LogInfo("Using FrameTime Callback");
                 if (data != null)
                     _wrapper.FrameTimeInterface = *(retro_frame_time_callback*)data;
                 return true;
@@ -614,7 +592,7 @@ namespace SK.Libretro
             bool SetAudioCallback()
             {
                 if (data != null)
-                    _audioCallback = Marshal.PtrToStructure<retro_audio_callback>((IntPtr)data);
+                    _wrapper.Audio.AudioCallback = Marshal.PtrToStructure<retro_audio_callback>((IntPtr)data);
                 return true;
             }
 
@@ -622,6 +600,48 @@ namespace SK.Libretro
             {
                 if (data != null)
                     _wrapper.Game.SystemAVInfo = *(retro_system_av_info*)data;
+                return true;
+            }
+
+            bool SetSubsystemInfo()
+            {
+                if (data == null)
+                    return false;
+
+                retro_subsystem_info* subsystemInfoPtr = (retro_subsystem_info*)data;
+
+                int subsystemIndex = 0;
+                while (subsystemInfoPtr[subsystemIndex].ident != IntPtr.Zero)
+                {
+                    retro_subsystem_info subsystemInfo = subsystemInfoPtr[subsystemIndex];
+                    //Logger.Instance.LogInfo("Subsystem:");
+                    //Logger.Instance.LogInfo($"  Desc: {Marshal.PtrToStringAnsi(subsystemInfo.desc)}");
+                    //Logger.Instance.LogInfo($"  Ident: {Marshal.PtrToStringAnsi(subsystemInfo.ident)}");
+                    //Logger.Instance.LogInfo($"  NumRoms: {subsystemInfo.num_roms}");
+                    //Logger.Instance.LogInfo($"  ID: {subsystemInfo.id}");
+
+                    for (int romIndex = 0; romIndex < subsystemInfo.num_roms; ++romIndex)
+                    {
+                        retro_subsystem_rom_info romInfo = subsystemInfo.roms[romIndex];
+                        //Logger.Instance.LogInfo($"    Rom:");
+                        //Logger.Instance.LogInfo($"      Desc: {Marshal.PtrToStringAnsi(romInfo.desc)}");
+                        //Logger.Instance.LogInfo($"      ValidExtensions: {Marshal.PtrToStringAnsi(romInfo.valid_extensions)}");
+                        //Logger.Instance.LogInfo($"      NeedFullPath: {romInfo.need_fullpath}");
+                        //Logger.Instance.LogInfo($"      BlockExtract: {romInfo.block_extract}");
+                        //Logger.Instance.LogInfo($"      Required: {romInfo.required}");
+                        //Logger.Instance.LogInfo($"      NumMemory: {romInfo.num_memory}");
+
+                        for (int memoryIndex = 0; memoryIndex < romInfo.num_memory; ++memoryIndex)
+                        {
+                            retro_subsystem_memory_info memoryInfo = romInfo.memory[memoryIndex];
+                            //Logger.Instance.LogInfo($"      Memory:");
+                            //Logger.Instance.LogInfo($"        Extension: {Marshal.PtrToStringAnsi(memoryInfo.extension)}");
+                            //Logger.Instance.LogInfo($"        Type: {memoryInfo.type}");
+                        }
+                    }
+                    ++subsystemIndex;
+                }
+
                 return true;
             }
 
@@ -654,10 +674,7 @@ namespace SK.Libretro
             bool SetMemoryMaps()
             {
                 if (data != null)
-                {
-                    retro_memory_map* inMemoryMap = (retro_memory_map*)data;
-                    _memoryMap = *inMemoryMap;
-                }
+                    _wrapper.Memory = new LibretroMemory(*(retro_memory_map*)data);
                 return true;
             }
 
@@ -688,87 +705,38 @@ namespace SK.Libretro
             bool SetSerializationQuirks()
             {
                 if (data != null)
-                    _serializationQuirks = *(ulong*)data;
+                    _wrapper.Serialization.SetQuirks(*(ulong*)data);
                 return true;
-            }
-
-            bool SetCoreOptions() => data != null && SetCoreOptionsInternal((long)data);
-
-            // FIXME: Figure out why retro_core_options_intl.us isn't providing proper addresses...
-            bool SetCoreOptionsIntl()
-            {
-                if (data == null)
-                    return false;
-
-                //retro_core_options_intl inOptionsIntl = Marshal.PtrToStructure<retro_core_options_intl>((IntPtr)data);
-                //return SetCoreOptionsInternal(inOptionsIntl.us.ToInt64());
-                return false;
             }
 
             bool SetDiskControlExtInterface()
             {
-                if (data != null)
-                    _diskControlExtCallback = Marshal.PtrToStructure<retro_disk_control_ext_callback>((IntPtr)data);
+                if (data == null)
+                    return false;
+
+                retro_disk_control_ext_callback inCallback = Marshal.PtrToStructure<retro_disk_control_ext_callback>((IntPtr)data);
+                _wrapper.Disk = new LibretroDiskInterface(inCallback);
                 return true;
             }
 
             bool Shutdown() => true;
-            #endregion
-        }
 
-        private unsafe bool SetCoreOptionsInternal(long data)
-        {
-            _wrapper.Core.CoreOptions = LibretroWrapper.CoreOptionsList.Cores.Find(x => x.CoreName.Equals(_wrapper.Core.Name, StringComparison.OrdinalIgnoreCase));
-            if (_wrapper.Core.CoreOptions is null)
+            bool SetMessageExt()
             {
-                _wrapper.Core.CoreOptions = new LibretroCoreOptions { CoreName = _wrapper.Core.Name };
-                LibretroWrapper.CoreOptionsList.Cores.Add(_wrapper.Core.CoreOptions);
-            }
-
-            try
-            {
-                for (int i = 0; i < RETRO_NUM_CORE_OPTION_VALUES_MAX; ++i)
+                if (data != null)
                 {
-                    IntPtr ins = new IntPtr(data + (i * Marshal.SizeOf<retro_core_option_definition>()));
-                    retro_core_option_definition defs = Marshal.PtrToStructure<retro_core_option_definition>(ins);
-                    if (defs.key == null)
-                        break;
-
-                    string key = UnsafeStringUtils.CharsToString(defs.key);
-
-                    string coreOption = _wrapper.Core.CoreOptions.Options.Find(x => x.StartsWith(key, StringComparison.OrdinalIgnoreCase));
-                    if (!(coreOption is null))
-                        continue;
-
-                    string defaultValue = UnsafeStringUtils.CharsToString(defs.default_value);
-
-                    List<string> possibleValues = new List<string>();
-                    for (int j = 0; j < defs.values.Length; j++)
-                    {
-                        retro_core_option_value val = defs.values[j];
-                        if (val.value != null)
-                            possibleValues.Add(UnsafeStringUtils.CharsToString(val.value));
-                    }
-
-                    string value = "";
-                    if (!string.IsNullOrEmpty(defaultValue))
-                        value = defaultValue;
-                    else if (possibleValues.Count > 0)
-                        value = possibleValues[0];
-
-                    coreOption = $"{key};{value};{string.Join("|", possibleValues)}";
-
-                    _wrapper.Core.CoreOptions.Options.Add(coreOption);
+                    retro_message_ext* messageExt = (retro_message_ext*)data;
+                    Logger.Instance.LogInfo($"{UnsafeStringUtils.CharsToString(messageExt->msg)}", $"{cmd}");
+                    Logger.Instance.LogInfo($"{messageExt->duration}", $"{cmd}");
+                    Logger.Instance.LogInfo($"{messageExt->priority}", $"{cmd}");
+                    Logger.Instance.LogInfo($"{messageExt->level}", $"{cmd}");
+                    Logger.Instance.LogInfo($"{messageExt->target}", $"{cmd}");
+                    Logger.Instance.LogInfo($"{messageExt->type}", $"{cmd}");
+                    Logger.Instance.LogInfo($"{messageExt->progress}", $"{cmd}");
                 }
-
-                LibretroWrapper.SaveCoreOptionsFile();
+                return true;
             }
-            catch (Exception e)
-            {
-                Logger.Instance.LogError($"Failed to retrieve and write the core options, they must be entered manually in the configuration file for now... (Exception message: {e.Message})");
-            }
-
-            return true;
+            #endregion
         }
     }
 }

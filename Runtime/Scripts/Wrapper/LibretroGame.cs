@@ -81,7 +81,7 @@ namespace SK.Libretro
 
                 if (!GetGameInfo())
                 {
-                    Logger.Instance.LogWarning($"Game not set, running '{_wrapper.Core.Name}' core only.", "Libretro.LibretroGame.Start");
+                    Logger.Instance.LogError($"Game not set, core '{_wrapper.Core.Name}' needs a game to run.", "Libretro.LibretroGame.Start");
                     return false;
                 }
 
@@ -129,15 +129,7 @@ namespace SK.Libretro
         private bool GetGameInfo()
         {
             if (string.IsNullOrEmpty(_path))
-            {
-                if (!_wrapper.Core.SupportNoGame)
-                {
-                    Logger.Instance.LogError($"Game not set, core '{_wrapper.Core.Name}' needs a game to run.", "Libretro.LibretroGame.Start");
-                    return false;
-                }
-
-                return true;
-            }
+                return _wrapper.Core.SupportNoGame;
 
             GameInfo.path = _path;
 

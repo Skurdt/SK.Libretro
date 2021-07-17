@@ -33,6 +33,14 @@ namespace SK.Libretro
 
         public LibretroGraphics(LibretroWrapper wrapper) => _wrapper = wrapper;
 
+        public void Enable(IGraphicsProcessor graphicsProcessor) => Processor = graphicsProcessor;
+
+        public void Disable()
+        {
+            Processor?.DeInit();
+            Processor = null;
+        }
+
         public unsafe void Callback(void* data, uint width, uint height, ulong pitch)
         {
             if (Processor is null || data == null)

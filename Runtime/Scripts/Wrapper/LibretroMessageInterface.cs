@@ -20,11 +20,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-//using UnityEngine;
-
-//namespace SK.Libretro.Unity
-//{
-//    public sealed class LibretroScreenNode : MonoBehaviour
-//    {
-//    }
-//}
+namespace SK.Libretro
+{
+    internal sealed class LibretroMessageInterface
+    {
+        public const int VERSION = 1;
+    }
+}

@@ -20,15 +20,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using SK.Libretro.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SK.Libretro
 {
     [Serializable]
     internal sealed class LibretroCoreOptions
     {
+        [Serializable]
+        public sealed class LibretroCoreOptionsList
+        {
+            public List<LibretroCoreOptions> Cores = new List<LibretroCoreOptions>();
+        }
+
+        public static LibretroCoreOptionsList CoreOptionsList { get; private set; }
+
         public string CoreName      = "";
         public List<string> Options = new List<string>();
+
+        public static void LoadCoreOptionsFile()
+        {
+            CoreOptionsList = FileSystem.DeserializeFromJson<LibretroCoreOptionsList>(LibretroWrapper.CoreOptionsFile);
+            CoreOptionsList ??= new LibretroCoreOptionsList();
+        }
+
+        public static void SaveCoreOptionsFile()
+        {
+            if (CoreOptionsList is null || CoreOptionsList.Cores.Count == 0)
+                return;
+
+            CoreOptionsList.Cores = CoreOptionsList.Cores.OrderBy(x => x.CoreName).ToList();
+            for (int i = 0; i < CoreOptionsList.Cores.Count; ++i)
+                CoreOptionsList.Cores[i].Options.Sort();
+            _ = FileSystem.SerializeToJson(CoreOptionsList, LibretroWrapper.CoreOptionsFile);
+        }
     }
 }

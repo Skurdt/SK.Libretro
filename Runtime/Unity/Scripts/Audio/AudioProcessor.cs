@@ -42,9 +42,10 @@ namespace SK.Libretro.Unity
             }
         }
 
-        public void Init(int sampleRate)
+        public void Init(int sampleRate) => MainThreadDispatcher.Instance.Enqueue(() =>
         {
-            DeInit();
+            if (_audioSource != null)
+                _audioSource.Stop();
 
             AudioConfiguration audioConfig = AudioSettings.GetConfiguration();
             audioConfig.sampleRate = sampleRate;
@@ -52,12 +53,17 @@ namespace SK.Libretro.Unity
 
             _audioSource = GetComponent<AudioSource>();
             _audioSource.Play();
-        }
+        });
 
         public void DeInit()
         {
-            if (_audioSource != null)
-                _audioSource.Stop();
+            MainThreadDispatcher mainThreadDispatcher = MainThreadDispatcher.Instance;
+            if (mainThreadDispatcher != null)
+                mainThreadDispatcher.Enqueue(() =>
+                {
+                    if (_audioSource != null)
+                        _audioSource.Stop();
+                });
         }
 
         public void ProcessSamples(float[] samples) => _audioBuffer.AddRange(samples);

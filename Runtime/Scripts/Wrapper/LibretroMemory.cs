@@ -20,11 +20,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-//using UnityEngine;
+using static SK.Libretro.LibretroHeader;
 
-//namespace SK.Libretro.Unity
-//{
-//    public sealed class LibretroScreenNode : MonoBehaviour
-//    {
-//    }
-//}
+namespace SK.Libretro
+{
+    internal sealed class LibretroMemory
+    {
+        private readonly retro_memory_map _map;
+
+        public LibretroMemory(retro_memory_map map) => _map = map;
+    }
+}

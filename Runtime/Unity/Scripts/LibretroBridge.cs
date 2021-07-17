@@ -30,17 +30,6 @@ namespace SK.Libretro.Unity
 {
     public sealed class LibretroBridge
     {
-        public sealed class Settings
-        {
-            public string MainDirectory                 = Path.Combine(Application.streamingAssetsPath, "libretro~");
-            public string ShaderTextureName             = "_MainTex";
-            public bool AudioVolumeControlledByDistance = true;
-            public float AudioMaxVolume                 = 1f;
-            public float AudioMinDistance               = 2f;
-            public float AudioMaxDistance               = 10f;
-            public bool AnalogDirectionsToDigital       = false;
-        }
-
         public bool Paused { get; private set; }
 
         private struct SaveStateStatus
@@ -61,7 +50,7 @@ namespace SK.Libretro.Unity
         //private readonly Transform _screenTransform;
         private readonly Renderer _screenRenderer;
         //private readonly Transform _viewer;
-        private readonly Settings _settings;
+        private readonly LibretroSettings _settings;
         private readonly int _shaderTextureId;
 
         private readonly IInputProcessor _inputProcessor;
@@ -76,9 +65,11 @@ namespace SK.Libretro.Unity
         private Texture2D _texture;
         private SaveStateStatus _saveStateStatus;
         private LoadStateStatus _loadStateStatus;
+        private bool _saveSRAMStatus;
+        private bool _loadSRAMStatus;
         private bool _savingScreenshot;
 
-        public LibretroBridge(LibretroScreenNode screen, Transform viewer, Settings settings = null)
+        public LibretroBridge(Renderer renderer, Transform viewer, LibretroSettings settings = null)
         {
             if (_firstInstance)
             {
@@ -92,9 +83,9 @@ namespace SK.Libretro.Unity
             }
 
             //_screenTransform = screen.transform;
-            _screenRenderer  = screen.GetComponent<Renderer>();
+            _screenRenderer  = renderer;
             //_viewer          = viewer;
-            _settings        = settings ?? new Settings();
+            _settings        = settings ?? new LibretroSettings();
             _shaderTextureId = Shader.PropertyToID(_settings.ShaderTextureName);
 
             PlayerInputManager playerInputManager = Object.FindObjectOfType<PlayerInputManager>();
@@ -111,7 +102,7 @@ namespace SK.Libretro.Unity
             if (_inputProcessor is null)
                 _inputProcessor = playerInputManager.gameObject.AddComponent<InputProcessor>();
 
-            _inputProcessor.AnalogDirectionsToDigital = _settings.AnalogDirectionsToDigital;
+            _inputProcessor.AnalogToDigital = _settings.AnalogToDigital;
 
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
             AudioProcessor unityAudio = _screenRenderer.GetComponentInChildren<AudioProcessor>();
@@ -207,21 +198,22 @@ namespace SK.Libretro.Unity
             _loadStateStatus.Index      = index;
         }
 
+        public void SaveSRAM() => _saveSRAMStatus = true;
+
+        public void LoadSRAM() => _loadSRAMStatus = true;
+
         private void LibretroThread()
         {
             LibretroWrapper wrapper = new LibretroWrapper((LibretroTargetPlatform)Application.platform, _settings.MainDirectory);
-            if (!wrapper.StartGame(_coreName, _gameDirectory, _gameName))
-            {
-                wrapper.StopGame();
+            if (!wrapper.StartContent(_coreName, _gameDirectory, _gameName))
                 throw new System.Exception("Failed to start core/game combination");
-            }
 
             if (wrapper.Core.HwAccelerated)
             {
                 // Running gl cores only works in builds, or if a debugger is attached to the unity instance. (Visual Studio > Attach > Unity.exe)
                 if (Application.isEditor)
                 {
-                    wrapper.StopGame();
+                    wrapper.StopContent();
                     throw new System.Exception("Starting hardware accelerated cores is not supported in the editor");
                 }
 
@@ -229,9 +221,9 @@ namespace SK.Libretro.Unity
             }
 
             IGraphicsProcessor graphicsProcessor = new GraphicsProcessor(wrapper.Game.VideoWidth, wrapper.Game.VideoHeight, SetTexture);
-            wrapper.ActivateGraphics(graphicsProcessor);
-            wrapper.ActivateAudio(_audioProcessor);
-            wrapper.ActivateInput(_inputProcessor);
+            wrapper.Graphics.Enable(graphicsProcessor);
+            wrapper.Audio.Enable(_audioProcessor);
+            wrapper.Input.Enable(_inputProcessor);
 
             System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
             double targetFrameTime = 1.0 / wrapper.Game.VideoFps;
@@ -256,17 +248,28 @@ namespace SK.Libretro.Unity
 
                 if (_saveStateStatus.InProgress)
                 {
-                    if (wrapper.SaveState(_saveStateStatus.Index, out string screenshotPath))
+                    if (wrapper.Serialization.SaveState(_saveStateStatus.Index, out string screenshotPath))
                         TakeScreenshot(screenshotPath);
                     _saveStateStatus.InProgress = false;
                 }
 
-                if (_loadStateStatus.InProgress)
+                if (!_saveStateStatus.InProgress && _loadStateStatus.InProgress)
                 {
-                    _ = wrapper.LoadState(_loadStateStatus.Index);
+                    _ = wrapper.Serialization.LoadState(_loadStateStatus.Index);
                     _loadStateStatus.InProgress = false;
                 }
 
+                if (_saveSRAMStatus)
+                {
+                    _ = wrapper.Serialization.SaveSRAM();
+                    _saveSRAMStatus = false;
+                }
+
+                if (!_saveSRAMStatus && _loadSRAMStatus)
+                {
+                    _ = wrapper.Serialization.LoadSRAM();
+                    _loadSRAMStatus = false;
+                }
                 //wrapper.FrameTimeUpdate();
 
                 double currentTime = stopwatch.Elapsed.TotalSeconds;
@@ -274,12 +277,12 @@ namespace SK.Libretro.Unity
                 startTime          = currentTime;
                 if ((accumulator += dt) >= targetFrameTime)
                 {
-                    wrapper.Update();
+                    wrapper.RunFrame();
                     accumulator = 0.0;
                 }
             }
 
-            wrapper.StopGame();
+            wrapper.StopContent();
         }
 
         //  public void Rewind(bool rewind) => _wrapper.DoRewind = rewind;

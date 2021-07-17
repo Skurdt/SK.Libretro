@@ -50,25 +50,21 @@ namespace SK.Libretro
         public retro_get_memory_data_t retro_get_memory_data;
         public retro_get_memory_size_t retro_get_memory_size;
 
-        public bool Initialized { get; private set; } = false;
-
-        public uint ApiVersion { get; private set; }
+        public int Rotation { get; set; }
+        public int PerformanceLevel { get; set; }
+        public bool HwAccelerated { get; set; }
+        public LibretroCoreOptions CoreOptions { get; set; }
+        public bool SupportNoGame { get; set; }
+        public retro_controller_info[] ControllerPorts { get; set; }
 
         public string Name { get; private set; }
+        public uint ApiVersion { get; private set; }
         public string LibraryName { get; private set; }
         public string LibraryVersion { get; private set; }
         public string[] ValidExtensions { get; private set; }
         public bool NeedFullpath { get; private set; }
         public bool BlockExtract { get; private set; }
-
-        public LibretroCoreOptions CoreOptions;
-
-        public int PerformanceLevel;
-        public bool SupportNoGame;
-        public bool HwAccelerated;
-        public int Rotation;
-
-        public retro_controller_info[] ControllerPorts;
+        public bool Initialized { get; private set; } = false;
 
         private readonly LibretroWrapper _wrapper;
 
@@ -112,7 +108,6 @@ namespace SK.Libretro
                 return false;
 
             retro_init();
-            retro_set_controller_port_device(0, RETRO_DEVICE_JOYPAD);
 
             Initialized = true;
             return true;
@@ -122,9 +117,8 @@ namespace SK.Libretro
         {
             try
             {
-                //FIXME(Tom): This sometimes crash (mostly on cores using libco)
-                if (Initialized && !HwAccelerated)
-                    retro_deinit();
+                //FIXME(Tom): This sometimes crashes
+                //retro_deinit();
 
                 _dll?.Free(true);
                 _dll = null;

@@ -20,12 +20,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using Nito.Collections;
 using SK.Libretro.Utilities;
 using SK.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using static SK.Libretro.LibretroHeader;
@@ -105,20 +105,10 @@ namespace SK.Libretro
                 }
             }
         }
-        public bool RewindEnabled
-        {
-            get => _rewindEnabled;
-            set
-            {
-                _rewindEnabled = value;
-                _rewindSaveStates.Clear();
-            }
-        }
-        public bool DoRewind { get; set; } = false;
+        public bool RewindEnabled { get; set; } = false;
+        public bool PerformRewind { get; set; } = false;
 
         public static readonly retro_log_level LogLevel = retro_log_level.RETRO_LOG_WARN;
-
-        public static LibretroCoreOptionsList CoreOptionsList = null;
 
         public readonly LibretroTargetPlatform TargetPlatform;
 
@@ -129,6 +119,12 @@ namespace SK.Libretro
         public readonly LibretroGraphics Graphics;
         public readonly LibretroAudio Audio;
         public readonly LibretroInput Input;
+        public readonly LibretroSerialization Serialization;
+        public LibretroDiskInterface Disk { get; internal set; }
+        public LibretroMessageInterface Message { get; internal set; }
+        public LibretroPerfInterface Perf { get; internal set; }
+        public LibretroLedInterface Led { get; internal set; }
+        public LibretroMemory Memory { get; internal set; }
 
         public readonly retro_environment_t EnvironmentCallback;
         public readonly retro_video_refresh_t VideoRefreshCallback;
@@ -148,27 +144,15 @@ namespace SK.Libretro
         private string _optionUserName   = "LibretroUnityFE's Awesome User";
         private bool _optionCropOverscan = true;
 
-        private sealed class SaveStateData
-        {
-            public readonly byte[] Data;
-            public readonly ulong Size;
+        private const int REWIND_NUM_MAX_STATES          = 4096;
+        private const int REWIND_FRAMES_INTERVAL         = 10;
+        private readonly Deque<byte[]> _rewindSaveStates = new Deque<byte[]>(REWIND_NUM_MAX_STATES);
+        private ulong _rewindSaveStateSize               = ulong.MaxValue;
 
-            public SaveStateData(byte[] data, ulong size)
-            {
-                Data = data;
-                Size = size;
-            }
-        }
-
-        private const int MAX_STATES_COUNT                     = 2048;
-        private const int REWIND_FRAMES_INTERVAL               = 10;
-        private readonly List<SaveStateData> _rewindSaveStates = new List<SaveStateData>(MAX_STATES_COUNT);
-
-        private readonly List<IntPtr> _unsafePointers          = new List<IntPtr>();
+        private readonly List<IntPtr> _unsafePointers = new List<IntPtr>();
 
         private long _frameTimeLast   = 0;
         private uint _totalFrameCount = 0;
-        private bool _rewindEnabled   = false;
 
         public unsafe LibretroWrapper(LibretroTargetPlatform targetPlatform, string baseDirectory = null)
         {
@@ -204,10 +188,11 @@ namespace SK.Libretro
             Core = new LibretroCore(this);
             Game = new LibretroGame(this);
 
-            Environment = new LibretroEnvironment(this);
-            Graphics    = new LibretroGraphics(this);
-            Audio       = new LibretroAudio(this);
-            Input       = new LibretroInput();
+            Environment   = new LibretroEnvironment(this);
+            Graphics      = new LibretroGraphics(this);
+            Audio         = new LibretroAudio(this);
+            Input         = new LibretroInput();
+            Serialization = new LibretroSerialization(this);
 
             EnvironmentCallback      = Environment.Callback;
             VideoRefreshCallback     = Graphics.Callback;
@@ -219,16 +204,16 @@ namespace SK.Libretro
             LogPrintfCallback = LibretroLog.RetroLogPrintf;
         }
 
-        public bool StartGame(string coreName, string gameDirectory, string gameName)
+        public bool StartContent(string coreName, string gameDirectory, string gameName)
         {
             if (string.IsNullOrEmpty(coreName))
                 return false;
 
-            LoadCoreOptionsFile();
+            LibretroCoreOptions.LoadCoreOptionsFile();
 
             if (!Core.Start(coreName))
             {
-                StopGame();
+                StopContent();
                 return false;
             }
 
@@ -237,26 +222,28 @@ namespace SK.Libretro
 
             if (!Game.Start(gameDirectory, gameName))
             {
-                StopGame();
+                StopContent();
                 return false;
             }
 
             if (Core.HwAccelerated && OpenGL is null)
             {
-                StopGame();
+                StopContent();
                 return false;
             }
+
+            Core.retro_set_controller_port_device(0, RETRO_DEVICE_JOYPAD);
 
             FrameTimeRestart();
 
             return true;
         }
 
-        public void StopGame()
+        public void StopContent()
         {
-            DeactivateInput();
-            DeactivateAudio();
-            DeactivateGraphics();
+            Input.Disable();
+            Audio.Disable();
+            Graphics.Disable();
 
             Game.Stop();
             Core.Stop();
@@ -267,9 +254,39 @@ namespace SK.Libretro
 
         public void InitHardwareContext() => Marshal.GetDelegateForFunctionPointer<retro_hw_context_reset_t>(HwRenderInterface.context_reset).Invoke();
 
-        public void FrameTimeRestart() => _frameTimeLast = System.Diagnostics.Stopwatch.GetTimestamp();
+        public void RunFrame()
+        {
+            if (!Game.Running || !Core.Initialized)
+                return;
 
-        public void FrameTimeUpdate()
+            if (Core.HwAccelerated)
+                OpenGL.PollEvents();
+
+            _totalFrameCount++;
+
+            FrameTimeUpdate();
+
+            if (RewindEnabled)
+            {
+                if (PerformRewind)
+                    RewindLoadState();
+                else if (_totalFrameCount % REWIND_FRAMES_INTERVAL == 0)
+                    RewindSaveState();
+            }
+
+            Core.retro_run();
+        }
+
+        internal unsafe char* GetUnsafeString(string source)
+        {
+            char* result = UnsafeStringUtils.StringToChars(source, out IntPtr ptr);
+            _unsafePointers.Add(ptr);
+            return result;
+        }
+
+        private void FrameTimeRestart() => _frameTimeLast = System.Diagnostics.Stopwatch.GetTimestamp();
+
+        private void FrameTimeUpdate()
         {
             if (FrameTimeInterfaceCallback is null)
                 return;
@@ -283,161 +300,45 @@ namespace SK.Libretro
             FrameTimeInterfaceCallback(delta * 1000);
         }
 
-        public void Update()
+        private unsafe void RewindSaveState()
         {
-            if (!Game.Running || !Core.Initialized)
+            if (_rewindSaveStateSize == ulong.MaxValue)
+                _rewindSaveStateSize = Core.retro_serialize_size();
+
+            if (_rewindSaveStateSize == 0)
                 return;
 
-            if (Core.HwAccelerated)
-                OpenGL.PollEvents();
-
-            _totalFrameCount++;
-
-            if (RewindEnabled)
+            byte[] rewindSaveStatedata = new byte[_rewindSaveStateSize];
+            fixed (byte* p = rewindSaveStatedata)
             {
-                if (DoRewind && _rewindSaveStates.Count > 0)
+                if (Core.retro_serialize(p, _rewindSaveStateSize))
                 {
-                    RewindLoadState(_rewindSaveStates[_rewindSaveStates.Count - 1]);
-                    _rewindSaveStates.RemoveAt(_rewindSaveStates.Count - 1);
-                }
-                else if (_totalFrameCount % REWIND_FRAMES_INTERVAL == 0)
-                {
-                    if (_rewindSaveStates.Count >= MAX_STATES_COUNT)
-                        _rewindSaveStates.RemoveAt(0);
-                    _rewindSaveStates.Add(RewindSaveState());
+                    if (_rewindSaveStates.Count == REWIND_NUM_MAX_STATES)
+                        _ = _rewindSaveStates.RemoveFromFront();
+                    _rewindSaveStates.AddToBack(rewindSaveStatedata);
                 }
             }
-
-            Core.retro_run();
         }
 
-        public void ActivateGraphics(IGraphicsProcessor graphicsProcessor) => Graphics.Processor = graphicsProcessor;
-
-        public void DeactivateGraphics()
+        private unsafe void RewindLoadState()
         {
-            Graphics.Processor?.DeInit();
-            Graphics.Processor = null;
-        }
+            if (_rewindSaveStateSize == 0 || _rewindSaveStates.Count == 0)
+                return;
 
-        public void ActivateAudio(IAudioProcessor audioProcessor)
-        {
-            Audio.Processor = audioProcessor;
-            Audio.Init();
-        }
-
-        public void DeactivateAudio()
-        {
-            Audio.DeInit();
-            Audio.Processor = null;
-        }
-
-        public void ActivateInput(IInputProcessor inputProcessor) => Input.Processor = inputProcessor;
-
-        public void DeactivateInput() => Input.Processor = null;
-
-        public unsafe bool SaveState(int index, out string outPath)
-        {
-            outPath = null;
-
-            ulong size = Core.retro_serialize_size();
-            if (size <= 0)
-                return false;
-
-            byte[] data = new byte[size];
+            byte[] data = _rewindSaveStates.RemoveFromBack();
             fixed (byte* p = data)
             {
-                if (!Core.retro_serialize(p, size))
-                    return false;
+                _ = Core.retro_unserialize(p, _rewindSaveStateSize);
             }
-
-            string coreDirectory = Path.Combine(SavesDirectory, Core.Name);
-            if (!Directory.Exists(coreDirectory))
-                _ = Directory.CreateDirectory(coreDirectory);
-
-            string gameDirectory = !(Game.Name is null) ? Path.Combine(coreDirectory, Path.GetFileNameWithoutExtension(Game.Name)) : null;
-            if (!(gameDirectory is null) && !Directory.Exists(gameDirectory))
-                _ = Directory.CreateDirectory(gameDirectory);
-
-            outPath = Path.GetFullPath(!(gameDirectory is null) ? Path.Combine(gameDirectory, $"save_{index}.state") : Path.Combine(coreDirectory, $"save_{index}.state"));
-            File.WriteAllBytes(outPath, data);
-
-            return true;
-        }
-
-        public unsafe bool LoadState(int index)
-        {
-            string coreDirectory = Path.Combine(SavesDirectory, Core.Name);
-            if (!Directory.Exists(coreDirectory))
-                return false;
-
-            string gameDirectory = !(Game.Name is null) ? Path.Combine(coreDirectory, Path.GetFileNameWithoutExtension(Game.Name)) : null;
-            if (!(gameDirectory is null) && !Directory.Exists(gameDirectory))
-                return false;
-
-            string savePath = !(gameDirectory is null) ? Path.Combine(gameDirectory, $"save_{index}.state") : Path.Combine(coreDirectory, $"save_{index}.state");
-
-            if (!File.Exists(savePath))
-                return false;
-
-            ulong size = Core.retro_serialize_size();
-            if (size <= 0)
-                return false;
-
-            byte[] data = File.ReadAllBytes(savePath);
-            fixed (byte* p = data)
-                _ = Core.retro_unserialize(p, size); // FIXME: This returns false, not sure why
-
-            return true;
-        }
-
-        public static void LoadCoreOptionsFile()
-        {
-            CoreOptionsList = FileSystem.DeserializeFromJson<LibretroCoreOptionsList>(CoreOptionsFile);
-            CoreOptionsList ??= new LibretroCoreOptionsList();
-        }
-
-        public static void SaveCoreOptionsFile()
-        {
-            if (CoreOptionsList is null || CoreOptionsList.Cores.Count == 0)
-                return;
-
-            CoreOptionsList.Cores = CoreOptionsList.Cores.OrderBy(x => x.CoreName).ToList();
-            for (int i = 0; i < CoreOptionsList.Cores.Count; ++i)
-                CoreOptionsList.Cores[i].Options.Sort();
-            _ = FileSystem.SerializeToJson(CoreOptionsList, CoreOptionsFile);
-        }
-
-        public unsafe char* GetUnsafeString(string source)
-        {
-            char* result = UnsafeStringUtils.StringToChars(source, out IntPtr ptr);
-            _unsafePointers.Add(ptr);
-            return result;
-        }
-
-        private unsafe SaveStateData RewindSaveState()
-        {
-            ulong size = Core.retro_serialize_size();
-            if (size <= 0)
-                return null;
-
-            byte[] data = new byte[size];
-            fixed (byte* p = data)
-                return Core.retro_serialize(p, size) ? new SaveStateData(data, size) : null;
-        }
-
-        private unsafe void RewindLoadState(SaveStateData saveStateData)
-        {
-            if (saveStateData is null)
-                return;
-
-            fixed (byte* p = saveStateData.Data)
-                _ = Core.retro_unserialize(p, saveStateData.Size);
         }
 
         private void FreeUnsafePointers()
         {
             for (int i = 0; i < _unsafePointers.Count; ++i)
-                Marshal.FreeHGlobal(_unsafePointers[i]);
+            {
+                if (_unsafePointers[i] != IntPtr.Zero)
+                    Marshal.FreeHGlobal(_unsafePointers[i]);
+            }
         }
     }
 }

@@ -33,6 +33,8 @@ namespace SK.Libretro.Unity
         private const int NUM_KEYBOARD_KEYS  = 324;
         private const int NUM_MOUSE_BUTTONS  = 5;
 
+        public static readonly bool[] EmptyArray = new bool[NUM_JOYPAD_BUTTONS];
+
         public bool AnalogDirectionsToDigital { get; set; }
 
         public readonly bool[] JoypadButtons = new bool[NUM_JOYPAD_BUTTONS];

@@ -20,11 +20,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-//using UnityEngine;
+using System.IO;
+using UnityEngine;
 
-//namespace SK.Libretro.Unity
-//{
-//    public sealed class LibretroScreenNode : MonoBehaviour
-//    {
-//    }
-//}
+namespace SK.Libretro.Unity
+{
+    [System.Serializable]
+    public sealed class LibretroSettings
+    {
+        public string MainDirectory      = Application.streamingAssetsPath + "/libretro~";
+        public string ShaderTextureName  = "_MainTex";
+        public bool AudioDistanceControl = true;
+        public float AudioMaxVolume      = 1f;
+        public float AudioMinDistance    = 2f;
+        public float AudioMaxDistance    = 10f;
+        public bool AnalogToDigital      = false;
+        public bool RewindEnabled        = true;
+    }
+}

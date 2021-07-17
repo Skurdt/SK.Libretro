@@ -20,11 +20,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-//using UnityEngine;
+using System;
+using System.Runtime.InteropServices;
+using static SK.Libretro.LibretroHeader;
 
-//namespace SK.Libretro.Unity
-//{
-//    public sealed class LibretroScreenNode : MonoBehaviour
-//    {
-//    }
-//}
+namespace SK.Libretro
+{
+    internal sealed class LibretroPerfInterface
+    {
+        private readonly retro_perf_callback _callback = new retro_perf_callback
+        {
+            get_time_usec    = () => 0,
+            get_cpu_features = () => 0,
+            get_perf_counter = () => 0,
+            perf_register    = (ref retro_perf_counter counter) => {},
+            perf_start       = (ref retro_perf_counter counter) => {},
+            perf_stop        = (ref retro_perf_counter counter) => {},
+            perf_log         = () => {}
+        };
+
+        public LibretroPerfInterface(IntPtr data) => Marshal.StructureToPtr(_callback, data, true);
+    }
+}

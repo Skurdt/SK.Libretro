@@ -73,7 +73,7 @@ namespace SK.Libretro.UnityEditor
                         return "windows";
                     default:
                     {
-                        Debug.LogError($"[LibretroManagerWindow] Invalid/unsupported platform detected: {Application.platform}");
+                        Debug.LogError($"[LibretroManagerWindow] Invalid/Unsupported platform detected: {Application.platform}");
                         return null;
                     }
                 }
