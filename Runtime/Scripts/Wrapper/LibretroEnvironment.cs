@@ -38,10 +38,7 @@ namespace SK.Libretro
         // TODO(Tom): Should probably not be here...
         private bool _supportsAchievements;
 
-        public LibretroEnvironment(LibretroWrapper wrapper)
-        {
-            _wrapper = wrapper;
-        }
+        public LibretroEnvironment(LibretroWrapper wrapper) => _wrapper = wrapper;
 
         public unsafe bool Callback(retro_environment cmd, void* data)
         {
@@ -371,7 +368,7 @@ namespace SK.Libretro
                 // Result: 0, 90, 180, 270 degrees
                 if (data != null)
                     _wrapper.Core.Rotation = (int)*(uint*)data * 90;
-                Logger.Instance.LogInfo($"<- Rotation: {_wrapper.Core.Rotation}", $"{cmd}");
+                //Logger.Instance.LogInfo($"<- Rotation: {_wrapper.Core.Rotation}", $"{cmd}");
                 // return true;
                 return false;
             }
@@ -705,7 +702,11 @@ namespace SK.Libretro
             bool SetSerializationQuirks()
             {
                 if (data != null)
-                    _wrapper.Serialization.SetQuirks(*(ulong*)data);
+                {
+                    ulong* quirks = (ulong*)data;
+                    *quirks |= RETRO_SERIALIZATION_QUIRK_FRONT_VARIABLE_SIZE;
+                    _wrapper.Serialization.SetQuirks(*quirks);
+                }
                 return true;
             }
 

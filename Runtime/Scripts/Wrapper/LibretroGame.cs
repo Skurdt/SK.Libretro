@@ -21,6 +21,7 @@
  * SOFTWARE. */
 
 using SK.Libretro.Utilities;
+using SK.Utilities;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;

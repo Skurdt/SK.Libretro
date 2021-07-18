@@ -73,11 +73,11 @@ namespace SK.Libretro.Unity
         {
             if (_firstInstance)
             {
-                Utilities.Logger.Instance.AddDebughandler(Debug.Log, true);
-                Utilities.Logger.Instance.AddInfoHandler(Debug.Log, true);
-                Utilities.Logger.Instance.AddWarningHandler(Debug.LogWarning, true);
-                Utilities.Logger.Instance.AddErrorhandler(Debug.LogError, true);
-                Utilities.Logger.Instance.AddExceptionHandler(Debug.LogException);
+                SK.Utilities.Logger.Instance.AddDebughandler(Debug.Log, true);
+                SK.Utilities.Logger.Instance.AddInfoHandler(Debug.Log, true);
+                SK.Utilities.Logger.Instance.AddWarningHandler(Debug.LogWarning, true);
+                SK.Utilities.Logger.Instance.AddErrorhandler(Debug.LogError, true);
+                SK.Utilities.Logger.Instance.AddExceptionHandler(Debug.LogException);
 
                 _firstInstance = false;
             }

@@ -21,6 +21,7 @@
  * SOFTWARE. */
 
 using System;
+using Unity.Collections;
 using static SK.Libretro.LibretroHeader;
 
 namespace SK.Libretro
@@ -30,7 +31,8 @@ namespace SK.Libretro
         public IAudioProcessor Processor;
         public retro_audio_callback AudioCallback;
 
-        private const float AUDIO_GAIN = 1f;
+        private const float GAIN            = 1f;
+        private const float NORMALIZED_GAIN = GAIN / 0x8000;
 
         private readonly LibretroWrapper _wrapper;
 
@@ -53,30 +55,25 @@ namespace SK.Libretro
             if (Processor is null)
                 return;
 
-            float gain          = AUDIO_GAIN / 0x8000;
-            float[] floatBuffer = new float[]
-            {
-                left  * gain,
-                right * gain
-            };
+            NativeArray<float> floatBuffer = new NativeArray<float>(2, Allocator.TempJob);
+            floatBuffer[0] = left * NORMALIZED_GAIN;
+            floatBuffer[1] = right * NORMALIZED_GAIN;
 
-            Processor.ProcessSamples(floatBuffer);
+            Processor.ProcessSamples(ref floatBuffer);
+            floatBuffer.Dispose();
         }
 
         public unsafe ulong SampleBatchCallback(short* data, ulong frames)
         {
-            if (!(Processor is null))
-            {
-                float gain          = AUDIO_GAIN / 0x8000;
-                uint numSamples     = Convert.ToUInt32(frames) * 2;
-                float[] floatBuffer = new float[numSamples];
+            if (Processor is null)
+                return frames;
 
-                for (int i = 0; i < numSamples; ++i)
-                    floatBuffer[i] = data[i] * gain;
+            int numSamples                 = Convert.ToInt32(frames) * 2;
+            NativeArray<float> floatBuffer = new NativeArray<float>(numSamples, Allocator.TempJob);
+            for (int i = 0; i < numSamples; ++i)
+                floatBuffer[i] = data[i] * NORMALIZED_GAIN;
 
-                Processor.ProcessSamples(floatBuffer);
-            }
-
+            Processor.ProcessSamples(ref floatBuffer);
             return frames;
         }
     }

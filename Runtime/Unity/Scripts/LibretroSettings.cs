@@ -20,7 +20,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using System.IO;
 using UnityEngine;
 
 namespace SK.Libretro.Unity
@@ -28,7 +27,10 @@ namespace SK.Libretro.Unity
     [System.Serializable]
     public sealed class LibretroSettings
     {
-        public string MainDirectory      = Application.streamingAssetsPath + "/libretro~";
+        public static readonly string DefaultMainDirectory = Application.streamingAssetsPath + "/libretro~";
+
+        [LibretroMainDirectory]
+        public string MainDirectory      = DefaultMainDirectory;
         public string ShaderTextureName  = "_MainTex";
         public bool AudioDistanceControl = true;
         public float AudioMaxVolume      = 1f;

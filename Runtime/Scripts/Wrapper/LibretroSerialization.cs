@@ -20,7 +20,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using SK.Libretro.Utilities;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -38,12 +37,38 @@ namespace SK.Libretro
 
         public void SetQuirks(ulong quirks) => _quirks = quirks;
 
+        public unsafe bool SaveState(int index)
+        {
+            ulong stateSize = _wrapper.Core.retro_serialize_size();
+            if (stateSize == 0)
+                return false;
+
+            byte[] data = new byte[stateSize];
+            fixed (byte* p = data)
+            {
+                if (!_wrapper.Core.retro_serialize(p, stateSize))
+                    return false;
+
+                string coreDirectory = Path.Combine(LibretroWrapper.SavesDirectory, _wrapper.Core.Name);
+                if (!Directory.Exists(coreDirectory))
+                    _ = Directory.CreateDirectory(coreDirectory);
+
+                string gameDirectory = !(_wrapper.Game.Name is null) ? Path.Combine(coreDirectory, Path.GetFileNameWithoutExtension(_wrapper.Game.Name)) : null;
+                if (!(gameDirectory is null) && !Directory.Exists(gameDirectory))
+                    _ = Directory.CreateDirectory(gameDirectory);
+
+                string path = !(gameDirectory is null) ? Path.Combine(gameDirectory, $"save_{index}.state") : Path.Combine(coreDirectory, $"save_{index}.state");
+                File.WriteAllBytes(path, data);
+            }
+
+            return true;
+        }
+
         public unsafe bool SaveState(int index, out string outPath)
         {
             outPath = null;
 
             ulong stateSize = _wrapper.Core.retro_serialize_size();
-            Logger.Instance.LogWarning($"Save: {stateSize}");
             if (stateSize == 0)
                 return false;
 
@@ -84,13 +109,12 @@ namespace SK.Libretro
                 return false;
 
             ulong stateSize = _wrapper.Core.retro_serialize_size();
-            Logger.Instance.LogWarning($"Load: {stateSize}");
             if (stateSize == 0)
                 return false;
 
             byte[] data = File.ReadAllBytes(savePath);
             fixed (byte* p = data)
-                Logger.Instance.LogError(_wrapper.Core.retro_unserialize(p, stateSize)); // FIXME: This returns false, not sure why
+                _ = _wrapper.Core.retro_unserialize(p, stateSize); // FIXME: This returns false, not sure why
 
             return true;
         }

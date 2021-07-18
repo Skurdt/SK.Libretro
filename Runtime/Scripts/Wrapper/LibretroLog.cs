@@ -21,6 +21,7 @@
  * SOFTWARE. */
 
 using SK.Libretro.Utilities;
+using SK.Utilities;
 using System;
 using System.Runtime.InteropServices;
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN

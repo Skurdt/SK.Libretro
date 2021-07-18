@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using System;
+/*using System;
 using System.Collections.Generic;
 
 namespace SK.Libretro.Utilities
@@ -127,4 +127,4 @@ namespace SK.Libretro.Utilities
                 exceptionLogger.Invoke(e);
         }
     }
-}
+}*/

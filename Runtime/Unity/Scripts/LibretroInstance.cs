@@ -20,12 +20,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 [assembly: InternalsVisibleTo("SK.Libretro.UnityEditor")]
 
@@ -35,25 +38,30 @@ namespace SK.Libretro.Unity
     [DisallowMultipleComponent]
     public sealed class LibretroInstance : MonoBehaviour
     {
-        [Tooltip("The renderer to show libretro's content on.")]
-        [SerializeField] private Renderer _renderer;
-
-        [Tooltip("Assign this to enable distance based audio control.")]
-        [SerializeField] private Transform _viewer;
-
-        [SerializeField] private LibretroSettings _settings;
-        [SerializeField] private string _coreName;
-        [SerializeField] private string _gameDirectory;
-        [SerializeField] private string[] _gameNames;
-        [SerializeField] private bool _allowGLCoresInEditor;
-
-        public bool FastForwarding { get; set; }
-
-        private struct SaveStateStatus
+        private enum ThreadCommand
         {
-            public bool InProgress;
-            public bool TakeScreenshot;
+            SaveStateWithScreenshot,
+            SaveStateWithoutScreenshot,
+            LoadState,
+            SaveSRAM,
+            LoadSRAM,
+            TakeScreenshot
         }
+
+        public Renderer Renderer;
+        public RawImage RawImage;
+        public Transform Viewer;
+
+        public LibretroSettings Settings;
+        public string CoreName;
+        public string GamesDirectory;
+        public string[] GameNames;
+        public bool AllowGLCoresInEditor;
+
+        public double FastForwardFactor { get; set; } = 8.0;
+        public bool FastForwarding { get; set; }
+        public bool PerformRewind { get; set; }
+        public bool Paused { get; private set; }
 
         private static bool _firstInstance = true;
 
@@ -61,21 +69,13 @@ namespace SK.Libretro.Unity
         private IAudioProcessor _audioProcessor;
 
         private Thread _thread;
+        private readonly ConcurrentQueue<ThreadCommand> _threadCommands = new ConcurrentQueue<ThreadCommand>();
         private bool _running;
-        private bool _paused;
-        private int _currentSaveStateSlot;
-        private SaveStateStatus _saveStateStatus;
-        private bool _loadSaveStateStatus;
-        private bool _saveSRAMStatus;
-        private bool _loadSRAMStatus;
-        private bool _setRewindStatus;
-
-        private bool _performRewind;
+        private int _currentStateSlot;
 
         private readonly System.Diagnostics.Stopwatch _stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        private double _targetFrameTime                          = 1.0 / 60.0;
-        private double _startTime                                = 0.0;
-        private double _accumulator                              = 0.0;
+        private double _startTime = 0.0;
+        private double _accumulator = 0.0;
 
         private int _shaderTextureId;
         private Texture2D _texture;
@@ -89,29 +89,42 @@ namespace SK.Libretro.Unity
                 if (mainThreadDispatcher == null)
                     _ = new GameObject("MainThreadDispatcher", typeof(MainThreadDispatcher));
 
-                Utilities.Logger.Instance.AddDebughandler(Debug.Log, true);
-                Utilities.Logger.Instance.AddInfoHandler(Debug.Log, true);
-                Utilities.Logger.Instance.AddWarningHandler(Debug.LogWarning, true);
-                Utilities.Logger.Instance.AddErrorhandler(Debug.LogError, true);
-                Utilities.Logger.Instance.AddExceptionHandler(Debug.LogException);
+                SK.Utilities.Logger.Instance.AddDebughandler(Debug.Log, true);
+                SK.Utilities.Logger.Instance.AddInfoHandler(Debug.Log, true);
+                SK.Utilities.Logger.Instance.AddWarningHandler(Debug.LogWarning, true);
+                SK.Utilities.Logger.Instance.AddErrorhandler(Debug.LogError, true);
+                SK.Utilities.Logger.Instance.AddExceptionHandler(Debug.LogException);
 
                 _firstInstance = false;
             }
 
-            if (_renderer == null)
-                _renderer = GetComponent<Renderer>();
+            if (Renderer == null)
+                Renderer = GetComponent<Renderer>();
 
-            _shaderTextureId = Shader.PropertyToID(_settings.ShaderTextureName);
+            if (Renderer == null)
+                RawImage = GetComponent<RawImage>();
+
+            if (RawImage == null)
+                throw new Exception("No target display available!");
+
+            _shaderTextureId = Shader.PropertyToID(Settings.ShaderTextureName);
         }
 
         private void OnDisable() => StopContent();
+
+        public void SetContent(string coreName, string gamesDirectory, string[] gameNames)
+        {
+            CoreName       = coreName;
+            GamesDirectory = gamesDirectory;
+            GameNames      = gameNames;
+        }
 
         public void StartContent()
         {
             if (_running)
                 return;
 
-            if (string.IsNullOrEmpty(_coreName))
+            if (string.IsNullOrEmpty(CoreName))
             {
                 Debug.LogError("Core is not set");
                 return;
@@ -131,13 +144,18 @@ namespace SK.Libretro.Unity
             if (_inputProcessor == null)
                 _inputProcessor = playerInputManager.gameObject.AddComponent<InputProcessor>();
 
-            _inputProcessor.AnalogToDigital = _settings.AnalogToDigital;
+            _inputProcessor.AnalogToDigital = Settings.AnalogToDigital;
 
+            GameObject go = null;
+            if (Renderer != null)
+                go = Renderer.gameObject;
+            else if (RawImage != null)
+                go = RawImage.gameObject;
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-            AudioProcessor unityAudio = _renderer.GetComponentInChildren<AudioProcessor>();
+            AudioProcessor unityAudio = go != null ? go.GetComponentInChildren<AudioProcessor>() : null;
             _audioProcessor = unityAudio != null ? unityAudio : (IAudioProcessor)new NAudio.AudioProcessor();
 #else
-            AudioProcessor unityAudio = _renderer.GetComponentInChildren<AudioProcessor>(true);
+            AudioProcessor unityAudio = go != null ? go.GetComponentInChildren<AudioProcessor>(true) : null;
             if (unityAudio != null)
             {
                 unityAudio.gameObject.SetActive(true);
@@ -146,13 +164,13 @@ namespace SK.Libretro.Unity
             else
             {
                 GameObject audioProcessorGameObject = new GameObject("LibretroAudioProcessor");
-                audioProcessorGameObject.transform.SetParent(_renderer.transform);
+                audioProcessorGameObject.transform.SetParent(go.transform);
                 _audioProcessor = audioProcessorGameObject.AddComponent<AudioProcessor>();
             }
 #endif
             _thread = new Thread(LibretroThread)
             {
-                Name = $"LibretroThread_{_coreName}_{(_gameNames.Length > 0 ? _gameNames[0] : "nogame")}"
+                Name = $"LibretroThread_{CoreName}_{(GameNames.Length > 0 ? GameNames[0] : "nogame")}"
             };
             _thread.SetApartmentState(ApartmentState.STA);
             _thread.Start();
@@ -160,18 +178,18 @@ namespace SK.Libretro.Unity
 
         public void PauseContent()
         {
-            if (!_running || _paused)
+            if (!_running || Paused)
                 return;
 
-            _paused = true;
+            Paused = true;
         }
 
         public void ResumeContent()
         {
-            if (!_running || !_paused)
+            if (!_running || !Paused)
                 return;
 
-            _paused = false;
+            Paused = false;
             _thread.Interrupt();
         }
 
@@ -180,17 +198,29 @@ namespace SK.Libretro.Unity
             if (!_running)
                 return;
 
-            if (_paused)
+            if (Paused)
                 ResumeContent();
 
             _running = false;
         }
 
-        public void TakeScreenshot()
+        public void SetStateSlot(string slot)
         {
-            string screenshotPath = Path.Combine(_settings.MainDirectory, "screenshots", _coreName, $"{(_gameNames.Length > 0 ? _gameNames[0] : _coreName)}.png");
-            TakeScreenshot(screenshotPath);
+            if (int.TryParse(slot, out int slotInt))
+                SetStateSlot(slotInt);
         }
+
+        public void SetStateSlot(int slot) => _currentStateSlot = slot;
+
+        public void SaveStateWithScreenshot() => _threadCommands.Enqueue(ThreadCommand.SaveStateWithScreenshot);
+
+        public void SaveStateWithoutScreenshot() => _threadCommands.Enqueue(ThreadCommand.SaveStateWithoutScreenshot);
+
+        public void LoadState() => _threadCommands.Enqueue(ThreadCommand.LoadState);
+
+        public void SaveSRAM() => _threadCommands.Enqueue(ThreadCommand.SaveSRAM);
+
+        public void LoadSRAM() => _threadCommands.Enqueue(ThreadCommand.LoadSRAM);
 
         public void TakeScreenshot(string screenshotPath) => MainThreadDispatcher.Instance.Enqueue(() =>
         {
@@ -198,42 +228,13 @@ namespace SK.Libretro.Unity
                 _screenshotCoroutine = StartCoroutine(CoSaveScreenshot(screenshotPath));
         });
 
-        public void SetSaveStateSlot(string slot)
-        {
-            if (int.TryParse(slot, out int slotInt))
-                _currentSaveStateSlot = slotInt;
-        }
-
-        public void SetSaveStateSlot(int slot) => _currentSaveStateSlot = slot;
-
-        public void SaveStateWithScreenshot() => SaveState(true);
-
-        public void SaveStateWithoutScreenshot() => SaveState(false);
-
-        public void SaveState(bool takeScreenshot)
-        {
-            _saveStateStatus.InProgress     = true;
-            _saveStateStatus.TakeScreenshot = takeScreenshot;
-        }
-
-        public void LoadState() => _loadSaveStateStatus = true;
-
-        public void SaveSRAM() => _saveSRAMStatus = true;
-
-        public void LoadSRAM() => _loadSRAMStatus = true;
-
-        public void SetRewindEnabled(bool enabled)
-        {
-            _settings.RewindEnabled = enabled;
-            _setRewindStatus        = true;
-        }
-
-        public void PerformRewind(bool rewind) => _performRewind = rewind;
-
         private void LibretroThread()
         {
-            LibretroWrapper wrapper = new LibretroWrapper((LibretroTargetPlatform)Application.platform, _settings.MainDirectory);
-            if (!wrapper.StartContent(_coreName, _gameDirectory, _gameNames?[0]))
+            if (!Directory.Exists(Settings.MainDirectory))
+                Settings.MainDirectory = LibretroSettings.DefaultMainDirectory;
+
+            LibretroWrapper wrapper = new LibretroWrapper((LibretroTargetPlatform)Application.platform, Settings.MainDirectory);
+            if (!wrapper.StartContent(CoreName, GamesDirectory, GameNames?[0]))
             {
                 Debug.LogError("Failed to start core/game combination");
                 return;
@@ -242,7 +243,7 @@ namespace SK.Libretro.Unity
             if (wrapper.Core.HwAccelerated)
             {
                 // Running gl cores only works in builds, or if a debugger is attached to Unity instance. Set "_allowGLCoresInEditor" to true to bypass this.
-                if (Application.isEditor && !_allowGLCoresInEditor)
+                if (Application.isEditor && !AllowGLCoresInEditor)
                 {
                     wrapper.StopContent();
                     Debug.LogError("Starting hardware accelerated cores is not supported in the editor");
@@ -257,12 +258,42 @@ namespace SK.Libretro.Unity
             wrapper.Audio.Enable(_audioProcessor);
             wrapper.Input.Enable(_inputProcessor);
 
-            wrapper.RewindEnabled = _settings.RewindEnabled;
+            wrapper.RewindEnabled = Settings.RewindEnabled;
+
+            double gameFrameTime = 1.0 / wrapper.Game.VideoFps;
 
             _running = true;
             while (_running)
             {
-                if (_paused)
+                while (_threadCommands.Count > 0)
+                {
+                    if (_threadCommands.TryDequeue(out ThreadCommand command))
+                    {
+                        switch (command)
+                        {
+                            case ThreadCommand.SaveStateWithScreenshot:
+                                if (wrapper.Serialization.SaveState(_currentStateSlot, out string screenshotPath))
+                                    TakeScreenshot(screenshotPath);
+                                break;
+                            case ThreadCommand.SaveStateWithoutScreenshot:
+                                _ = wrapper.Serialization.SaveState(_currentStateSlot);
+                                break;
+                            case ThreadCommand.LoadState:
+                                _ = wrapper.Serialization.LoadState(_currentStateSlot);
+                                break;
+                            case ThreadCommand.SaveSRAM:
+                                _ = wrapper.Serialization.SaveSRAM();
+                                break;
+                            case ThreadCommand.LoadSRAM:
+                                _ = wrapper.Serialization.LoadSRAM();
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+
+                if (Paused)
                 {
                     try
                     {
@@ -275,47 +306,16 @@ namespace SK.Libretro.Unity
                     }
                 }
 
-                if (_saveStateStatus.InProgress)
-                {
-                    if (wrapper.Serialization.SaveState(_currentSaveStateSlot, out string screenshotPath))
-                        if (_saveStateStatus.TakeScreenshot)
-                            TakeScreenshot(screenshotPath);
-                    _saveStateStatus.InProgress = false;
-                }
+                wrapper.RewindEnabled = Settings.RewindEnabled;
 
-                if (!_saveStateStatus.InProgress && _loadSaveStateStatus)
-                {
-                    _ = wrapper.Serialization.LoadState(_currentSaveStateSlot);
-                    _loadSaveStateStatus = false;
-                }
-
-                if (_saveSRAMStatus)
-                {
-                    _ = wrapper.Serialization.SaveSRAM();
-                    _saveSRAMStatus = false;
-                }
-
-                if (!_saveSRAMStatus && _loadSRAMStatus)
-                {
-                    _ = wrapper.Serialization.LoadSRAM();
-                    _loadSRAMStatus = false;
-                }
-
-                if (_setRewindStatus)
-                {
-                    wrapper.RewindEnabled = _settings.RewindEnabled;
-                    _setRewindStatus = false;
-                }
-
-
-                if (_settings.RewindEnabled && !_setRewindStatus)
-                    wrapper.PerformRewind = _performRewind;
+                if (Settings.RewindEnabled)
+                    wrapper.PerformRewind = PerformRewind;
 
                 double currentTime = _stopwatch.Elapsed.TotalSeconds;
                 double dt = currentTime - _startTime;
                 _startTime = currentTime;
 
-                double targetFrameTime = FastForwarding ? 1.0 / wrapper.Game.VideoFps / 4.0 : 1.0 / wrapper.Game.VideoFps;
+                double targetFrameTime = FastForwarding && FastForwardFactor > 0.0 ? gameFrameTime / FastForwardFactor : gameFrameTime;
                 if ((_accumulator += dt) >= targetFrameTime)
                 {
                     wrapper.RunFrame();
@@ -328,11 +328,14 @@ namespace SK.Libretro.Unity
 
         private void SetTexture(Texture texture)
         {
-            if (_renderer == null || texture == null)
+            if (texture == null)
                 return;
 
             _texture = texture as Texture2D;
-            _renderer.material.SetTexture(_shaderTextureId, texture);
+            if (Renderer != null)
+                Renderer.material.SetTexture(_shaderTextureId, texture);
+            else
+                RawImage.texture = texture;
         }
 
         private IEnumerator CoSaveScreenshot(string screenshotPath)

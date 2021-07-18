@@ -27,34 +27,44 @@ using UnityEngine;
 
 namespace SK.Libretro.UnityEditor
 {
-    [CustomEditor(typeof(LibretroInstance), true)]
+    [CustomEditor(typeof(LibretroInstance)), CanEditMultipleObjects]
     public sealed class LibretroInstanceInspector : Editor
     {
         private SerializedProperty _rendererProperty;
+        private SerializedProperty _rawImageProperty;
         private SerializedProperty _viewerProperty;
+        private SerializedProperty _editorGLProperty;
+        private SerializedProperty _settingsProperty;
         private SerializedProperty _mainDirectoryProperty;
         private SerializedProperty _coreNameProperty;
         private SerializedProperty _gameDirectoryProperty;
         private SerializedProperty _gamesProperty;
-        private SerializedProperty _editorGLProperty;
 
         private void OnEnable()
         {
-            _rendererProperty      = serializedObject.FindProperty("_renderer");
-            _viewerProperty        = serializedObject.FindProperty("_viewer");
-            _mainDirectoryProperty = serializedObject.FindProperty("_settings").FindPropertyRelative("MainDirectory");
-            _coreNameProperty      = serializedObject.FindProperty("_coreName");
-            _gameDirectoryProperty = serializedObject.FindProperty("_gameDirectory");
-            _gamesProperty         = serializedObject.FindProperty("_gameNames");
-            _editorGLProperty      = serializedObject.FindProperty("_allowGLCoresInEditor");
-
-            EditorGUI.FocusTextInControl(null);
+            _rendererProperty      = serializedObject.FindProperty(nameof(LibretroInstance.Renderer));
+            _rawImageProperty      = serializedObject.FindProperty(nameof(LibretroInstance.RawImage));
+            _viewerProperty        = serializedObject.FindProperty(nameof(LibretroInstance.Viewer));
+            _settingsProperty      = serializedObject.FindProperty(nameof(LibretroInstance.Settings));
+            _mainDirectoryProperty = _settingsProperty.FindPropertyRelative(nameof(LibretroInstance.Settings.MainDirectory));
+            _coreNameProperty      = serializedObject.FindProperty(nameof(LibretroInstance.CoreName));
+            _gameDirectoryProperty = serializedObject.FindProperty(nameof(LibretroInstance.GamesDirectory));
+            _gamesProperty         = serializedObject.FindProperty(nameof(LibretroInstance.GameNames));
+            _editorGLProperty      = serializedObject.FindProperty(nameof(LibretroInstance.AllowGLCoresInEditor));
         }
 
         public override void OnInspectorGUI()
         {
+            serializedObject.Update();
+
             _ = EditorGUILayout.PropertyField(_rendererProperty);
+            _ = EditorGUILayout.PropertyField(_rawImageProperty);
             _ = EditorGUILayout.PropertyField(_viewerProperty);
+
+            GUILayout.Space(8f);
+            _ = EditorGUILayout.PropertyField(_settingsProperty);
+
+            GUILayout.Space(8f);
             _ = EditorGUILayout.PropertyField(_editorGLProperty);
 
             GUILayout.Space(8f);
@@ -74,10 +84,18 @@ namespace SK.Libretro.UnityEditor
 
             GUILayout.Space(8f);
             ShowGames();
-            if (GUILayout.Button("+", GUILayout.Width(100f), GUILayout.Height(EditorGUIUtility.singleLineHeight)))
+            using (new EditorGUILayout.HorizontalScope())
             {
-                ++_gamesProperty.arraySize;
-                ShowSelectRomDialog(_gamesProperty.arraySize - 1);
+                if (GUILayout.Button("+", GUILayout.Width(48f), GUILayout.Height(EditorGUIUtility.singleLineHeight)))
+                {
+                    ++_gamesProperty.arraySize;
+                    _gamesProperty.GetArrayElementAtIndex(_gamesProperty.arraySize - 1).stringValue = "";
+                }
+                if (GUILayout.Button("...", GUILayout.Width(48f), GUILayout.Height(EditorGUIUtility.singleLineHeight)))
+                {
+                    ++_gamesProperty.arraySize;
+                    ShowSelectRomDialog(_gamesProperty.arraySize - 1);
+                }
             }
 
             GUILayout.Space(8f);
@@ -90,20 +108,7 @@ namespace SK.Libretro.UnityEditor
         private void ShowGames()
         {
             GUILayout.Label("Roms:");
-            if (_gamesProperty.arraySize == 0)
-            {
-                ++_gamesProperty.arraySize;
-                using (new EditorGUILayout.HorizontalScope())
-                {
-                    if (GUILayout.Button($"Rom_0", GUILayout.Width(100f), GUILayout.Height(EditorGUIUtility.singleLineHeight)))
-                        ShowSelectRomDialog(0);
-
-                    SerializedProperty gameNameProperty = _gamesProperty.GetArrayElementAtIndex(0);
-                    gameNameProperty.stringValue = EditorGUILayout.TextField("");
-                }
-                return;
-            }
-
+            _gamesProperty.arraySize = Mathf.Max(1, _gamesProperty.arraySize);
             for (int i = 0; i < _gamesProperty.arraySize; ++i)
             {
                 using (new EditorGUILayout.HorizontalScope())
@@ -144,6 +149,7 @@ namespace SK.Libretro.UnityEditor
             {
                 if (!string.IsNullOrEmpty(coreName))
                 {
+                    EditorGUI.FocusTextInControl(null);
                     _coreNameProperty.stringValue = coreName;
                     _ = serializedObject.ApplyModifiedProperties();
                 }
@@ -155,7 +161,10 @@ namespace SK.Libretro.UnityEditor
             string startingDirectory = !string.IsNullOrEmpty(_gameDirectoryProperty.stringValue) ? _gameDirectoryProperty.stringValue : "";
             string directory         = EditorUtility.OpenFolderPanel("Select rom directory", startingDirectory, startingDirectory);
             if (!string.IsNullOrEmpty(directory))
+            {
+                EditorGUI.FocusTextInControl(null);
                 _gameDirectoryProperty.stringValue = directory.Replace(Path.DirectorySeparatorChar, '/');
+            }
         }
 
         private void ShowSelectRomDialog(int romIndex)
@@ -164,6 +173,7 @@ namespace SK.Libretro.UnityEditor
             string filePath          = EditorUtility.OpenFilePanel("Select rom", startingDirectory, "");
             if (!string.IsNullOrEmpty(filePath))
             {
+                EditorGUI.FocusTextInControl(null);
                 _gameDirectoryProperty.stringValue = Path.GetDirectoryName(filePath).Replace(Path.DirectorySeparatorChar, '/');
                 _gamesProperty.GetArrayElementAtIndex(romIndex).stringValue = Path.GetFileNameWithoutExtension(filePath);
             }

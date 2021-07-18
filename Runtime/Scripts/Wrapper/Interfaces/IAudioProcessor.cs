@@ -20,12 +20,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using Unity.Collections;
+
 namespace SK.Libretro
 {
     internal interface IAudioProcessor
     {
         void Init(int sampleRate);
         void DeInit();
-        void ProcessSamples(float[] samples);
+        void ProcessSamples(ref NativeArray<float> samples);
     }
 }

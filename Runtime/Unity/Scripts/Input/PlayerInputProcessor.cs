@@ -53,11 +53,11 @@ namespace SK.Libretro.Unity
                 KeyboardKeys[i] = Input.GetKey((KeyCode)i);
         }
 
-        public void OnDeviceLost(PlayerInput player) => Utilities.Logger.Instance.LogInfo($"Player #{player.playerIndex} device lost ({player.devices.Count}).");
+        public void OnDeviceLost(PlayerInput player) => SK.Utilities.Logger.Instance.LogInfo($"Player #{player.playerIndex} device lost ({player.devices.Count}).");
 
-        public void OnDeviceRegained(PlayerInput player) => Utilities.Logger.Instance.LogInfo($"Player #{player.playerIndex} device regained ({player.devices.Count}).");
+        public void OnDeviceRegained(PlayerInput player) => SK.Utilities.Logger.Instance.LogInfo($"Player #{player.playerIndex} device regained ({player.devices.Count}).");
 
-        public void OnControlsChanged(PlayerInput player) => Utilities.Logger.Instance.LogInfo($"Player #{player.playerIndex} controls changed ({player.devices.Count}).");
+        public void OnControlsChanged(PlayerInput player) => SK.Utilities.Logger.Instance.LogInfo($"Player #{player.playerIndex} controls changed ({player.devices.Count}).");
 
         public void OnDPad(InputAction.CallbackContext context) => HandleDPad(GetVector2(context));
 

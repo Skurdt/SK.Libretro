@@ -21,10 +21,11 @@
  * SOFTWARE. */
 
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using SK.Utilities;
 using System;
+using Unity.Collections;
 using Unity.Mathematics;
 
 namespace SK.Libretro.NAudio
@@ -65,7 +66,7 @@ namespace SK.Libretro.NAudio
             }
             catch (Exception e)
             {
-                Utilities.Logger.Instance.LogException(e);
+                Logger.Instance.LogException(e);
             }
         }
 
@@ -79,14 +80,13 @@ namespace SK.Libretro.NAudio
             _bufferedWaveProvider.ClearBuffer();
         }
 
-        public void ProcessSamples(float[] samples)
+        public void ProcessSamples(ref NativeArray<float> samples)
         {
             if (_bufferedWaveProvider is null)
                 return;
 
-            byte[] byteBuffer = new byte[samples.Length * sizeof(float)];
-            Buffer.BlockCopy(samples, 0, byteBuffer, 0, byteBuffer.Length);
-            _bufferedWaveProvider.AddSamples(byteBuffer, 0, byteBuffer.Length);
+            using NativeArray<byte> byteBuffer = samples.Reinterpret<byte>(sizeof(float));
+            _bufferedWaveProvider.AddSamples(byteBuffer.ToArray(), 0, byteBuffer.Length);
         }
 
         public void SetVolume(float volume)

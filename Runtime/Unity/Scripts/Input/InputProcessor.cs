@@ -39,7 +39,7 @@ namespace SK.Libretro.Unity
         {
             player.actions.Enable();
 
-            Utilities.Logger.Instance.LogInfo($"Player #{player.playerIndex} joined ({player.currentControlScheme}).");
+            SK.Utilities.Logger.Instance.LogInfo($"Player #{player.playerIndex} joined ({player.currentControlScheme}).");
             if (!_controls.ContainsKey(player.playerIndex))
             {
                 PlayerInputProcessor processor = player.GetComponent<PlayerInputProcessor>();
@@ -54,7 +54,7 @@ namespace SK.Libretro.Unity
         [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Input Callback")]
         private void OnPlayerLeft(PlayerInput player)
         {
-            Utilities.Logger.Instance.LogInfo($"Player #{player.playerIndex} left ({player.currentControlScheme}).");
+            SK.Utilities.Logger.Instance.LogInfo($"Player #{player.playerIndex} left ({player.currentControlScheme}).");
             if (_controls.ContainsKey(player.playerIndex))
                 _ = _controls.TryRemove(player.playerIndex, out PlayerInputProcessor _);
         }
