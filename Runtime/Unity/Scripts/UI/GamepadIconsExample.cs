@@ -73,7 +73,7 @@ namespace SK.Libretro.Unity
                 "rightStick"      => rightStick,
                 "leftStickPress"  => leftStickPress,
                 "rightStickPress" => rightStickPress,
-                _                 => null,
+                _                 => null
             };
         }
 

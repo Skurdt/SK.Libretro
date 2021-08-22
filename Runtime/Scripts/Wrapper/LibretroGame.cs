@@ -37,8 +37,8 @@ namespace SK.Libretro
         public string Name { get; private set; }
         public bool Running { get; private set; }
 
-        public retro_game_info GameInfo          = new retro_game_info();
-        public retro_system_av_info SystemAVInfo = new retro_system_av_info();
+        public retro_game_info GameInfo;
+        public retro_system_av_info SystemAVInfo;
         public retro_pixel_format PixelFormat;
 
         public readonly string[,] ButtonDescriptions = new string[LibretroInput.MAX_USERS, LibretroInput.FIRST_META_KEY];
@@ -130,28 +130,27 @@ namespace SK.Libretro
         {
             if (string.IsNullOrEmpty(_path))
             {
-                if (!_wrapper.Core.SupportNoGame)
-                {
-                    Logger.Instance.LogError($"Game not set, core '{_wrapper.Core.Name}' needs a game to run.", "Libretro.LibretroGame.Start");
-                    return false;
-                }
+                if (_wrapper.Core.SupportNoGame)
+                    return true;
+                
+                Logger.Instance.LogError($"Game not set, core '{_wrapper.Core.Name}' needs a game to run.", "Libretro.LibretroGame.Start");
+                return false;
 
-                return true;
             }
 
             GameInfo.path = _path;
 
-            if (!_wrapper.Core.NeedFullpath)
-            {
-                using FileStream stream = new FileStream(_path, FileMode.Open);
-                byte[] data = new byte[stream.Length];
+            if (_wrapper.Core.NeedFullpath)
+                return true;
+            
+            using FileStream stream = new FileStream(_path, FileMode.Open);
+            byte[] data = new byte[stream.Length];
 
-                GameInfo.size = (ulong)data.Length;
-                GameInfo.data = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
+            GameInfo.size = (ulong)data.Length;
+            GameInfo.data = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
 
-                _ = stream.Read(data, 0, (int)stream.Length);
-                Marshal.Copy(data, 0, GameInfo.data, data.Length);
-            }
+            _ = stream.Read(data, 0, (int)stream.Length);
+            Marshal.Copy(data, 0, GameInfo.data, data.Length);
 
             return true;
         }

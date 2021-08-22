@@ -115,15 +115,7 @@ namespace SK.Libretro.Unity
             set => _rebindOverlay = value;
         }
 
-        public UpdateBindingUIEvent OnUpdateBindingUI
-        {
-            get
-            {
-                if (_updateBindingUIEvent == null)
-                    _updateBindingUIEvent = new UpdateBindingUIEvent();
-                return _updateBindingUIEvent;
-            }
-        }
+        public UpdateBindingUIEvent OnUpdateBindingUI => _updateBindingUIEvent ??= new UpdateBindingUIEvent();
 
         public InteractiveRebindEvent StartRebindEvent
         {
@@ -135,15 +127,7 @@ namespace SK.Libretro.Unity
             }
         }
 
-        public InteractiveRebindEvent StopRebindEvent
-        {
-            get
-            {
-                if (_rebindStopEvent == null)
-                    _rebindStopEvent = new InteractiveRebindEvent();
-                return _rebindStopEvent;
-            }
-        }
+        public InteractiveRebindEvent StopRebindEvent => _rebindStopEvent ??= new InteractiveRebindEvent();
 
         public InputActionRebindingExtensions.RebindingOperation OngoingRebind { get; private set; }
 
@@ -162,13 +146,11 @@ namespace SK.Libretro.Unity
 
             Guid bindingId = new Guid(_bindingId);
             bindingIndex = action.bindings.IndexOf(x => x.id == bindingId);
-            if (bindingIndex == -1)
-            {
-                Debug.LogError($"Cannot find binding with ID '{bindingId}' on '{action}'", this);
-                return false;
-            }
-
-            return true;
+            if (bindingIndex != -1)
+                return true;
+            
+            Debug.LogError($"Cannot find binding with ID '{bindingId}' on '{action}'", this);
+            return false;
         }
 
         public void UpdateBindingDisplay()
@@ -287,8 +269,7 @@ namespace SK.Libretro.Unity
 
         protected void OnEnable()
         {
-            if (_rebindActionUIs == null)
-                _rebindActionUIs = new List<RebindActionUI>();
+            _rebindActionUIs ??= new List<RebindActionUI>();
             _rebindActionUIs.Add(this);
             if (_rebindActionUIs.Count == 1)
                 InputSystem.onActionChange += OnActionChange;
@@ -302,11 +283,11 @@ namespace SK.Libretro.Unity
             OngoingRebind = null;
 
             _ = _rebindActionUIs.Remove(this);
-            if (_rebindActionUIs.Count == 0)
-            {
-                _rebindActionUIs = null;
-                InputSystem.onActionChange -= OnActionChange;
-            }
+            if (_rebindActionUIs.Count != 0) 
+                return;
+            
+            _rebindActionUIs = null;
+            InputSystem.onActionChange -= OnActionChange;
         }
 
         private static void OnActionChange(object obj, InputActionChange change)
@@ -318,9 +299,8 @@ namespace SK.Libretro.Unity
             InputActionMap actionMap = action != null ? action.actionMap ?? obj as InputActionMap : null;
             InputActionAsset actionAsset = actionMap?.asset != null ? obj as InputActionAsset : null;
 
-            for (int i = 0; i < _rebindActionUIs.Count; ++i)
+            foreach (RebindActionUI component in _rebindActionUIs)
             {
-                RebindActionUI component = _rebindActionUIs[i];
                 InputAction referencedAction = component.ActionReference != null ? component.ActionReference.action : null;
                 if (referencedAction is null)
                     continue;
@@ -342,11 +322,11 @@ namespace SK.Libretro.Unity
 
         private void UpdateActionLabel()
         {
-            if (_actionLabel != null)
-            {
-                InputAction action = _action != null ? _action.action : null;
-                _actionLabel.text  = action != null ? action.name : string.Empty;
-            }
+            if (_actionLabel == null) 
+                return;
+            
+            InputAction action = _action != null ? _action.action : null;
+            _actionLabel.text  = action != null ? action.name : string.Empty;
         }
     }
 }

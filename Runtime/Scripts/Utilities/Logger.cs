@@ -44,23 +44,22 @@ namespace SK.Libretro.Utilities
             private readonly string _prefix;
             private readonly Action<string> _logAction;
             private readonly bool _colorSupport;
-            private readonly string _color;
 
             public LogStringHandler(LogLevel logLevel, Action<string> logAction, bool colorSupport = false)
             {
                 string logLevelString = logLevel.ToString().ToUpper();
 
-                _color = logLevel switch
+                string color = logLevel switch
                 {
                     LogLevel.Debug     => "white",
                     LogLevel.Info      => "yellow",
                     LogLevel.Warning   => "orange",
                     LogLevel.Error     => "red",
                     LogLevel.Exception => "red",
-                    _ => throw new NotImplementedException(),
+                    _ => throw new NotImplementedException()
                 };
 
-                _prefix       = colorSupport ? $"[<color={_color}>{logLevelString}</color>]" : $"[{logLevelString}]";
+                _prefix       = colorSupport ? $"[<color={color}>{logLevelString}</color>]" : $"[{logLevelString}]";
                 _logAction    = logAction;
                 _colorSupport = colorSupport;
             }

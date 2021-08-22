@@ -133,7 +133,7 @@ namespace SK.Libretro
                 RETRO_DEVICE_MOUSE    => ProcessMouseDeviceState(port, id),
                 RETRO_DEVICE_KEYBOARD => ProcessKeyboardDeviceState(port, id),
                 RETRO_DEVICE_ANALOG   => ProcessAnalogDeviceState(port, index, id),
-                _ => 0,
+                _ => 0
             };
         }
 
@@ -183,9 +183,6 @@ namespace SK.Libretro
                             break;
                     }
                     break;
-                case RETRO_DEVICE_INDEX_ANALOG_BUTTON:
-                default:
-                    break;
             }
 
             return 0;
@@ -193,6 +190,6 @@ namespace SK.Libretro
 
         private static short BoolToShort(bool boolValue) => (short)(boolValue ? 1 : 0);
 
-        private static short FloatToShort(float floatValue) => (short)MathUtils.Clamp(System.Math.Round(floatValue), short.MinValue, short.MaxValue);
+        private static short FloatToShort(float floatValue) => (short)System.Math.Round(floatValue).Clamp(short.MinValue, short.MaxValue);
     }
 }

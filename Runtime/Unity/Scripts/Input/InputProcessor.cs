@@ -40,15 +40,15 @@ namespace SK.Libretro.Unity
             player.actions.Enable();
 
             Utilities.Logger.Instance.LogInfo($"Player #{player.playerIndex} joined ({player.currentControlScheme}).");
-            if (!_controls.ContainsKey(player.playerIndex))
-            {
-                PlayerInputProcessor processor = player.GetComponent<PlayerInputProcessor>();
-                if (processor != null)
-                {
-                    processor.AnalogDirectionsToDigital = AnalogDirectionsToDigital;
-                    _ = _controls.TryAdd(player.playerIndex, processor);
-                }
-            }
+            if (_controls.ContainsKey(player.playerIndex))
+                return;
+            
+            PlayerInputProcessor processor = player.GetComponent<PlayerInputProcessor>();
+            if (processor == null) 
+                return;
+                
+            processor.AnalogDirectionsToDigital = AnalogDirectionsToDigital;
+            _ = _controls.TryAdd(player.playerIndex, processor);
         }
 
         [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Input Callback")]

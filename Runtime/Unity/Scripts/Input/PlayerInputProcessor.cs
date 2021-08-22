@@ -89,7 +89,7 @@ namespace SK.Libretro.Unity
         public void OnMouseForwardButton(InputAction.CallbackContext context) => MouseButtons[3]    = context.performed;
         public void OnMouseBackButton(InputAction.CallbackContext context)    => MouseButtons[4]    = context.performed;
 
-        private Vector2 GetVector2(InputAction.CallbackContext context) => context.performed ? context.ReadValue<Vector2>() : Vector2.zero;
+        private static Vector2 GetVector2(InputAction.CallbackContext context) => context.performed ? context.ReadValue<Vector2>() : Vector2.zero;
 
         private void HandleDPad(Vector2 vec)
         {

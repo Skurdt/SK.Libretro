@@ -78,6 +78,8 @@ namespace SK.Libretro
                 case retro_log_level.RETRO_LOG_ERROR:
                     Logger.Instance.LogError(formattedString, LOG_PRINTF_CALLER);
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(level), level, null);
             }
         }
 
@@ -87,7 +89,6 @@ namespace SK.Libretro
             MatchCollection matches = _argumentsRegex.Matches(format);
 
             foreach (Match match in matches)
-            {
                 switch (match.Groups[1].Value)
                 {
                     case "b":
@@ -104,7 +105,6 @@ namespace SK.Libretro
                     default:
                         throw new NotImplementedException($"Placeholder '{match.Value}' not implemented");
                 }
-            }
 
             return argumentsToPush;
         }

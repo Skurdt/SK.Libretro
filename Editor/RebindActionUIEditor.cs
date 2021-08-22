@@ -21,6 +21,7 @@
  * SOFTWARE. */
 
 using SK.Libretro.Unity;
+using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -39,7 +40,7 @@ namespace SK.Libretro.UnityEditor
     {
         private static class Styles
         {
-            public static GUIStyle boldLabel = new GUIStyle("MiniBoldLabel");
+            public static readonly GUIStyle BoldLabel = new GUIStyle("MiniBoldLabel");
         }
 
         private SerializedProperty _actionProperty;
@@ -82,7 +83,7 @@ namespace SK.Libretro.UnityEditor
             EditorGUI.BeginChangeCheck();
 
             // Binding section.
-            EditorGUILayout.LabelField(_bindingLabel, Styles.boldLabel);
+            EditorGUILayout.LabelField(_bindingLabel, Styles.BoldLabel);
             using (new EditorGUI.IndentLevelScope())
             {
                 _ = EditorGUILayout.PropertyField(_actionProperty);
@@ -103,7 +104,7 @@ namespace SK.Libretro.UnityEditor
 
             // UI section.
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField(_uILabel, Styles.boldLabel);
+            EditorGUILayout.LabelField(_uILabel, Styles.BoldLabel);
             using (new EditorGUI.IndentLevelScope())
             {
                 _ = EditorGUILayout.PropertyField(_actionLabelProperty);
@@ -114,7 +115,7 @@ namespace SK.Libretro.UnityEditor
 
             // Events section.
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField(_eventsLabel, Styles.boldLabel);
+            EditorGUILayout.LabelField(_eventsLabel, Styles.BoldLabel);
             using (new EditorGUI.IndentLevelScope())
             {
                 _ = EditorGUILayout.PropertyField(_rebindStartEventProperty);
@@ -122,11 +123,11 @@ namespace SK.Libretro.UnityEditor
                 _ = EditorGUILayout.PropertyField(_updateBindingUIEventProperty);
             }
 
-            if (EditorGUI.EndChangeCheck())
-            {
-                _ = serializedObject.ApplyModifiedProperties();
-                RefreshBindingOptions();
-            }
+            if (!EditorGUI.EndChangeCheck()) 
+                return;
+            
+            _ = serializedObject.ApplyModifiedProperties();
+            RefreshBindingOptions();
         }
 
         private void RefreshBindingOptions()
@@ -139,8 +140,8 @@ namespace SK.Libretro.UnityEditor
 
             if (action is null)
             {
-                _bindingOptions        = new GUIContent[0];
-                _bindingOptionValues   = new string[0];
+                _bindingOptions        = Array.Empty<GUIContent>();
+                _bindingOptionValues   = Array.Empty<string>();
                 _selectedBindingOption = -1;
                 return;
             }

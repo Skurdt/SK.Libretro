@@ -50,7 +50,7 @@ namespace SK.Libretro
         public retro_get_memory_data_t retro_get_memory_data;
         public retro_get_memory_size_t retro_get_memory_size;
 
-        public bool Initialized { get; private set; } = false;
+        public bool Initialized { get; private set; }
 
         public uint ApiVersion { get; private set; }
 

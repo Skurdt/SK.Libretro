@@ -61,24 +61,24 @@ namespace SK.Libretro
             Asturian
         }
 
-        public static string MainDirectory       { get; private set; } = null;
-        public static string CoresDirectory      { get; private set; } = null;
-        public static string SystemDirectory     { get; private set; } = null;
-        public static string CoreAssetsDirectory { get; private set; } = null;
-        public static string SavesDirectory      { get; private set; } = null;
-        public static string TempDirectory       { get; private set; } = null;
-        public static string CoreOptionsFile     { get; private set; } = null;
+        public static string MainDirectory       { get; private set; }
+        public static string CoresDirectory      { get; private set; }
+        public static string SystemDirectory     { get; private set; }
+        public static string CoreAssetsDirectory { get; private set; }
+        public static string SavesDirectory      { get; private set; }
+        public static string TempDirectory       { get; private set; }
+        public static string CoreOptionsFile     { get; private set; }
 
         public bool OptionCropOverscan
         {
             get => _optionCropOverscan;
             set
             {
-                if (_optionCropOverscan != value)
-                {
-                    _optionCropOverscan         = value;
-                    Environment.UpdateVariables = true;
-                }
+                if (_optionCropOverscan == value)
+                    return;
+                
+                _optionCropOverscan         = value;
+                Environment.UpdateVariables = true;
             }
         }
         public string OptionUserName
@@ -86,11 +86,11 @@ namespace SK.Libretro
             get => _optionUserName;
             set
             {
-                if (!_optionUserName.Equals(value, StringComparison.Ordinal))
-                {
-                    _optionUserName             = value;
-                    Environment.UpdateVariables = true;
-                }
+                if (_optionUserName.Equals(value, StringComparison.Ordinal)) 
+                    return;
+                
+                _optionUserName             = value;
+                Environment.UpdateVariables = true;
             }
         }
         public Language OptionLanguage
@@ -98,11 +98,11 @@ namespace SK.Libretro
             get => _optionLanguage;
             set
             {
-                if (_optionLanguage != value)
-                {
-                    _optionLanguage             = value;
-                    Environment.UpdateVariables = true;
-                }
+                if (_optionLanguage == value)
+                    return;
+                
+                _optionLanguage             = value;
+                Environment.UpdateVariables = true;
             }
         }
         public bool RewindEnabled
@@ -118,7 +118,7 @@ namespace SK.Libretro
 
         public static readonly retro_log_level LogLevel = retro_log_level.RETRO_LOG_WARN;
 
-        public static LibretroCoreOptionsList CoreOptionsList = null;
+        public static LibretroCoreOptionsList CoreOptionsList;
 
         public readonly LibretroTargetPlatform TargetPlatform;
 
@@ -166,9 +166,9 @@ namespace SK.Libretro
 
         private readonly List<IntPtr> _unsafePointers          = new List<IntPtr>();
 
-        private long _frameTimeLast   = 0;
-        private uint _totalFrameCount = 0;
-        private bool _rewindEnabled   = false;
+        private long _frameTimeLast;
+        private uint _totalFrameCount;
+        private bool _rewindEnabled;
 
         public unsafe LibretroWrapper(LibretroTargetPlatform targetPlatform, string baseDirectory = null)
         {
@@ -402,8 +402,9 @@ namespace SK.Libretro
                 return;
 
             CoreOptionsList.Cores = CoreOptionsList.Cores.OrderBy(x => x.CoreName).ToList();
-            for (int i = 0; i < CoreOptionsList.Cores.Count; ++i)
-                CoreOptionsList.Cores[i].Options.Sort();
+            foreach (LibretroCoreOptions options in CoreOptionsList.Cores)
+                options.Options.Sort();
+
             _ = FileSystem.SerializeToJson(CoreOptionsList, CoreOptionsFile);
         }
 
@@ -436,8 +437,8 @@ namespace SK.Libretro
 
         private void FreeUnsafePointers()
         {
-            for (int i = 0; i < _unsafePointers.Count; ++i)
-                Marshal.FreeHGlobal(_unsafePointers[i]);
+            foreach (IntPtr ptr in _unsafePointers)
+                Marshal.FreeHGlobal(ptr);
         }
     }
 }

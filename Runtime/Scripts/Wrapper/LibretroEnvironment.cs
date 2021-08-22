@@ -32,7 +32,7 @@ namespace SK.Libretro
 {
     internal sealed class LibretroEnvironment
     {
-        public bool UpdateVariables = false;
+        public bool UpdateVariables;
 
         private readonly LibretroWrapper _wrapper;
 
@@ -67,7 +67,7 @@ namespace SK.Libretro
             };
             _ledInterface = new retro_led_interface
             {
-                set_led_state = (int led, int state) => { }
+                set_led_state = (led, state) => { }
             };
         }
 
@@ -206,7 +206,7 @@ namespace SK.Libretro
             {
                 if (data == null)
                 {
-                    Logger.Instance.LogWarning($"Variable data is null.", $"{cmd}");
+                    Logger.Instance.LogWarning("Variable data is null.", $"{cmd}");
                     return false;
                 }
 
@@ -315,13 +315,13 @@ namespace SK.Libretro
 
             bool GetAudioVideoEnable()
             {
-                if (data != null)
-                {
-                    int mask = 0;
-                    mask |= 1; // if video enabled
-                    mask |= 2; // if audio enabled
-                    *(int*)data = mask;
-                }
+                if (data == null)
+                    return true;
+                
+                int mask = 0;
+                mask |= 1; // if video enabled
+                mask |= 2; // if audio enabled
+                *(int*)data = mask;
                 return true;
             }
 
@@ -335,15 +335,15 @@ namespace SK.Libretro
 
             bool GetCoreOptionsVersion()
             {
-                if (data != null)
-                {
-                    // TEMP_HACK
-                    string filePath = Path.GetFullPath(Path.Combine(LibretroWrapper.MainDirectory, "cores_using_options_intl.json"));
-                    CoresUsingOptionsIntlList coresUsingOptionsIntl = FileSystem.DeserializeFromJson<CoresUsingOptionsIntlList>(filePath);
-                    *(uint*)data = coresUsingOptionsIntl is null || coresUsingOptionsIntl.Cores is null || !coresUsingOptionsIntl.Cores.Contains(_wrapper.Core.Name)
-                                 ? RETRO_API_VERSION
-                                 : 0;
-                }
+                if (data == null)
+                    return true;
+                
+                // TEMP_HACK
+                string filePath = Path.GetFullPath(Path.Combine(LibretroWrapper.MainDirectory, "cores_using_options_intl.json"));
+                CoresUsingOptionsIntlList coresUsingOptionsIntl = FileSystem.DeserializeFromJson<CoresUsingOptionsIntlList>(filePath);
+                *(uint*)data = coresUsingOptionsIntl?.Cores is null || !coresUsingOptionsIntl.Cores.Contains(_wrapper.Core.Name)
+                             ? RETRO_API_VERSION
+                             : 0;
                 return true;
             }
 
@@ -423,7 +423,6 @@ namespace SK.Libretro
                     return true;
 
                 retro_input_descriptor* inInputDescriptors = (retro_input_descriptor*)data;
-                uint id;
                 for (; inInputDescriptors->desc != null; ++inInputDescriptors)
                 {
                     uint port = inInputDescriptors->port;
@@ -434,7 +433,7 @@ namespace SK.Libretro
                     if (device != RETRO_DEVICE_JOYPAD && device != RETRO_DEVICE_ANALOG)
                         continue;
 
-                    id = inInputDescriptors->id;
+                    uint id = inInputDescriptors->id;
                     if (id >= LibretroInput.FIRST_CUSTOM_BIND)
                         continue;
 
@@ -515,16 +514,16 @@ namespace SK.Libretro
 
                 _diskControlExtCallback = new retro_disk_control_ext_callback
                 {
-                    set_eject_state     = inCallback.set_eject_state     ?? ((bool ejected) => false),
+                    set_eject_state     = inCallback.set_eject_state     ?? (ejected => false),
                     get_eject_state     = inCallback.get_eject_state     ?? (() => false),
                     get_image_index     = inCallback.get_image_index     ?? (() => 0),
-                    set_image_index     = inCallback.set_image_index     ?? ((uint index) => false),
+                    set_image_index     = inCallback.set_image_index     ?? (index => false),
                     get_num_images      = inCallback.get_num_images      ?? (() => 0),
                     replace_image_index = inCallback.replace_image_index ?? ((uint index, ref retro_game_info info) => false),
                     add_image_index     = inCallback.add_image_index     ?? (() => false),
-                    set_initial_image   = (uint index, char* path) => false,
-                    get_image_path      = (uint index, char* path, ulong len) => false,
-                    get_image_label     = (uint index, char* label, ulong len) => false
+                    set_initial_image   = (index, path) => false,
+                    get_image_path      = (index, path, len) => false,
+                    get_image_label     = (index, label, len) => false
                 };
 
                 return true;
@@ -743,9 +742,8 @@ namespace SK.Libretro
                     string defaultValue = UnsafeStringUtils.CharsToString(defs.default_value);
 
                     List<string> possibleValues = new List<string>();
-                    for (int j = 0; j < defs.values.Length; j++)
+                    foreach (retro_core_option_value val in defs.values)
                     {
-                        retro_core_option_value val = defs.values[j];
                         if (val.value != null)
                             possibleValues.Add(UnsafeStringUtils.CharsToString(val.value));
                     }

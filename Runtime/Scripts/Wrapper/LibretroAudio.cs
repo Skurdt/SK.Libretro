@@ -28,7 +28,7 @@ namespace SK.Libretro
     {
         public IAudioProcessor Processor;
 
-        private const float AUDIO_GAIN = 1f;
+        private const float GAIN = 1f / 0x8000;
 
         private readonly LibretroWrapper _wrapper;
 
@@ -43,11 +43,10 @@ namespace SK.Libretro
             if (Processor is null)
                 return;
 
-            float gain          = AUDIO_GAIN / 0x8000;
-            float[] floatBuffer = new float[]
+            float[] floatBuffer =
             {
-                left  * gain,
-                right * gain
+                left  * GAIN,
+                right * GAIN
             };
 
             Processor.ProcessSamples(floatBuffer);
@@ -55,18 +54,16 @@ namespace SK.Libretro
 
         public unsafe ulong SampleBatchCallback(short* data, ulong frames)
         {
-            if (!(Processor is null))
-            {
-                float gain          = AUDIO_GAIN / 0x8000;
-                uint numSamples     = Convert.ToUInt32(frames) * 2;
-                float[] floatBuffer = new float[numSamples];
+            if (Processor is null)
+                return frames;
+            
+            uint numSamples     = Convert.ToUInt32(frames) * 2;
+            float[] floatBuffer = new float[numSamples];
 
-                for (int i = 0; i < numSamples; ++i)
-                    floatBuffer[i] = data[i] * gain;
+            for (int i = 0; i < numSamples; ++i)
+                floatBuffer[i] = data[i] * GAIN;
 
-                Processor.ProcessSamples(floatBuffer);
-            }
-
+            Processor.ProcessSamples(floatBuffer);
             return frames;
         }
     }

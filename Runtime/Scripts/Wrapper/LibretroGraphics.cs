@@ -68,6 +68,8 @@ namespace SK.Libretro
                 case retro_pixel_format.RETRO_PIXEL_FORMAT_RGB565:
                     Processor.ProcessFrameRGB565((ushort*)data, (int)width, (int)height, Convert.ToInt32(pitch));
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
     }

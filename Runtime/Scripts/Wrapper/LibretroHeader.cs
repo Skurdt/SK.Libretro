@@ -123,7 +123,7 @@ namespace SK.Libretro
         public const int RETRO_REGION_NTSC = 0;
         public const int RETRO_REGION_PAL  = 1;
 
-        public enum retro_language : int
+        public enum retro_language
         {
             RETRO_LANGUAGE_ENGLISH             = 0,
             RETRO_LANGUAGE_JAPANESE            = 1,
@@ -714,7 +714,7 @@ namespace SK.Libretro
             public retro_perf_log_t perf_log;
         }
 
-        public enum retro_sensor_action : int
+        public enum retro_sensor_action
         {
             RETRO_SENSOR_ACCELEROMETER_ENABLE = 0,
             RETRO_SENSOR_ACCELEROMETER_DISABLE,
@@ -744,7 +744,7 @@ namespace SK.Libretro
             public retro_sensor_get_input_t get_sensor_input;
         }
 
-        public enum retro_camera_buffer : int
+        public enum retro_camera_buffer
         {
             RETRO_CAMERA_BUFFER_OPENGL_TEXTURE = 0,
             RETRO_CAMERA_BUFFER_RAW_FRAMEBUFFER
@@ -844,7 +844,7 @@ namespace SK.Libretro
         // typedef retro_proc_address_t (RETRO_CALLCONV *retro_hw_get_proc_address_t)(const char* sym);
         public delegate retro_proc_address_t retro_hw_get_proc_address_t(string sym);
 
-        public enum retro_hw_context_type : int
+        public enum retro_hw_context_type
         {
             RETRO_HW_CONTEXT_NONE             = 0,
             RETRO_HW_CONTEXT_OPENGL           = 1,
@@ -931,7 +931,7 @@ namespace SK.Libretro
             public retro_get_image_label_t get_image_label;
         }
 
-        public enum retro_pixel_format : int
+        public enum retro_pixel_format
         {
             RETRO_PIXEL_FORMAT_0RGB1555 = 0,
             RETRO_PIXEL_FORMAT_XRGB8888 = 1,

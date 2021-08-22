@@ -30,7 +30,7 @@ namespace SK.Libretro.Unity
     /// </summary>
     public class MainThreadDispatcher : MonoBehaviour
     {
-        public static MainThreadDispatcher Instance { get; private set; } = null;
+        public static MainThreadDispatcher Instance { get; private set; }
 
         private static readonly Queue<Action> _executionQueue     = new Queue<Action>();
         private static readonly SemaphoreSlim _executionQueueLock = new SemaphoreSlim(1, 1);
@@ -115,7 +115,7 @@ namespace SK.Libretro.Unity
             return tcs.Task;
         }
 
-        private IEnumerator ActionWrapper(Action a)
+        private static IEnumerator ActionWrapper(Action a)
         {
             a();
             yield return null;

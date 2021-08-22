@@ -35,11 +35,11 @@ namespace SK.Libretro.Unity
 
         private void OnAudioFilterRead(float[] data, int channels)
         {
-            if (_audioBuffer.Count >= data.Length)
-            {
-                _audioBuffer.CopyTo(0, data, 0, data.Length);
-                _audioBuffer.RemoveRange(0, data.Length);
-            }
+            if (_audioBuffer.Count < data.Length)
+                return;
+            
+            _audioBuffer.CopyTo(0, data, 0, data.Length);
+            _audioBuffer.RemoveRange(0, data.Length);
         }
 
         public void Init(int sampleRate)

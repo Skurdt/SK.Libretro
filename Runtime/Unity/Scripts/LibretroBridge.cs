@@ -242,7 +242,6 @@ namespace SK.Libretro.Unity
             while (_running)
             {
                 if (Paused)
-                {
                     try
                     {
                         Thread.Sleep(Timeout.Infinite);
@@ -252,7 +251,6 @@ namespace SK.Libretro.Unity
                         if (!_running)
                             break;
                     }
-                }
 
                 if (_saveStateStatus.InProgress)
                 {
@@ -272,11 +270,11 @@ namespace SK.Libretro.Unity
                 double currentTime = stopwatch.Elapsed.TotalSeconds;
                 double dt          = currentTime - startTime;
                 startTime          = currentTime;
-                if ((accumulator += dt) >= targetFrameTime)
-                {
-                    wrapper.Update();
-                    accumulator = 0.0;
-                }
+                if (!((accumulator += dt) >= targetFrameTime)) 
+                    continue;
+                
+                wrapper.Update();
+                accumulator = 0.0;
             }
 
             wrapper.StopGame();
@@ -332,10 +330,10 @@ namespace SK.Libretro.Unity
 
             //_screenRenderer.material.SetTexture(_shaderTextureId, texture);
 
-            MaterialPropertyBlock _block = new MaterialPropertyBlock();
-            _screenRenderer.GetPropertyBlock(_block);
-            _block.SetTexture(_shaderTextureId, _texture);
-            _screenRenderer.SetPropertyBlock(_block);
+            MaterialPropertyBlock block = new MaterialPropertyBlock();
+            _screenRenderer.GetPropertyBlock(block);
+            block.SetTexture(_shaderTextureId, _texture);
+            _screenRenderer.SetPropertyBlock(block);
         }
 
         private async UniTaskVoid SaveScreenshotAsync(string screenshotPath)

@@ -31,13 +31,13 @@ namespace SK.Libretro.Unity
 {
     public sealed class GraphicsProcessor : IGraphicsProcessor
     {
-        public Action<Texture> OnTextureRecreated;
+        private readonly Action<Texture> _onTextureRecreated;
 
-        public Texture2D Texture { get; private set; }
+        private Texture2D _texture;
 
         public GraphicsProcessor(int width, int height, Action<Texture> textureRecreatedCallback, FilterMode filterMode = FilterMode.Point)
         {
-            OnTextureRecreated = textureRecreatedCallback;
+            _onTextureRecreated = textureRecreatedCallback;
 
             MainThreadDispatcher mainThreadDispatcher = MainThreadDispatcher.Instance;
             if (mainThreadDispatcher != null)
@@ -60,10 +60,10 @@ namespace SK.Libretro.Unity
                     Width       = width,
                     Height      = height,
                     PitchPixels = pitch / sizeof(ushort),
-                    TextureData = Texture.GetRawTextureData<uint>()
+                    TextureData = _texture.GetRawTextureData<uint>()
                 }.Schedule().Complete();
 
-                Texture.Apply();
+                _texture.Apply();
             });
         }
 
@@ -83,10 +83,10 @@ namespace SK.Libretro.Unity
                     Width       = width,
                     Height      = height,
                     PitchPixels = pitch / sizeof(uint),
-                    TextureData = Texture.GetRawTextureData<uint>()
+                    TextureData = _texture.GetRawTextureData<uint>()
                 }.Schedule().Complete();
 
-                Texture.Apply();
+                _texture.Apply();
             });
         }
 
@@ -106,10 +106,10 @@ namespace SK.Libretro.Unity
                     Width       = width,
                     Height      = height,
                     PitchPixels = pitch / sizeof(uint),
-                    TextureData = Texture.GetRawTextureData<uint>()
+                    TextureData = _texture.GetRawTextureData<uint>()
                 }.Schedule().Complete();
 
-                Texture.Apply();
+                _texture.Apply();
             });
         }
 
@@ -129,10 +129,10 @@ namespace SK.Libretro.Unity
                     Width       = width,
                     Height      = height,
                     PitchPixels = pitch / sizeof(ushort),
-                    TextureData = Texture.GetRawTextureData<uint>()
+                    TextureData = _texture.GetRawTextureData<uint>()
                 }.Schedule().Complete();
 
-                Texture.Apply();
+                _texture.Apply();
             });
         }
 
@@ -142,22 +142,22 @@ namespace SK.Libretro.Unity
             if (mainThreadDispatcher != null)
                 mainThreadDispatcher.Enqueue(() =>
                 {
-                    if (Texture != null)
-                        UnityEngine.Object.Destroy(Texture);
+                    if (_texture != null)
+                        UnityEngine.Object.Destroy(_texture);
                 });
         }
 
         private void CreateTexture(int width, int height, FilterMode filterMode = FilterMode.Point)
         {
-            if (Texture == null || Texture.width != width || Texture.height != height)
+            if (_texture != null && _texture.width == width && _texture.height == height)
+                return;
+            
+            _texture = new Texture2D(width, height, TextureFormat.BGRA32, false)
             {
-                Texture = new Texture2D(width, height, TextureFormat.BGRA32, false)
-                {
-                    filterMode = filterMode
-                };
+                filterMode = filterMode
+            };
 
-                OnTextureRecreated(Texture);
-            }
+            _onTextureRecreated(_texture);
         }
 
         [BurstCompile]
