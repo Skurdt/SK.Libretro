@@ -329,7 +329,13 @@ namespace SK.Libretro.Unity
                 return;
 
             _texture = texture as Texture2D;
-            _screenRenderer.material.SetTexture(_shaderTextureId, texture);
+
+            //_screenRenderer.material.SetTexture(_shaderTextureId, texture);
+
+            MaterialPropertyBlock _block = new MaterialPropertyBlock();
+            _screenRenderer.GetPropertyBlock(_block);
+            _block.SetTexture(_shaderTextureId, _texture);
+            _screenRenderer.SetPropertyBlock(_block);
         }
 
         private async UniTaskVoid SaveScreenshotAsync(string screenshotPath)
