@@ -35,7 +35,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""3d136013-1adf-4a01-ad86-7e5f4e85dd81"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""DPadDown"",
@@ -43,7 +44,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""7760eb09-40c3-407b-a78f-b921cfb12220"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""DPadLeft"",
@@ -51,7 +53,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""0038abb7-866b-4663-ba18-2ba0d91d8278"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""DPadRight"",
@@ -59,7 +62,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""5be0e20d-0a38-4110-b69d-2c12222af05d"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""AnalogLeft"",
@@ -67,7 +71,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""37eaa882-3108-46cb-9d25-c58cbc04245c"",
                     ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 },
                 {
                     ""name"": ""AnalogRight"",
@@ -75,7 +80,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""13b7bb8d-03e0-4bab-90ed-96c8fba076ff"",
                     ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 },
                 {
                     ""name"": ""Start"",
@@ -83,7 +89,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""9c24f261-5878-4731-84f6-c78c63030707"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""Select"",
@@ -91,7 +98,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""f36bdbe8-984d-4ee1-828f-09864532efd2"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""A"",
@@ -99,7 +107,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""e53ba5ed-7472-4b78-84c0-1fb5090f8c02"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""B"",
@@ -107,7 +116,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""43910c93-05e7-444e-a9a2-e9672dc24851"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""X"",
@@ -115,7 +125,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""e4753e14-08e3-4a66-8300-14400a4ac68f"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""Y"",
@@ -123,7 +134,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""b06fcc7f-56a6-474b-8210-8542c0a84670"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""L1"",
@@ -131,7 +143,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""7b0cf759-77c7-4989-9771-c92f0d252cbe"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""L2"",
@@ -139,7 +152,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""056ab63b-501f-43c2-b9ef-6f18ba200cbc"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""L3"",
@@ -147,7 +161,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""e24819fc-988c-4580-b3f3-5cf81d5bc5f6"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""R1"",
@@ -155,7 +170,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""818c3450-ed6f-43c4-b028-bd2e462d9531"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""R2"",
@@ -163,7 +179,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""53f451b1-0b6c-4fb3-aa44-e9adb960fde3"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""R3"",
@@ -171,7 +188,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""c370147f-9b2e-4df5-94d7-ee55bbf96f12"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""MousePositionDelta"",
@@ -179,7 +197,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""d1bb5935-abc8-408f-8be9-e7c13106d47f"",
                     ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 },
                 {
                     ""name"": ""MouseWheelDelta"",
@@ -187,7 +206,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""d4393c8f-ae26-43d5-a210-aada0d924e9c"",
                     ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 },
                 {
                     ""name"": ""MouseLeftButton"",
@@ -195,7 +215,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""fb5fe1ab-4f43-4283-aa33-979f65f561f8"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""MouseRightButton"",
@@ -203,7 +224,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""0f8e30f0-b439-4f01-b0d1-a44602b472a9"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""MouseMiddleButton"",
@@ -211,7 +233,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""d083c22f-6003-497b-b429-a6768fdd427c"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""MouseForwardButton"",
@@ -219,7 +242,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""717e1b43-c43a-483a-b741-74bcebf873c7"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""MouseBackButton"",
@@ -227,7 +251,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""2dd72a4a-66e3-4798-a075-6bb2dc2960bc"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""LightgunTrigger"",
@@ -235,7 +260,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""bc140f6d-c2ac-4e47-bca9-ad46748bcfde"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""LightgunReload"",
@@ -243,7 +269,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""eac3b4ee-8d56-4893-ba75-5cda41228de3"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""LightgunA"",
@@ -251,7 +278,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""0467163e-355e-4a82-84e3-4855efd6d92b"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""LightgunB"",
@@ -259,7 +287,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""7303ab29-d32f-45f0-89c7-7f17d1f7b1ea"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""LightgunStart"",
@@ -267,7 +296,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""fff3d153-08ee-454d-a52b-5a6cd3b76b7b"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""LightgunSelect"",
@@ -275,7 +305,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""10f049bf-4f20-4a2c-8b1d-37570583ff8b"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""LightgunC"",
@@ -283,7 +314,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""e111be7a-5b8f-47db-a495-6311ea7dd4ee"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""LightgunDPadUp"",
@@ -291,7 +323,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""dd466b88-1632-4dc5-a4cb-a1d0b3b0903b"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""LightgunDPadDown"",
@@ -299,7 +332,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""32f32150-5c72-43af-ad7f-24b8bada2936"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""LightgunDPadLeft"",
@@ -307,7 +341,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""002905db-5ec3-4424-9e01-b5a787fd1aa0"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""LightgunDPadRight"",
@@ -315,7 +350,8 @@ namespace SK.Libretro.Unity
                     ""id"": ""d313664d-baef-43df-ab01-2001f9cf7cc8"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
