@@ -1,0 +1,19 @@
+{
+    "name": "SK.Libretro.NAudio",
+    "rootNamespace": "SK.Libretro.NAudio",
+    "references": [
+        "GUID:39dd5a9af0abb57419a105585282ccbb"
+    ],
+    "includePlatforms": [
+        "Editor",
+        "WindowsStandalone64"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

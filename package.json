@@ -1,16 +1,14 @@
 {
   "name": "com.sk.libretro",
-  "version": "0.2.0-preview1",
+  "version": "0.3.0",
   "displayName": "SK.Libretro",
-  "description": "Libretro to Unity bridge",
-  "unity": "2020.2",
+  "description": "Libretro support in Unity",
+  "unity": "2021.1",
   "dependencies": {
     "com.unity.mathematics": "1.2.1",
-    "com.unity.burst": "1.4.8",
+    "com.unity.burst": "1.5.6",
     "com.unity.textmeshpro": "3.0.6",
-    "com.unity.inputsystem": "1.1.0-pre.5",
-    "com.sk.utilities": "1.0.0",
-    "com.sk.utilities.unity": "1.0.0"
+    "com.unity.inputsystem": "1.1.0-pre.6"
   },
   "keywords": [],
   "author": {
@@ -23,6 +21,5 @@
     "type": "git",
     "url": "https://github.com/Skurdt/SK.Libretro.git",
     "directory": ""
-  },
-  "hideInEditor": false
+  }
 }

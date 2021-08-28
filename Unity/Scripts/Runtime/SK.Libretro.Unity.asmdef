@@ -1,0 +1,20 @@
+{
+    "name": "SK.Libretro.Unity",
+    "rootNamespace": "SK.Libretro.Unity",
+    "references": [
+        "GUID:d8b63aba1907145bea998dd612889d6b",
+        "GUID:2665a8d13d1b3f18800f46e256720795",
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:39dd5a9af0abb57419a105585282ccbb",
+        "GUID:a5d033b6e8e35024cab66f7c85f41a5c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
