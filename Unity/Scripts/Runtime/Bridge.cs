@@ -180,6 +180,7 @@ namespace SK.Libretro.Unity
         private readonly BridgeSettings _settings;
 
         private readonly object _lock                                   = new object();
+        private readonly object _mlock                                  = new object();
         private readonly ManualResetEventSlim _manualResetEvent         = new ManualResetEventSlim(false);
         private readonly ConcurrentQueue<ThreadCommand> _threadCommands = new ConcurrentQueue<ThreadCommand>();
 
@@ -192,6 +193,9 @@ namespace SK.Libretro.Unity
         private string _gamesDirectory;
         private string[] _gameNames;
 
+        private byte[] _memory;
+        private bool _memoryenabled;
+
         private Thread _thread;
         private Exception _threadException;
         private IInputProcessor _inputProcessor;
@@ -199,6 +203,7 @@ namespace SK.Libretro.Unity
         private Texture2D _texture;
         private double _startTime;
         private double _accumulator;
+        private double _mrefresh_time;
         private Coroutine _screenshotCoroutine;
 
         private volatile int _currentStateSlot;
@@ -350,7 +355,7 @@ namespace SK.Libretro.Unity
 
         public void SetStateSlot(int slot)
         {
-            lock(_lock)
+            lock (_lock)
                 _currentStateSlot = slot;
         }
 
@@ -385,6 +390,16 @@ namespace SK.Libretro.Unity
                 _screen.GetPropertyBlock(_materialPropertyBlock, 0);
                 _materialPropertyBlock.SetTexture(_shaderTextureId, _texture);
                 _screen.SetPropertyBlock(_materialPropertyBlock, 0);
+            }
+        }
+
+        public byte GetMemoryByte(int address)
+        {
+            if (!_running || !_memoryenabled)
+                return 0;
+            lock (_mlock)
+            {
+                return _memory[address];
             }
         }
 
@@ -429,6 +444,7 @@ namespace SK.Libretro.Unity
                 ControllersMap = wrapper.Input.DeviceMap;
 
                 wrapper.RewindEnabled = _settings.RewindEnabled;
+                _memoryenabled = _settings.MemoryEnabled;
 
                 double gameFrameTime = 1.0 / wrapper.Game.VideoFps;
 
@@ -441,6 +457,9 @@ namespace SK.Libretro.Unity
                         _manualResetEvent.Set();
                     });
                 _manualResetEvent.Wait();
+
+                if(_memoryenabled)
+                    _memory = new byte[wrapper.Core.retro_get_memory_size(Header.RETRO_MEMORY_SYSTEM_RAM)];
 
                 Running = true;
                 while (Running)
@@ -512,6 +531,15 @@ namespace SK.Libretro.Unity
                     {
                         wrapper.RunFrame();
                         _accumulator = 0.0;
+                    }
+                    else if (((_mrefresh_time += dt) >= 1.0) && _memoryenabled)
+                    {
+                        lock (_mlock)
+                        {
+                            System.Runtime.InteropServices.Marshal.Copy((IntPtr)wrapper.Core.retro_get_memory_data(Header.RETRO_MEMORY_SYSTEM_RAM),
+                                                                        _memory, 0, (int)wrapper.Core.retro_get_memory_size(Header.RETRO_MEMORY_SYSTEM_RAM));
+                        }
+                        _mrefresh_time = 0.0;
                     }
                 }
 

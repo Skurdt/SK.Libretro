@@ -31,6 +31,8 @@ namespace SK.Libretro
         public static T DeepCopy<T>(T obj)
             where T : class
         {
+            if (obj == null)
+                return null;
             using MemoryStream ms = new MemoryStream();
             IFormatter formatter  = new BinaryFormatter();
             formatter.Serialize(ms, obj);

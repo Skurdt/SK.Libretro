@@ -98,5 +98,6 @@ namespace SK.Libretro.Unity
         public void SaveSRAM() => _libretro.SaveSRAM();
         public void LoadSRAM() => _libretro.LoadSRAM();
         public void SetDiskIndex(int index) => _libretro.SetDiskIndex(index);
+        public byte GetMemoryByte(int address) => _libretro.GetMemoryByte(address);
     }
 }

@@ -38,5 +38,6 @@ namespace SK.Libretro.Unity
         public float AudioMaxDistance    = 10f;
         public bool AnalogToDigital      = false;
         public bool RewindEnabled        = false;
+        public bool MemoryEnabled        = true;
     }
 }
