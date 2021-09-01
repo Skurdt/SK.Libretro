@@ -44,8 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Actions: {fileID: -944628639613478452, guid: 6f7d63901b0f42f44ae9fc67a2665f24,
-    type: 3}
+  m_Actions: {fileID: -944628639613478452, guid: 5d43b74987427284995b70600990459f, type: 3}
   m_NotificationBehavior: 3
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
@@ -507,5 +506,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2eb77a6d4c597e946a168e94e1a7d536, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _libretroInstanceVariable: {fileID: 11400000, guid: 9faaf68029873df4697d6eb103e3bf41,
-    type: 2}
+  _libretroInstanceVariable: {fileID: 11400000, guid: 9faaf68029873df4697d6eb103e3bf41, type: 2}

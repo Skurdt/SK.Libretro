@@ -560,10 +560,9 @@ namespace SK.Libretro
 
             try
             {
+                _wrapper.Core.DeserializeOptions();
+
                 retro_variable* inVariable = (retro_variable*)data;
-
-                _wrapper.Core.CoreOptions ??= new CoreOptions();
-
                 for (IntPtr inKey = inVariable->key; inVariable->key != IntPtr.Zero && inVariable->value != IntPtr.Zero; ++inVariable)
                 {
                     string key     = Marshal.PtrToStringAnsi(inVariable->key);
@@ -738,7 +737,7 @@ namespace SK.Libretro
 
             try
             {
-                _wrapper.Core.CoreOptions ??= new CoreOptions();
+                _wrapper.Core.DeserializeOptions();
 
                 retro_core_option_definition* defs = (retro_core_option_definition*)data;
                 for (; defs->key != IntPtr.Zero; ++defs)
@@ -769,13 +768,13 @@ namespace SK.Libretro
                 }
 
                 _wrapper.Core.SerializeOptions();
+                return true;
             }
             catch (Exception e)
             {
                 Logger.Instance.LogError($"Failed to retrieve and write the core options, they must be entered manually in the configuration file for now... (Exception message: {e.Message})");
+                return false;
             }
-
-            return true;
         }
 
         /*
