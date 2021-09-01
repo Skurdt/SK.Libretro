@@ -366,11 +366,18 @@ namespace SK.Libretro.Unity
 
         public void SetDiskIndex(int index) => _threadCommands.Enqueue(new ThreadCommand { Type = ThreadCommandType.SetDiskIndex, Param0 = index });
 
-        public void TakeScreenshot(string screenshotPath) => MainThreadDispatcher.Instance.Enqueue(() =>
+        public void TakeScreenshot(string screenshotPath)
         {
-            if (_screenshotCoroutine == null && _texture != null && Running)
-                _screenshotCoroutine = _instanceComponent.StartCoroutine(CoSaveScreenshot(screenshotPath));
-        });
+            MainThreadDispatcher mainThreadDispatcher = MainThreadDispatcher.Instance;
+            if (mainThreadDispatcher == null)
+                return;
+
+            mainThreadDispatcher.Enqueue(() =>
+            {
+                if (_screenshotCoroutine == null && _texture != null && Running)
+                    _screenshotCoroutine = _instanceComponent.StartCoroutine(CoSaveScreenshot(screenshotPath));
+            });
+        }
 
         public void SetControllerPortDevice(uint port, uint id) => _threadCommands.Enqueue(new ThreadCommand { Type = ThreadCommandType.SetControllerPortDevice, Param0 = port, Param1 = id });
 

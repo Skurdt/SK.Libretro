@@ -35,35 +35,44 @@ namespace SK.Libretro.Unity
 
         private void OnAudioFilterRead(float[] data, int channels)
         {
-            if (_audioBuffer.Count >= data.Length)
-            {
-                _audioBuffer.CopyTo(0, data, 0, data.Length);
-                _audioBuffer.RemoveRange(0, data.Length);
-            }
+            if (_audioBuffer.Count < data.Length)
+                return;
+
+            _audioBuffer.CopyTo(0, data, 0, data.Length);
+            _audioBuffer.RemoveRange(0, data.Length);
         }
 
-        public void Init(int sampleRate) => MainThreadDispatcher.Instance.Enqueue(() =>
+        public void Init(int sampleRate)
         {
-            if (_audioSource != null)
-                _audioSource.Stop();
+            MainThreadDispatcher mainThreadDispatcher = MainThreadDispatcher.Instance;
+            if (mainThreadDispatcher == null)
+                return;
 
-            AudioConfiguration audioConfig = AudioSettings.GetConfiguration();
-            audioConfig.sampleRate = sampleRate;
-            _ = AudioSettings.Reset(audioConfig);
+            mainThreadDispatcher.Enqueue(() =>
+            {
+                if (_audioSource != null)
+                    _audioSource.Stop();
 
-            _audioSource = GetComponent<AudioSource>();
-            _audioSource.Play();
-        });
+                AudioConfiguration audioConfig = AudioSettings.GetConfiguration();
+                audioConfig.sampleRate = sampleRate;
+                _ = AudioSettings.Reset(audioConfig);
+
+                _audioSource = GetComponent<AudioSource>();
+                _audioSource.Play();
+            });
+        }
 
         public void DeInit()
         {
             MainThreadDispatcher mainThreadDispatcher = MainThreadDispatcher.Instance;
-            if (mainThreadDispatcher != null)
-                mainThreadDispatcher.Enqueue(() =>
-                {
-                    if (_audioSource != null)
-                        _audioSource.Stop();
-                });
+            if (mainThreadDispatcher == null)
+                return;
+
+            mainThreadDispatcher.Enqueue(() =>
+            {
+                if (_audioSource != null)
+                    _audioSource.Stop();
+            });
         }
 
         public unsafe void ProcessSamples(float[] samples) => _audioBuffer.AddRange(samples);

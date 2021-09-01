@@ -7,31 +7,22 @@ namespace SK.Libretro.Unity
 {
     internal sealed class MainThreadDispatcher : MonoBehaviour
     {
-        public static MainThreadDispatcher Instance
-        {
-            get
-            {
-                if (_instance == null)
-                    Debug.LogError("No MainThreadDispatcher found in scene.");
-                return _instance;
-            }
-        }
+        public static MainThreadDispatcher Instance { get; private set; } = null;
 
         private static readonly Queue<Action> _actions = new Queue<Action>();
-        private static MainThreadDispatcher _instance = null;
 
         private void Awake()
         {
-            if (_instance == null)
+            if (Instance == null)
             {
-                _instance = this;
+                Instance = this;
                 DontDestroyOnLoad(gameObject);
             }
         }
 
         private void Update()
         {
-            if (_instance == null)
+            if (Instance == null)
                 return;
 
             lock (_actions)
@@ -41,8 +32,11 @@ namespace SK.Libretro.Unity
 
         public void Enqueue(IEnumerator action)
         {
-            if (_instance == null)
+            if (Instance == null)
+            {
+                Debug.LogError("No MainThreadDispatcher found in scene.");
                 return;
+            }
 
             lock (_actions)
                 _actions.Enqueue(() => StartCoroutine(action));

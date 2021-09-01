@@ -40,8 +40,10 @@ namespace SK.Libretro.Unity
             OnTextureRecreated = textureRecreatedCallback;
 
             MainThreadDispatcher mainThreadDispatcher = MainThreadDispatcher.Instance;
-            if (mainThreadDispatcher != null)
-                MainThreadDispatcher.Instance.Enqueue(() => CreateTexture(width, height, filterMode));
+            if (mainThreadDispatcher == null)
+                return;
+
+            mainThreadDispatcher.Enqueue(() => CreateTexture(width, height, filterMode));
         }
 
         public unsafe void ProcessFrame0RGB1555(ushort* data, int width, int height, int pitch)

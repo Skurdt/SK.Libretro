@@ -62,6 +62,7 @@ namespace SK.Libretro
         public bool Initialized { get; private set; } = false;
 
         private readonly Wrapper _wrapper;
+        private readonly object _serializeLock = new object();
 
         private DynamicLibrary _dll;
 
@@ -115,9 +116,10 @@ namespace SK.Libretro
             try
             {
                 //FIXME(Tom): This sometimes crashes
-                retro_deinit();
+                if (Initialized)
+                    retro_deinit();
 
-                _dll?.Free();
+                _dll?.Free(true);
                 _dll = null;
 
                 Initialized = false;
@@ -130,20 +132,24 @@ namespace SK.Libretro
 
         public void SerializeOptions(bool global = true, bool updateVariables = true)
         {
-            if (global)
-                Serialize(CoreOptions, $"{Wrapper.CoreOptionsDirectory}/{Name}.json");
-            else
+            lock (_serializeLock)
             {
-                string directoryPath = $"{Wrapper.CoreOptionsDirectory}/{Name}";
-                if (!Directory.Exists(directoryPath))
-                    _ = Directory.CreateDirectory(directoryPath);
-                string filePath = $"{directoryPath}/{_wrapper.Game.Name}.json";
-                Serialize(GameOptions, filePath);
+                string filePath;
+                if (global)
+                    filePath = $"{Wrapper.CoreOptionsDirectory}/{Name}.json";
+                else
+                {
+                    string directoryPath = $"{Wrapper.CoreOptionsDirectory}/{Name}";
+                    if (!Directory.Exists(directoryPath))
+                        _ = Directory.CreateDirectory(directoryPath);
+                    filePath = $"{directoryPath}/{_wrapper.Game.Name}.json";
+                }
+
+                Serialize(CoreOptions, filePath);
+                DeserializeOptions();
+
+                _wrapper.UpdateVariables = updateVariables;
             }
-
-            DeserializeOptions();
-
-            _wrapper.UpdateVariables = updateVariables;
 
             static void Serialize(CoreOptions coreOptions, string path)
             {
@@ -157,8 +163,11 @@ namespace SK.Libretro
 
         public void DeserializeOptions()
         {
-            CoreOptions = Deserialize($"{Wrapper.CoreOptionsDirectory}/{Name}.json") ?? new CoreOptions();
-            GameOptions = Deserialize($"{Wrapper.CoreOptionsDirectory}/{Name}/{_wrapper.Game.Name}.json") ?? ClassUtils.DeepCopy(CoreOptions);
+            lock (_serializeLock)
+            {
+                CoreOptions = Deserialize($"{Wrapper.CoreOptionsDirectory}/{Name}.json") ?? new CoreOptions();
+                GameOptions = Deserialize($"{Wrapper.CoreOptionsDirectory}/{Name}/{_wrapper.Game.Name}.json") ?? ClassUtils.DeepCopy(CoreOptions);
+            }
 
             static CoreOptions Deserialize(string path)
             {
@@ -167,8 +176,8 @@ namespace SK.Libretro
 
                 SerializableCoreOptions options = FileSystem.DeserializeFromJson<SerializableCoreOptions>(path);
                 return options == null || options.Options == null || options.Options.Length <= 0
-                     ? null
-                     : new CoreOptions(options);
+                        ? null
+                        : new CoreOptions(options);
             }
         }
 
@@ -183,7 +192,14 @@ namespace SK.Libretro
                     return false;
                 }
 
-                _dll.Load(corePath);
+                string tempDirectory = Wrapper.TempDirectory;
+                if (!Directory.Exists(tempDirectory))
+                    _ = Directory.CreateDirectory(tempDirectory);
+
+                string instancePath = Path.Combine(tempDirectory, $"{Name}_{Guid.NewGuid()}.{_dll.Extension}");
+                File.Copy(corePath, instancePath);
+
+                _dll.Load(instancePath);
                 return true;
             }
             catch (Exception e)

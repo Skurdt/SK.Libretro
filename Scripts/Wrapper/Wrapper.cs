@@ -177,14 +177,6 @@ namespace SK.Libretro
 
                 if (!Directory.Exists(SystemDirectory))
                     _ = Directory.CreateDirectory(SystemDirectory);
-
-                if (Directory.Exists(TempDirectory))
-                {
-                    Directory.Delete(TempDirectory, true);
-                    //string[] fileNames = Directory.GetFiles(TempDirectory, "*.*", SearchOption.AllDirectories);
-                    //foreach (string fileName in fileNames)
-                    //    _ = FileSystem.DeleteFile(fileName);
-                }
             }
 
             Core = new Core(this);

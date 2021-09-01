@@ -21,13 +21,14 @@
  * SOFTWARE. */
 
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace SK.Libretro
 {
     public sealed class ControllersMap : IEnumerable<Controllers>
     {
-        private readonly Dictionary<int, Controllers> _deviceMap = new Dictionary<int, Controllers>();
+        private readonly ConcurrentDictionary<int, Controllers> _deviceMap = new ConcurrentDictionary<int, Controllers>();
 
         public Controllers this[int port] => _deviceMap.TryGetValue(port, out Controllers devices) ? devices : null;
 
@@ -36,7 +37,7 @@ namespace SK.Libretro
             if (_deviceMap.TryGetValue(port, out Controllers existingDevices))
                 existingDevices.Add(device);
             else
-                _deviceMap.Add(port, new Controllers { device });
+                _ = _deviceMap.TryAdd(port, new Controllers { device });
         }
 
         IEnumerator<Controllers> IEnumerable<Controllers>.GetEnumerator() => _deviceMap.Values.GetEnumerator();

@@ -21,6 +21,7 @@
  * SOFTWARE. */
 
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace SK.Libretro
@@ -69,7 +70,7 @@ namespace SK.Libretro
             }
         }
 
-        public void Free()
+        public void Free(bool deleteFile = false)
         {
             try
             {
@@ -79,6 +80,11 @@ namespace SK.Libretro
             catch (Exception e)
             {
                 throw new Exception($"Failed to free library '{Name}' at path '{Path}' ({e.Message})");
+            }
+            finally
+            {
+                if (deleteFile && File.Exists(Path))
+                    File.Delete(Path);
             }
         }
 
