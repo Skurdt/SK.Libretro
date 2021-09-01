@@ -211,7 +211,7 @@ namespace SK.Libretro
 
         private void DeserializeOptions()
         {
-            CoreOptions = Deserialize($"{Wrapper.CoreOptionsDirectory}/{Name}.json");
+            CoreOptions = Deserialize($"{Wrapper.CoreOptionsDirectory}/{Name}.json") ?? new CoreOptions();
             GameOptions = Deserialize($"{Wrapper.CoreOptionsDirectory}/{Name}/{_wrapper.Game.Name}.json") ?? ClassUtils.DeepCopy(CoreOptions);
 
             static CoreOptions Deserialize(string path)

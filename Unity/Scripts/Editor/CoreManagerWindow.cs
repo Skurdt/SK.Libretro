@@ -22,7 +22,6 @@
 
 using HtmlAgilityPack;
 using Newtonsoft.Json;
-using SK.Libretro;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -81,7 +80,7 @@ namespace SK.Libretro.Unity.Editor
             }
         }
 
-        private static readonly string _buildbotUrl       = "https://buildbot.libretro.com/nightly/{CurrentPlatform}/x86_64/latest/";
+        private static readonly string _buildbotUrl       = $"https://buildbot.libretro.com/nightly/{CurrentPlatform}/x86_64/latest/";
         private static readonly string _libretroDirectory = $"{Application.streamingAssetsPath}/libretro~";
         private static readonly string _coresDirectory    = $"{_libretroDirectory}/cores";
         private static readonly string _coresStatusFile   = $"{_libretroDirectory}/cores.json";
