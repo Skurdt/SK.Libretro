@@ -175,7 +175,7 @@ namespace SK.Libretro.Unity.Editor
             }
 
             GUILayout.Space(8f);
-            if (string.IsNullOrEmpty(_statusText))
+            if (string.IsNullOrWhiteSpace(_statusText))
                 EditorGUILayout.HelpBox("Ready", MessageType.None);
             else
                 EditorGUILayout.HelpBox(_statusText, MessageType.None);

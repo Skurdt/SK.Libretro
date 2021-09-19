@@ -75,7 +75,7 @@ namespace SK.Libretro
 
             public void Log(string message, string caller = null)
             {
-                caller = !string.IsNullOrEmpty(caller) ? (_colorSupport ? $"<color=lightblue>[{caller}]</color> " : $"[{caller}] ") : "";
+                caller = !string.IsNullOrWhiteSpace(caller) ? (_colorSupport ? $"<color=lightblue>[{caller}]</color> " : $"[{caller}] ") : "";
                 _logAction?.Invoke($"{_prefix} {caller}{message}");
             }
         }
@@ -114,7 +114,7 @@ namespace SK.Libretro
 
         private void LogInternal(LogLevel level, string message, string caller)
         {
-            if (string.IsNullOrEmpty(message))
+            if (string.IsNullOrWhiteSpace(message))
                 return;
 
             if (!_loggers.TryGetValue(level, out List<LogStringHandler> stringHandlers))

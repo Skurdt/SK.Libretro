@@ -55,10 +55,10 @@ namespace SK.Libretro
 
         internal CoreOption this[string key]
         {
-            get => !string.IsNullOrEmpty(key) && _options.ContainsKey(key) ? _options[key] : null;
+            get => !string.IsNullOrWhiteSpace(key) && _options.ContainsKey(key) ? _options[key] : null;
             set
             {
-                if (string.IsNullOrEmpty(key))
+                if (string.IsNullOrWhiteSpace(key))
                     return;
                 if (_options.ContainsKey(key))
                     _options[key] = value;

@@ -157,7 +157,7 @@ namespace SK.Libretro
 
             if (MainDirectory == null)
             {
-                MainDirectory        = !string.IsNullOrEmpty(baseDirectory) ? baseDirectory : "libretro";
+                MainDirectory        = !string.IsNullOrWhiteSpace(baseDirectory) ? baseDirectory : "libretro";
                 CoresDirectory       = $"{MainDirectory}/cores";
                 CoreOptionsDirectory = $"{MainDirectory}/core_options";
                 SystemDirectory      = $"{MainDirectory}/system";
@@ -200,7 +200,7 @@ namespace SK.Libretro
 
         public bool StartContent(string coreName, string gameDirectory, string gameName)
         {
-            if (string.IsNullOrEmpty(coreName))
+            if (string.IsNullOrWhiteSpace(coreName))
                 return false;
 
             if (!Core.Start(coreName))

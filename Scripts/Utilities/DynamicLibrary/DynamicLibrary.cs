@@ -39,7 +39,7 @@ namespace SK.Libretro
 
         public void Load(string path)
         {
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrWhiteSpace(path))
                 throw new Exception("Library path == null or empty.");
 
             Path = path;

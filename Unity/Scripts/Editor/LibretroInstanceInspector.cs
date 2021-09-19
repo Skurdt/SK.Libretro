@@ -44,16 +44,16 @@ namespace SK.Libretro.Unity.Editor
         private void OnEnable()
         {
             _cameraProperty        = serializedObject.FindProperty($"<{nameof(LibretroInstance.Camera)}>k__BackingField");
-            _raycastLayerProperty  = serializedObject.FindProperty($"<{nameof(LibretroInstance.RaycastLayer)}>k__BackingField");
+            _raycastLayerProperty  = serializedObject.FindProperty($"<{nameof(LibretroInstance.LightgunRaycastLayer)}>k__BackingField");
             _rendererProperty      = serializedObject.FindProperty($"<{nameof(LibretroInstance.Renderer)}>k__BackingField");
             _colliderProperty      = serializedObject.FindProperty($"<{nameof(LibretroInstance.Collider)}>k__BackingField");
             _viewerProperty        = serializedObject.FindProperty($"<{nameof(LibretroInstance.Viewer)}>k__BackingField");
             _settingsProperty      = serializedObject.FindProperty($"<{nameof(LibretroInstance.Settings)}>k__BackingField");
             _mainDirectoryProperty = _settingsProperty.FindPropertyRelative(nameof(LibretroInstance.Settings.MainDirectory));
             _editorGLProperty      = serializedObject.FindProperty($"<{nameof(LibretroInstance.AllowGLCoreInEditor)}>k__BackingField");
-            _coreNameProperty      = serializedObject.FindProperty(nameof(LibretroInstance.CoreName));
-            _gameDirectoryProperty = serializedObject.FindProperty(nameof(LibretroInstance.GamesDirectory));
-            _gamesProperty         = serializedObject.FindProperty(nameof(LibretroInstance.GameNames));
+            _coreNameProperty      = serializedObject.FindProperty($"<{nameof(LibretroInstance.CoreName)}>k__BackingField");
+            _gameDirectoryProperty = serializedObject.FindProperty($"<{nameof(LibretroInstance.GamesDirectory)}>k__BackingField");
+            _gamesProperty         = serializedObject.FindProperty($"<{nameof(LibretroInstance.GameNames)}>k__BackingField");
         }
 
         public override void OnInspectorGUI()
@@ -104,7 +104,7 @@ namespace SK.Libretro.Unity.Editor
             }
 
             GUILayout.Space(8f);
-            if (string.IsNullOrEmpty(_coreNameProperty.stringValue))
+            if (string.IsNullOrWhiteSpace(_coreNameProperty.stringValue))
                 EditorGUILayout.HelpBox("No core selected", MessageType.Error);
 
             _ = serializedObject.ApplyModifiedProperties();
@@ -140,7 +140,7 @@ namespace SK.Libretro.Unity.Editor
 
         private void ShowSelectCoreWindow()
         {
-            string coresDirectory = !string.IsNullOrEmpty(_mainDirectoryProperty.stringValue)
+            string coresDirectory = !string.IsNullOrWhiteSpace(_mainDirectoryProperty.stringValue)
                                   ? $"{_mainDirectoryProperty.stringValue}/cores"
                                   : $"{Application.streamingAssetsPath}/libretro~/cores";
 
@@ -152,7 +152,7 @@ namespace SK.Libretro.Unity.Editor
 
             CoreListWindow.ShowWindow(coresDirectory, (string coreName) =>
             {
-                if (!string.IsNullOrEmpty(coreName))
+                if (!string.IsNullOrWhiteSpace(coreName))
                 {
                     EditorGUI.FocusTextInControl(null);
                     _coreNameProperty.stringValue = coreName;
@@ -163,9 +163,9 @@ namespace SK.Libretro.Unity.Editor
 
         private void ShowSelectRomDirectoryDialog()
         {
-            string startingDirectory = !string.IsNullOrEmpty(_gameDirectoryProperty.stringValue) ? _gameDirectoryProperty.stringValue : "";
+            string startingDirectory = !string.IsNullOrWhiteSpace(_gameDirectoryProperty.stringValue) ? _gameDirectoryProperty.stringValue : "";
             string directory         = EditorUtility.OpenFolderPanel("Select rom directory", startingDirectory, startingDirectory);
-            if (!string.IsNullOrEmpty(directory))
+            if (!string.IsNullOrWhiteSpace(directory))
             {
                 EditorGUI.FocusTextInControl(null);
                 _gameDirectoryProperty.stringValue = directory.Replace(Path.DirectorySeparatorChar, '/');
@@ -174,9 +174,9 @@ namespace SK.Libretro.Unity.Editor
 
         private void ShowSelectRomDialog(int romIndex)
         {
-            string startingDirectory = !string.IsNullOrEmpty(_gameDirectoryProperty.stringValue) ? _gameDirectoryProperty.stringValue : "";
+            string startingDirectory = !string.IsNullOrWhiteSpace(_gameDirectoryProperty.stringValue) ? _gameDirectoryProperty.stringValue : "";
             string filePath          = EditorUtility.OpenFilePanel("Select rom", startingDirectory, "");
-            if (!string.IsNullOrEmpty(filePath))
+            if (!string.IsNullOrWhiteSpace(filePath))
             {
                 EditorGUI.FocusTextInControl(null);
                 _gameDirectoryProperty.stringValue = Path.GetDirectoryName(filePath).Replace(Path.DirectorySeparatorChar, '/');

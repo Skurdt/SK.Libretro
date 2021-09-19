@@ -29,19 +29,18 @@ namespace SK.Libretro.Unity
     public sealed class LibretroInstance : MonoBehaviour
     {
         [field: SerializeField] public Camera Camera { get; private set; }
-        [field: SerializeField, Layer] public int RaycastLayer { get; private set; }
+        [field: SerializeField, Layer] public int LightgunRaycastLayer { get; private set; }
         [field: SerializeField] public Renderer Renderer { get; private set; }
         [field: SerializeField] public Collider Collider { get; private set; }
         [field: SerializeField] public Transform Viewer { get; private set; }
         [field: SerializeField] public BridgeSettings Settings { get; private set; }
         [field: SerializeField] public bool AllowGLCoreInEditor { get; private set; }
+        [field: SerializeField] public string CoreName { get; private set; }
+        [field: SerializeField] public string GamesDirectory { get; private set; }
+        [field: SerializeField] public string[] GameNames { get; private set; }
 
         public Action OnInstanceStarted;
         public Action OnInstanceStopped;
-
-        public string CoreName;
-        public string GamesDirectory;
-        public string[] GameNames;
 
         public bool Running => _libretro.Running;
         public ControllersMap ControllersMap => _libretro.ControllersMap;
@@ -51,52 +50,65 @@ namespace SK.Libretro.Unity
 
         private Bridge _libretro;
 
-        private void Awake()
+        public void Initialize(Camera camera,
+                               int lightgunRaycastLayer,
+                               Renderer renderer,
+                               Collider collider,
+                               Transform viewer,
+                               BridgeSettings settings,
+                               string coreName,
+                               string gamesDirectory,
+                               params string[] gameNames)
         {
-            if (Camera == null)
-                Camera = Camera.main;
+            Camera               = camera;
+            LightgunRaycastLayer = lightgunRaycastLayer;
+            Renderer             = renderer;
+            Collider             = collider;
+            Viewer               = viewer;
+            Settings             = settings;
+            CoreName             = coreName;
+            GamesDirectory       = gamesDirectory;
+            GameNames            = gameNames;
 
-            if (Renderer == null)
-                Renderer = GetComponent<Renderer>();
-
-            if (Collider == null)
-                Collider = GetComponent<Collider>();
+            Initialize();
         }
 
-        private void OnEnable()
+        public void Initialize(string coreName, string gamesDirectory, params string[] gameNames)
+        {
+            CoreName       = coreName;
+            GamesDirectory = gamesDirectory;
+            GameNames      = gameNames;
+
+            Initialize();
+        }
+
+        public void Initialize()
         {
             _libretro = new Bridge(this);
             SetContent();
-            //StartContent();
         }
 
-        private void OnApplicationQuit()
-        {
-            _libretro?.Dispose();
-            _libretro = null;
-        }
-
-        private void OnDisable()
-        {
-            _libretro?.Dispose();
-            _libretro = null;
-        }
-
-        public void SetContent() => _libretro.SetContent(CoreName, GamesDirectory, GameNames);
         public void StartContent()
         {
             SetContent();
             _libretro.StartContent(OnInstanceStarted, OnInstanceStopped);
         }
-
         public void PauseContent() => _libretro.PauseContent();
         public void ResumeContent() => _libretro.ResumeContent();
-        public void StopContent() => _libretro.StopContent();
+        public void StopContent()
+        {
+            _libretro?.StopContent();
+            _libretro?.Dispose();
+            _libretro = null;
+        }
+
         public void SetControllerPortDevice(uint port, uint id) => _libretro.SetControllerPortDevice(port, id);
         public void SaveStateWithScreenshot() => _libretro.SaveStateWithScreenshot();
         public void LoadState() => _libretro.LoadState();
         public void SaveSRAM() => _libretro.SaveSRAM();
         public void LoadSRAM() => _libretro.LoadSRAM();
         public void SetDiskIndex(int index) => _libretro.SetDiskIndex(index);
+
+        private void SetContent() => _libretro.SetContent(CoreName, GamesDirectory, GameNames);
     }
 }

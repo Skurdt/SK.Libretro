@@ -55,7 +55,7 @@ namespace SK.Libretro
 
             try
             {
-                if (!string.IsNullOrEmpty(gameDirectory) && !string.IsNullOrEmpty(gameName))
+                if (!string.IsNullOrWhiteSpace(gameDirectory) && !string.IsNullOrWhiteSpace(gameName))
                 {
                     _path = GetGamePath(gameDirectory, gameName);
                     if (_path == null)
@@ -106,7 +106,7 @@ namespace SK.Libretro
 
             FreeGameInfo();
 
-            if (!string.IsNullOrEmpty(_extractedPath) && FileSystem.FileExists(_extractedPath))
+            if (!string.IsNullOrWhiteSpace(_extractedPath) && FileSystem.FileExists(_extractedPath))
                 _ = FileSystem.DeleteFile(_extractedPath);
         }
 
@@ -127,7 +127,7 @@ namespace SK.Libretro
 
         private bool GetGameInfo()
         {
-            if (string.IsNullOrEmpty(_path))
+            if (string.IsNullOrWhiteSpace(_path))
                 return _wrapper.Core.SupportNoGame;
 
             GameInfo.path = Marshal.StringToHGlobalAnsi(_path);

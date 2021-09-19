@@ -678,7 +678,7 @@ namespace SK.Libretro
                     string description = Marshal.PtrToStringAnsi(controllerDescription.desc);
                     Controller device = new Controller
                     {
-                        Description = !string.IsNullOrEmpty(description) ? description : "none",
+                        Description = !string.IsNullOrWhiteSpace(description) ? description : "none",
                         Id          = controllerDescription.id
                     };
                     _wrapper.Input.DeviceMap.Add(portIndex, device);
@@ -756,7 +756,7 @@ namespace SK.Libretro
                     }
 
                     string value = "";
-                    if (!string.IsNullOrEmpty(defaultValue))
+                    if (!string.IsNullOrWhiteSpace(defaultValue))
                         value = defaultValue;
                     else if (possibleValues.Count > 0)
                         value = possibleValues[0];
@@ -846,7 +846,7 @@ namespace SK.Libretro
             for (retro_system_content_info_override* infoOverride = infoOverrides; infoOverrides->extensions != IntPtr.Zero; ++infoOverrides)
             {
                 string extensionsString = Marshal.PtrToStringAnsi(infoOverride->extensions);
-                if (string.IsNullOrEmpty(extensionsString))
+                if (string.IsNullOrWhiteSpace(extensionsString))
                     continue;
 
                 string[] extensions = extensionsString.Split('|');

@@ -212,7 +212,7 @@ namespace SK.Libretro.Unity
             }
 
             Ray ray = _libretroInstanceVariable.Current.Camera.ScreenPointToRay(Mouse.current.position.ReadValue());
-            int hitCount = Physics.RaycastNonAlloc(ray, _pointerRaycastHits, float.PositiveInfinity, LayerMask.GetMask(LayerMask.LayerToName(_libretroInstanceVariable.Current.RaycastLayer)));
+            int hitCount = Physics.RaycastNonAlloc(ray, _pointerRaycastHits, float.PositiveInfinity, LayerMask.GetMask(LayerMask.LayerToName(_libretroInstanceVariable.Current.LightgunRaycastLayer)));
             bool inScreen = hitCount > 0 && _pointerRaycastHits[0].collider is MeshCollider meshCollider && meshCollider == _libretroInstanceVariable.Current.Collider;
             if (inScreen)
             {

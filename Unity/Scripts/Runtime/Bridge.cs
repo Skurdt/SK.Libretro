@@ -254,7 +254,7 @@ namespace SK.Libretro.Unity
             if (Running)
                 return;
 
-            if (string.IsNullOrEmpty(_coreName))
+            if (string.IsNullOrWhiteSpace(_coreName))
             {
                 Debug.LogError("Core is not set");
                 return;
