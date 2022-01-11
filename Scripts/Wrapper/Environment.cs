@@ -676,7 +676,7 @@ namespace SK.Libretro
                 {
                     retro_controller_description controllerDescription = controllerInfo.types[deviceIndex];
                     string description = Marshal.PtrToStringAnsi(controllerDescription.desc);
-                    Controller device = new Controller
+                    Controller device = new()
                     {
                         Description = !string.IsNullOrWhiteSpace(description) ? description : "none",
                         Id          = controllerDescription.id
@@ -747,7 +747,7 @@ namespace SK.Libretro
                     string info = defs->info != IntPtr.Zero ? Marshal.PtrToStringAnsi(defs->info) : "";
                     string defaultValue = defs->default_value != IntPtr.Zero ? Marshal.PtrToStringAnsi(defs->default_value) : "";
 
-                    List<string> possibleValues = new List<string>();
+                    List<string> possibleValues = new();
                     for (int i = 0; i < defs->values.Length; ++i)
                     {
                         if (defs->values[i].value == IntPtr.Zero)

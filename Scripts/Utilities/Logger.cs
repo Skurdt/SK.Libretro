@@ -80,8 +80,8 @@ namespace SK.Libretro
             }
         }
 
-        private readonly Dictionary<LogLevel, List<LogStringHandler>> _loggers = new Dictionary<LogLevel, List<LogStringHandler>>();
-        private readonly List<Action<Exception>> _exceptionLoggers = new List<Action<Exception>>();
+        private readonly Dictionary<LogLevel, List<LogStringHandler>> _loggers = new();
+        private readonly List<Action<Exception>> _exceptionLoggers = new();
 
         public void AddDebughandler(Action<string> function, bool colorSupport = false) => AddHandler(LogLevel.Debug, function, colorSupport);
         public void AddInfoHandler(Action<string> function, bool colorSupport = false) => AddHandler(LogLevel.Info, function, colorSupport);

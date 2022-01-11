@@ -30,7 +30,7 @@ namespace SK.Libretro
     {
         internal int Count => _options.Count;
 
-        private readonly SortedList<string, CoreOption> _options = new SortedList<string, CoreOption>();
+        private readonly SortedList<string, CoreOption> _options = new();
 
         internal CoreOptions()
         {
@@ -40,7 +40,7 @@ namespace SK.Libretro
         {
             foreach (string option in options.Options)
             {
-                CoreOption coreOption = new CoreOption(option);
+                CoreOption coreOption = new(option);
                 _options.Add(coreOption.Key, coreOption);
             }
         }

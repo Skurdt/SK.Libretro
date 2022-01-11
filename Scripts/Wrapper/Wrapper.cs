@@ -143,7 +143,7 @@ namespace SK.Libretro
 
         private const int REWIND_FRAMES_INTERVAL = 10;
 
-        private readonly List<IntPtr> _unmanagedPointers = new List<IntPtr>();
+        private readonly List<IntPtr> _unmanagedPointers = new();
 
         private Language _optionLanguage = Language.English;
         private string _optionUserName   = "LibretroUnityFE's Awesome User";

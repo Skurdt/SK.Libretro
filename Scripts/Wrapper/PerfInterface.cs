@@ -28,7 +28,7 @@ namespace SK.Libretro
 {
     internal sealed class PerfInterface
     {
-        private readonly retro_perf_callback _callback = new retro_perf_callback
+        private readonly retro_perf_callback _callback = new()
         {
             get_time_usec    = () => 0,
             get_cpu_features = () => 0,

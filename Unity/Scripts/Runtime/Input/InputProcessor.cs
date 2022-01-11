@@ -32,7 +32,7 @@ namespace SK.Libretro.Unity
     {
         public bool AnalogToDigital { get; set; }
 
-        private readonly Dictionary<int, PlayerInputProcessor> _controls = new Dictionary<int, PlayerInputProcessor>();
+        private readonly Dictionary<int, PlayerInputProcessor> _controls = new();
 
         [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Input Callback")]
         private void OnPlayerJoined(PlayerInput player)

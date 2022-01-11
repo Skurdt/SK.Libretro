@@ -34,9 +34,9 @@ namespace SK.Libretro
     {
         private const string LOG_PRINTF_CALLER = "Libretro.Wrapper.RetroLogPrintf";
 
-        private static readonly Regex _argumentsRegex = new Regex(@"%(?:\d+\$)?[+-]?(?:[ 0]|'.{1})?-?\d*(?:\.\d+)?([bcdeEufFgGosxX])", RegexOptions.Compiled);
+        private static readonly Regex _argumentsRegex = new(@"%(?:\d+\$)?[+-]?(?:[ 0]|'.{1})?-?\d*(?:\.\d+)?([bcdeEufFgGosxX])", RegexOptions.Compiled);
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-        private static readonly StringBuilder _sprintfBuffer = new StringBuilder();
+        private static readonly StringBuilder _sprintfBuffer = new();
 #endif
 
         public static void RetroLogPrintf(retro_log_level level, string format, IntPtr arg1, IntPtr arg2, IntPtr arg3, IntPtr arg4, IntPtr arg5, IntPtr arg6, IntPtr arg7, IntPtr arg8, IntPtr arg9, IntPtr arg10, IntPtr arg11, IntPtr arg12)

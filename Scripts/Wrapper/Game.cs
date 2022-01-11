@@ -36,11 +36,11 @@ namespace SK.Libretro
         public string Name { get; private set; }
         public bool Running { get; private set; }
 
-        public retro_game_info GameInfo          = new retro_game_info();
-        public retro_game_info_ext GameInfoExt   = new retro_game_info_ext();
-        public retro_system_av_info SystemAVInfo = new retro_system_av_info();
+        public retro_game_info GameInfo          = new();
+        public retro_game_info_ext GameInfoExt   = new();
+        public retro_system_av_info SystemAVInfo = new();
 
-        public ContentOverrides ContentOverrides = new ContentOverrides();
+        public ContentOverrides ContentOverrides = new();
 
         private readonly Wrapper _wrapper;
 
@@ -150,7 +150,7 @@ namespace SK.Libretro
             {
                 try
                 {
-                    using FileStream stream = new FileStream(_path, FileMode.Open);
+                    using FileStream stream = new(_path, FileMode.Open);
                     byte[] data             = new byte[stream.Length];
                     GameInfo.data           = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
                     GameInfoExt.data        = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());

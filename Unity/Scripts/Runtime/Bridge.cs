@@ -179,9 +179,9 @@ namespace SK.Libretro.Unity
         private readonly Transform _viewer;
         private readonly BridgeSettings _settings;
 
-        private readonly object _lock                                   = new object();
-        private readonly ManualResetEventSlim _manualResetEvent         = new ManualResetEventSlim(false);
-        private readonly ConcurrentQueue<ThreadCommand> _threadCommands = new ConcurrentQueue<ThreadCommand>();
+        private readonly object _lock                                   = new();
+        private readonly ManualResetEventSlim _manualResetEvent         = new(false);
+        private readonly ConcurrentQueue<ThreadCommand> _threadCommands = new();
 
         private readonly System.Diagnostics.Stopwatch _stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
@@ -263,7 +263,7 @@ namespace SK.Libretro.Unity
             PlayerInputManager playerInputManager = UnityEngine.Object.FindObjectOfType<PlayerInputManager>();
             if (playerInputManager == null)
             {
-                GameObject processorGameObject = new GameObject("LibretroInputProcessor");
+                GameObject processorGameObject = new("LibretroInputProcessor");
                 playerInputManager = processorGameObject.AddComponent<PlayerInputManager>();
                 playerInputManager.EnableJoining();
                 playerInputManager.joinBehavior = PlayerJoinBehavior.JoinPlayersWhenButtonIsPressed;
@@ -399,7 +399,7 @@ namespace SK.Libretro.Unity
         {
             try
             {
-                Wrapper wrapper = new Wrapper((TargetPlatform)Application.platform, _settings.MainDirectory);
+                Wrapper wrapper = new((TargetPlatform)Application.platform, _settings.MainDirectory);
                 if (!wrapper.StartContent(_coreName, _gamesDirectory, _gameNames?[0]))
                 {
                     Debug.LogError("Failed to start core/game combination");
@@ -535,7 +535,7 @@ namespace SK.Libretro.Unity
         {
             yield return new WaitForEndOfFrame();
 
-            Texture2D tex = new Texture2D(_texture.width, _texture.height, TextureFormat.RGB24, false);
+            Texture2D tex = new(_texture.width, _texture.height, TextureFormat.RGB24, false);
             tex.SetPixels32(_texture.GetPixels32());
             tex.Apply();
 

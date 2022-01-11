@@ -30,7 +30,7 @@ namespace SK.Libretro.Unity
     {
         private const int AUDIO_BUFFER_SIZE = 65536;
 
-        private readonly List<float> _audioBuffer = new List<float>(AUDIO_BUFFER_SIZE);
+        private readonly List<float> _audioBuffer = new(AUDIO_BUFFER_SIZE);
         private AudioSource _audioSource;
 
         private void OnAudioFilterRead(float[] data, int channels)

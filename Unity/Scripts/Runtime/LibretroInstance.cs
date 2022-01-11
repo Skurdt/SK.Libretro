@@ -50,42 +50,47 @@ namespace SK.Libretro.Unity
 
         private Bridge _libretro;
 
-        public void Initialize(Camera camera,
-                               int lightgunRaycastLayer,
-                               Renderer renderer,
-                               Collider collider,
-                               Transform viewer,
-                               BridgeSettings settings,
-                               string coreName,
-                               string gamesDirectory,
-                               params string[] gameNames)
+        private void Awake()
         {
-            Camera               = camera;
-            LightgunRaycastLayer = lightgunRaycastLayer;
-            Renderer             = renderer;
-            Collider             = collider;
-            Viewer               = viewer;
-            Settings             = settings;
-            CoreName             = coreName;
-            GamesDirectory       = gamesDirectory;
-            GameNames            = gameNames;
-
-            Initialize();
+            _libretro = new Bridge(this);
+            SetContent();
         }
+
+        //public void Initialize(Camera camera,
+        //                       int lightgunRaycastLayer,
+        //                       Renderer renderer,
+        //                       Collider collider,
+        //                       Transform viewer,
+        //                       BridgeSettings settings,
+        //                       string coreName,
+        //                       string gamesDirectory,
+        //                       params string[] gameNames)
+        //{
+        //    Camera               = camera;
+        //    LightgunRaycastLayer = lightgunRaycastLayer;
+        //    Renderer             = renderer;
+        //    Collider             = collider;
+        //    Viewer               = viewer;
+        //    Settings             = settings;
+        //    CoreName             = coreName;
+        //    GamesDirectory       = gamesDirectory;
+        //    GameNames            = gameNames;
+
+        //    Initialize();
+        //}
 
         public void Initialize(string coreName, string gamesDirectory, params string[] gameNames)
         {
             CoreName       = coreName;
             GamesDirectory = gamesDirectory;
             GameNames      = gameNames;
-
-            Initialize();
         }
 
-        public void Initialize()
+        public void DeInitialize()
         {
-            _libretro = new Bridge(this);
-            SetContent();
+            CoreName       = null;
+            GamesDirectory = null;
+            GameNames      = null;
         }
 
         public void StartContent()

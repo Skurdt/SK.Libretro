@@ -26,7 +26,7 @@ namespace SK.Libretro
 {
     internal class ContentOverrides
     {
-        private readonly Dictionary<string, ContentOverride> _overrides = new Dictionary<string, ContentOverride>();
+        private readonly Dictionary<string, ContentOverride> _overrides = new();
 
         public void Add(string extension, bool needFullPath, bool persistentData)
         {

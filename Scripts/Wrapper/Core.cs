@@ -62,7 +62,7 @@ namespace SK.Libretro
         public bool Initialized { get; private set; } = false;
 
         private readonly Wrapper _wrapper;
-        private readonly object _serializeLock = new object();
+        private readonly object _serializeLock = new();
 
         private DynamicLibrary _dll;
 
@@ -156,7 +156,7 @@ namespace SK.Libretro
                 if (coreOptions == null || coreOptions.Count <= 0)
                     return;
 
-                SerializableCoreOptions options = new SerializableCoreOptions(coreOptions);
+                SerializableCoreOptions options = new(coreOptions);
                 _ = FileSystem.SerializeToJson(options, path);
             }
         }

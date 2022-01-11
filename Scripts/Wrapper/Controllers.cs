@@ -31,7 +31,7 @@ namespace SK.Libretro
         public List<string> DeviceDescriptions => _devices.Select(x => x.Description).ToList();
         public Controller this[int index] => index >= 0 && index < _devices.Count ? _devices[index] : null;
 
-        private readonly List<Controller> _devices = new List<Controller>();
+        private readonly List<Controller> _devices = new();
 
         internal void Add(Controller device)
         {

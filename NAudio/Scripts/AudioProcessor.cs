@@ -22,7 +22,6 @@
 
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
-using SK.Libretro;
 using System;
 using System.Runtime.CompilerServices;
 
@@ -39,6 +38,8 @@ namespace SK.Libretro.NAudio
         private IWavePlayer _audioDevice;
         private BufferedWaveProvider _bufferedWaveProvider;
         private VolumeSampleProvider _volumeProvider;
+
+        private byte[] _byteBuffer = new byte[0];
 
         public void Init(int sampleRate)
         {
@@ -74,27 +75,36 @@ namespace SK.Libretro.NAudio
 
         public void DeInit()
         {
-            if (_audioDevice == null)
+            if (_audioDevice is null)
                 return;
 
             _audioDevice.Stop();
             _audioDevice.Dispose();
+            _audioDevice = null;
+
+            _volumeProvider = null;
+
             _bufferedWaveProvider.ClearBuffer();
+            _bufferedWaveProvider = null;
         }
 
         public void ProcessSamples(float[] samples)
         {
-            if (_bufferedWaveProvider == null)
+            if (_bufferedWaveProvider is null)
                 return;
 
-            byte[] byteBuffer = new byte[samples.Length * sizeof(float)];
-            Buffer.BlockCopy(samples, 0, byteBuffer, 0, byteBuffer.Length);
-            _bufferedWaveProvider.AddSamples(byteBuffer, 0, byteBuffer.Length);
+            int bufferLength = samples.Length * sizeof(float);
+
+            if (_byteBuffer.Length != bufferLength)
+                _byteBuffer = new byte[bufferLength];
+
+            Buffer.BlockCopy(samples, 0, _byteBuffer, 0, _byteBuffer.Length);
+            _bufferedWaveProvider.AddSamples(_byteBuffer, 0, _byteBuffer.Length);
         }
 
         public void SetVolume(float volume)
         {
-            if (_volumeProvider != null)
+            if (_volumeProvider is not null)
                 _volumeProvider.Volume = volume.Clamp(0f, 1f);
         }
     }

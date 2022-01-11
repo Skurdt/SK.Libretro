@@ -9,7 +9,7 @@ namespace SK.Libretro.Unity
     {
         public static MainThreadDispatcher Instance { get; private set; } = null;
 
-        private static readonly Queue<Action> _actions = new Queue<Action>();
+        private static readonly Queue<Action> _actions = new();
 
         private void Awake()
         {

@@ -41,8 +41,8 @@ namespace SK.Libretro
 
         private static CoreInstances _instance;
 
-        private readonly List<Core> _cores = new List<Core>();
-        private readonly object _lock = new object();
+        private readonly List<Core> _cores = new();
+        private readonly object _lock = new();
 
         public bool Contains(string coreName) => _cores.Any(x => x.Name == coreName);
 

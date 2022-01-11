@@ -56,7 +56,7 @@ namespace SK.Libretro.Unity.Editor
         [Serializable]
         private sealed class CoreList
         {
-            public List<Core> Cores = new List<Core>();
+            public List<Core> Cores = new();
         }
 
         private static string CurrentPlatform
@@ -85,7 +85,7 @@ namespace SK.Libretro.Unity.Editor
         private static readonly string _coresDirectory    = $"{_libretroDirectory}/cores";
         private static readonly string _coresStatusFile   = $"{_libretroDirectory}/cores.json";
         private static readonly Color _greenColor         = Color.green;
-        private static readonly Color _orangeColor        = new Color(1.0f, 0.5f, 0f, 1f);
+        private static readonly Color _orangeColor        = new(1.0f, 0.5f, 0f, 1f);
         private static readonly Color _redColor           = Color.red;
         private static readonly Color _grayColor          = Color.gray;
 
@@ -122,7 +122,7 @@ namespace SK.Libretro.Unity.Editor
             GUILayout.Space(8f);
             using (new EditorGUILayout.HorizontalScope())
             {
-                using EditorGUILayout.ScrollViewScope scrollView = new EditorGUILayout.ScrollViewScope(_scrollPos, EditorStyles.helpBox);
+                using EditorGUILayout.ScrollViewScope scrollView = new(_scrollPos, EditorStyles.helpBox);
                 _scrollPos = scrollView.scrollPosition;
 
                 foreach (Core core in _coreList.Cores)
@@ -220,7 +220,7 @@ namespace SK.Libretro.Unity.Editor
                 }
             }
 
-            HtmlWeb hw                 = new HtmlWeb();
+            HtmlWeb hw                 = new();
             HtmlDocument doc           = hw.Load(new Uri(_buildbotUrl));
             HtmlNodeCollection trNodes = doc.DocumentNode.SelectNodes("//body/div/table/tr");
 
@@ -285,7 +285,7 @@ namespace SK.Libretro.Unity.Editor
 
         private static string DownloadFile(string url)
         {
-            using WebClient webClient = new WebClient();
+            using WebClient webClient = new();
             string fileName = Path.GetFileName(url);
             string filePath = $"{_coresDirectory}/{fileName}";
             if (File.Exists(filePath))

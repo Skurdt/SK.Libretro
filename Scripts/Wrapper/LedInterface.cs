@@ -28,7 +28,7 @@ namespace SK.Libretro
 {
     internal sealed class LedInterface
     {
-        private readonly retro_led_interface _interface = new retro_led_interface
+        private readonly retro_led_interface _interface = new()
         {
             set_led_state = (int led, int state) => { }
         };

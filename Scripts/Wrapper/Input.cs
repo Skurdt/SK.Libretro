@@ -116,12 +116,12 @@ namespace SK.Libretro
             BIND_LIST_END_NULL
         };
 
-        public readonly ControllersMap DeviceMap = new ControllersMap();
+        public readonly ControllersMap DeviceMap = new();
 
         public readonly string[,] ButtonDescriptions = new string[MAX_USERS, FIRST_META_KEY];
         public bool HasInputDescriptors;
 
-        public readonly retro_rumble_interface RumbleInterface = new retro_rumble_interface
+        public readonly retro_rumble_interface RumbleInterface = new()
         {
             set_rumble_state = (uint port, retro_rumble_effect effect, ushort strength) =>
             {

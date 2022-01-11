@@ -90,7 +90,7 @@ namespace SK.Libretro
                 _wrapper.Game.GameInfo.path = Marshal.StringToHGlobalAnsi(filePath);
                 try
                 {
-                    using FileStream stream = new FileStream(filePath, FileMode.Open);
+                    using FileStream stream = new(filePath, FileMode.Open);
                     byte[] data = new byte[stream.Length];
                     _wrapper.Game.GameInfo.size = (ulong)data.Length;
                     _wrapper.Game.GameInfo.data = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());

@@ -33,11 +33,11 @@ namespace SK.Libretro.Unity.Editor
         {
             _ = EditorGUI.BeginProperty(position, label, property);
 
-            Rect buttonRect = new Rect(position.x + 14f, position.y, position.width, EditorGUIUtility.singleLineHeight);
+            Rect buttonRect = new(position.x + 14f, position.y, position.width, EditorGUIUtility.singleLineHeight);
             if (GUI.Button(buttonRect, "Reset Main Directory"))
                 property.stringValue = BridgeSettings.DefaultMainDirectory;
 
-            Rect totalRect     = new Rect(position.x, buttonRect.y + buttonRect.height + 4f, position.width, EditorGUIUtility.singleLineHeight);
+            Rect totalRect     = new(position.x, buttonRect.y + buttonRect.height + 4f, position.width, EditorGUIUtility.singleLineHeight);
             Rect textFieldRect = EditorGUI.PrefixLabel(totalRect, new GUIContent(nameof(BridgeSettings.MainDirectory)));
             property.stringValue = GUI.TextField(textFieldRect, property.stringValue);
 

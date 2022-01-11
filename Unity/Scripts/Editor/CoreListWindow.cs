@@ -81,7 +81,7 @@ namespace SK.Libretro.Unity.Editor
             if (!string.IsNullOrWhiteSpace(_searchQuery))
                 filteredCoreNames = _coreNames.Where(x => x.Contains(_searchQuery));
 
-            using EditorGUILayout.ScrollViewScope scrollView = new EditorGUILayout.ScrollViewScope(_scrollPos, EditorStyles.helpBox);
+            using EditorGUILayout.ScrollViewScope scrollView = new(_scrollPos, EditorStyles.helpBox);
             _scrollPos = scrollView.scrollPosition;
 
             foreach (string coreName in filteredCoreNames)
