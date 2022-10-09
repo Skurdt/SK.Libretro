@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2020 Skurdt
+ * Copyright (c) 2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using UnityEngine;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Jobs;
 
 namespace SK.Libretro.Unity
 {
-    internal sealed class MainDirectoryAttribute : PropertyAttribute
+    [BurstCompile]
+    public unsafe struct FrameRGB565Job : IJob
     {
+        [ReadOnly, NativeDisableUnsafePtrRestriction] public ushort* SourceData;
+        public int Width;
+        public int Height;
+        public int PitchPixels;
+        [WriteOnly] public NativeArray<uint> TextureData;
+
+        public void Execute()
+        {
+            ushort* line = SourceData;
+            for (int y = Height - 1; y >= 0; --y)
+            {
+                for (int x = 0; x < Width; ++x)
+                    TextureData[(y * Width) + x] = GraphicsUtilities.RGB565toBGRA32(line[x]);
+                line += PitchPixels;
+            }
+        }
     }
 }

@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2020 Skurdt
+ * Copyright (c) 2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@ namespace SK.Libretro.Unity
     [DisallowMultipleComponent, DefaultExecutionOrder(-2)]
     public sealed class LibretroInstance : MonoBehaviour
     {
+        [field: SerializeField] public bool UseSeparateThread { get; private set; }
         [field: SerializeField] public Camera Camera { get; private set; }
         [field: SerializeField, Layer] public int LightgunRaycastLayer { get; private set; }
         [field: SerializeField] public Renderer Renderer { get; private set; }
@@ -50,34 +51,11 @@ namespace SK.Libretro.Unity
 
         private Bridge _libretro;
 
-        private void Awake()
-        {
-            _libretro = new Bridge(this);
-            SetContent();
-        }
+        private void Awake() =>
+            _libretro = UseSeparateThread ? new BridgeSeparateThread(this) : new Bridge(this);
 
-        //public void Initialize(Camera camera,
-        //                       int lightgunRaycastLayer,
-        //                       Renderer renderer,
-        //                       Collider collider,
-        //                       Transform viewer,
-        //                       BridgeSettings settings,
-        //                       string coreName,
-        //                       string gamesDirectory,
-        //                       params string[] gameNames)
-        //{
-        //    Camera               = camera;
-        //    LightgunRaycastLayer = lightgunRaycastLayer;
-        //    Renderer             = renderer;
-        //    Collider             = collider;
-        //    Viewer               = viewer;
-        //    Settings             = settings;
-        //    CoreName             = coreName;
-        //    GamesDirectory       = gamesDirectory;
-        //    GameNames            = gameNames;
-
-        //    Initialize();
-        //}
+        private void OnDisable() =>
+            StopContent();
 
         public void Initialize(string coreName, string gamesDirectory, params string[] gameNames)
         {
@@ -98,8 +76,13 @@ namespace SK.Libretro.Unity
             SetContent();
             _libretro.StartContent(OnInstanceStarted, OnInstanceStopped);
         }
-        public void PauseContent() => _libretro.PauseContent();
-        public void ResumeContent() => _libretro.ResumeContent();
+
+        public void PauseContent() =>
+            _libretro.PauseContent();
+
+        public void ResumeContent() =>
+            _libretro.ResumeContent();
+
         public void StopContent()
         {
             _libretro?.StopContent();
@@ -107,13 +90,24 @@ namespace SK.Libretro.Unity
             _libretro = null;
         }
 
-        public void SetControllerPortDevice(uint port, uint id) => _libretro.SetControllerPortDevice(port, id);
-        public void SaveStateWithScreenshot() => _libretro.SaveStateWithScreenshot();
-        public void LoadState() => _libretro.LoadState();
-        public void SaveSRAM() => _libretro.SaveSRAM();
-        public void LoadSRAM() => _libretro.LoadSRAM();
-        public void SetDiskIndex(int index) => _libretro.SetDiskIndex(index);
+        public void SetControllerPortDevice(uint port, uint id) =>
+            _libretro.SetControllerPortDevice(port, id);
+        public void SaveStateWithScreenshot() =>
+            _libretro.SaveStateWithScreenshot();
 
-        private void SetContent() => _libretro.SetContent(CoreName, GamesDirectory, GameNames);
+        public void LoadState() =>
+            _libretro.LoadState();
+
+        public void SaveSRAM() =>
+            _libretro.SaveSRAM();
+
+        public void LoadSRAM() =>
+            _libretro.LoadSRAM();
+
+        public void SetDiskIndex(int index) =>
+            _libretro.SetDiskIndex(index);
+
+        private void SetContent() =>
+            _libretro.SetContent(CoreName, GamesDirectory, GameNames);
     }
 }

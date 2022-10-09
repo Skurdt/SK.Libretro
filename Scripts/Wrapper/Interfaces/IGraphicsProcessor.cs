@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2020 Skurdt
+ * Copyright (c) 2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,10 @@ namespace SK.Libretro
 {
     internal interface IGraphicsProcessor
     {
+        void DeInit();
         unsafe void ProcessFrame0RGB1555(ushort* data, int width, int height, int pitch);
         unsafe void ProcessFrameXRGB8888(uint* data, int width, int height, int pitch);
         unsafe void ProcessFrameXRGB8888VFlip(uint* data, int width, int height, int pitch);
         unsafe void ProcessFrameRGB565(ushort* data, int width, int height, int pitch);
-        void DeInit();
     }
 }

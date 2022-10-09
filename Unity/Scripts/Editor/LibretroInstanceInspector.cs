@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2020 Skurdt
+ * Copyright (c) 2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ namespace SK.Libretro.Unity.Editor
     [CustomEditor(typeof(LibretroInstance)), CanEditMultipleObjects]
     public sealed class LibretroInstanceInspector : UnityEditor.Editor
     {
+        private SerializedProperty _useSeparateThreadProperty;
         private SerializedProperty _cameraProperty;
         private SerializedProperty _raycastLayerProperty;
         private SerializedProperty _rendererProperty;
@@ -43,23 +44,25 @@ namespace SK.Libretro.Unity.Editor
 
         private void OnEnable()
         {
-            _cameraProperty        = serializedObject.FindProperty($"<{nameof(LibretroInstance.Camera)}>k__BackingField");
-            _raycastLayerProperty  = serializedObject.FindProperty($"<{nameof(LibretroInstance.LightgunRaycastLayer)}>k__BackingField");
-            _rendererProperty      = serializedObject.FindProperty($"<{nameof(LibretroInstance.Renderer)}>k__BackingField");
-            _colliderProperty      = serializedObject.FindProperty($"<{nameof(LibretroInstance.Collider)}>k__BackingField");
-            _viewerProperty        = serializedObject.FindProperty($"<{nameof(LibretroInstance.Viewer)}>k__BackingField");
-            _settingsProperty      = serializedObject.FindProperty($"<{nameof(LibretroInstance.Settings)}>k__BackingField");
-            _mainDirectoryProperty = _settingsProperty.FindPropertyRelative(nameof(LibretroInstance.Settings.MainDirectory));
-            _editorGLProperty      = serializedObject.FindProperty($"<{nameof(LibretroInstance.AllowGLCoreInEditor)}>k__BackingField");
-            _coreNameProperty      = serializedObject.FindProperty($"<{nameof(LibretroInstance.CoreName)}>k__BackingField");
-            _gameDirectoryProperty = serializedObject.FindProperty($"<{nameof(LibretroInstance.GamesDirectory)}>k__BackingField");
-            _gamesProperty         = serializedObject.FindProperty($"<{nameof(LibretroInstance.GameNames)}>k__BackingField");
+            _useSeparateThreadProperty = serializedObject.FindProperty($"<{nameof(LibretroInstance.UseSeparateThread)}>k__BackingField");
+            _cameraProperty            = serializedObject.FindProperty($"<{nameof(LibretroInstance.Camera)}>k__BackingField");
+            _raycastLayerProperty      = serializedObject.FindProperty($"<{nameof(LibretroInstance.LightgunRaycastLayer)}>k__BackingField");
+            _rendererProperty          = serializedObject.FindProperty($"<{nameof(LibretroInstance.Renderer)}>k__BackingField");
+            _colliderProperty          = serializedObject.FindProperty($"<{nameof(LibretroInstance.Collider)}>k__BackingField");
+            _viewerProperty            = serializedObject.FindProperty($"<{nameof(LibretroInstance.Viewer)}>k__BackingField");
+            _settingsProperty          = serializedObject.FindProperty($"<{nameof(LibretroInstance.Settings)}>k__BackingField");
+            _mainDirectoryProperty     = _settingsProperty.FindPropertyRelative(nameof(LibretroInstance.Settings.MainDirectory));
+            _editorGLProperty          = serializedObject.FindProperty($"<{nameof(LibretroInstance.AllowGLCoreInEditor)}>k__BackingField");
+            _coreNameProperty          = serializedObject.FindProperty($"<{nameof(LibretroInstance.CoreName)}>k__BackingField");
+            _gameDirectoryProperty     = serializedObject.FindProperty($"<{nameof(LibretroInstance.GamesDirectory)}>k__BackingField");
+            _gamesProperty             = serializedObject.FindProperty($"<{nameof(LibretroInstance.GameNames)}>k__BackingField");
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
 
+            _ = EditorGUILayout.PropertyField(_useSeparateThreadProperty);
             _ = EditorGUILayout.PropertyField(_cameraProperty);
             _ = EditorGUILayout.PropertyField(_raycastLayerProperty);
             _ = EditorGUILayout.PropertyField(_rendererProperty);

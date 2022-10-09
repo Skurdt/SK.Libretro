@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2020 Skurdt
+ * Copyright (c) 2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,7 @@ namespace SK.Libretro.NAudio
 
                 _audioDevice = new WaveOutEvent
                 {
-                    DesiredLatency = 110
+                    DesiredLatency = 120
                 };
 
                 _audioDevice.Init(_volumeProvider);

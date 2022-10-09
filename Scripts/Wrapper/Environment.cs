@@ -1,6 +1,6 @@
 /* MIT License
 
- * Copyright (c) 2020 Skurdt
+ * Copyright (c) 2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using static SK.Libretro.Header;
 
@@ -37,13 +38,6 @@ namespace SK.Libretro
 
         // TODO(Tom): Should not be here...
         private bool _supportsAchievements;
-
-        // TEMP_HACK
-        [Serializable]
-        private sealed class CoresUsingOptionsIntlList
-        {
-            public List<string> Cores = null;
-        }
 
         public Environment(Wrapper wrapper)
         {
@@ -161,11 +155,8 @@ namespace SK.Libretro
 
         private bool GetSystemDirectory(void* data)
         {
-            string path = $"{Wrapper.SystemDirectory}/{_wrapper.Core.Name}";
-            if (!Directory.Exists(path))
-                _ = Directory.CreateDirectory(path);
             if (data != null)
-                *(char**)data = _wrapper.GetUnsafeString(path);
+                *(char**)data = _wrapper.GetUnsafeString(Wrapper.SystemDirectory);
             return true;
         }
 
@@ -328,18 +319,10 @@ namespace SK.Libretro
             return true;
         }
 
-        // TODO: Set to >= 1 (RETRO_API_VERSION) once RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL works
         private bool GetCoreOptionsVersion(void* data)
         {
             if (data != null)
-            {
-                // TEMP_HACK
-                string filePath = $"{Wrapper.MainDirectory}/cores_using_options_intl.json";
-                CoresUsingOptionsIntlList coresUsingOptionsIntl = FileSystem.DeserializeFromJson<CoresUsingOptionsIntlList>(filePath);
-                *(uint*)data = coresUsingOptionsIntl == null || coresUsingOptionsIntl.Cores == null || !coresUsingOptionsIntl.Cores.Contains(_wrapper.Core.Name)
-                             ? RETRO_API_VERSION
-                             : 0;
-            }
+                *(uint*)data = RETRO_API_VERSION;
             return true;
         }
 
@@ -448,7 +431,7 @@ namespace SK.Libretro
                     continue;
 
                 uint device = inInputDescriptors->device;
-                if (device != RETRO_DEVICE_JOYPAD && device != RETRO_DEVICE_ANALOG)
+                if (device is not RETRO_DEVICE_JOYPAD and not RETRO_DEVICE_ANALOG)
                     continue;
 
                 id = inInputDescriptors->id;
@@ -536,7 +519,7 @@ namespace SK.Libretro
 
             retro_hw_render_callback* inCallback = (retro_hw_render_callback*)data;
 
-            if (inCallback->context_type != retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL && inCallback->context_type != retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE)
+            if (inCallback->context_type is not retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL and not retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE)
                 return false;
 
             _wrapper.OpenGL = new OpenGL();
@@ -730,68 +713,19 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool SetCoreOptions(void* data)
-        {
-            if (data == null)
-                return false;
+        private bool SetCoreOptions(void* data) =>
+            data != null && SetCoreOptionsInternal((IntPtr)data);
 
-            try
-            {
-                _wrapper.Core.DeserializeOptions();
-
-                retro_core_option_definition* defs = (retro_core_option_definition*)data;
-                for (; defs->key != IntPtr.Zero; ++defs)
-                {
-                    string key = Marshal.PtrToStringAnsi(defs->key);
-                    string description = defs->desc != IntPtr.Zero ? Marshal.PtrToStringAnsi(defs->desc) : "";
-                    string info = defs->info != IntPtr.Zero ? Marshal.PtrToStringAnsi(defs->info) : "";
-                    string defaultValue = defs->default_value != IntPtr.Zero ? Marshal.PtrToStringAnsi(defs->default_value) : "";
-
-                    List<string> possibleValues = new();
-                    for (int i = 0; i < defs->values.Length; ++i)
-                    {
-                        if (defs->values[i].value == IntPtr.Zero)
-                            break;
-                        possibleValues.Add(Marshal.PtrToStringAnsi(defs->values[i].value));
-                    }
-
-                    string value = "";
-                    if (!string.IsNullOrWhiteSpace(defaultValue))
-                        value = defaultValue;
-                    else if (possibleValues.Count > 0)
-                        value = possibleValues[0];
-
-                    if (_wrapper.Core.CoreOptions[key] == null)
-                        _wrapper.Core.CoreOptions[key] = new CoreOption(key, description, info, value, possibleValues.ToArray());
-                    else
-                        _wrapper.Core.CoreOptions[key].Update(key, description, info, possibleValues.ToArray());
-                }
-
-                _wrapper.Core.SerializeOptions();
-                return true;
-            }
-            catch (Exception e)
-            {
-                Logger.Instance.LogError($"Failed to retrieve and write the core options, they must be entered manually in the configuration file for now... (Exception message: {e.Message})");
-                return false;
-            }
-        }
-
-        /*
-         * FIXME: Figure out why data isn't providing proper addresses...
-         * Trying to read intl->us gives invalid/unreadable memory
-         * Definitions for retro_core_option_definition or retro_core_option_value don't really matter here I think.
-         * Since intl->local and intl->us are of IntPtr type, shouldn't this give a valid memory address either way?
-         */
         private bool SetCoreOptionsIntl(void* data)
         {
             if (data == null)
                 return false;
 
-            retro_core_options_intl* intl = (retro_core_options_intl*)data;
-            retro_core_option_definition* us = (retro_core_option_definition*)intl->us;
-
-            return ENVIRONMENT_NOT_IMPLEMENTED(retro_environment.RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL);
+            retro_core_options_intl intl = Marshal.PtrToStructure<retro_core_options_intl>((IntPtr)data);
+            bool result = SetCoreOptionsInternal(intl.local);
+            if (!result)
+                result = SetCoreOptionsInternal(intl.us);
+            return result;
         }
 
         private bool SetCoreOptionsDisplay(void* data)
@@ -868,6 +802,61 @@ namespace SK.Libretro
             else
                 Logger.Instance.LogError("Environment not implemented!", cmd.ToString());
             return defaultReturns;
+        }
+
+        private bool SetCoreOptionsInternal(IntPtr data)
+        {
+            try
+            {
+                _wrapper.Core.DeserializeOptions();
+
+                if (data == IntPtr.Zero)
+                    return false;
+
+                Type type = typeof(retro_core_option_values);
+                BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
+                FieldInfo[] fields = type.GetFields(bindingFlags);
+
+                retro_core_option_definition optionDefinition = Marshal.PtrToStructure<retro_core_option_definition>(data);
+                while (optionDefinition is not null && optionDefinition.key != IntPtr.Zero)
+                {
+                    string key = Marshal.PtrToStringAnsi(optionDefinition.key);
+                    string description = optionDefinition.desc != IntPtr.Zero ? Marshal.PtrToStringAnsi(optionDefinition.desc) : "";
+                    string info = optionDefinition.info != IntPtr.Zero ? Marshal.PtrToStringAnsi(optionDefinition.info) : "";
+                    string defaultValue = optionDefinition.default_value != IntPtr.Zero ? Marshal.PtrToStringAnsi(optionDefinition.default_value) : "";
+
+                    List<string> possibleValues = new();
+                    for (int i = 0; i < fields.Length; ++i)
+                    {
+                        FieldInfo fieldInfo = fields[i];
+                        if (fieldInfo.GetValue(optionDefinition.values) is not retro_core_option_value optionValue || optionValue.value == IntPtr.Zero)
+                            continue;
+
+                        possibleValues.Add(Marshal.PtrToStringAnsi(optionValue.value));
+                    }
+
+                    string value = "";
+                    if (!string.IsNullOrWhiteSpace(defaultValue))
+                        value = defaultValue;
+                    else if (possibleValues.Count > 0)
+                        value = possibleValues[0];
+
+                    if (_wrapper.Core.CoreOptions[key] == null)
+                        _wrapper.Core.CoreOptions[key] = new CoreOption(key, description, info, value, possibleValues.ToArray());
+                    else
+                        _wrapper.Core.CoreOptions[key].Update(key, description, info, possibleValues.ToArray());
+
+                    data += Marshal.SizeOf(optionDefinition);
+                    Marshal.PtrToStructure(data, optionDefinition);
+                }
+
+                _wrapper.Core.SerializeOptions();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

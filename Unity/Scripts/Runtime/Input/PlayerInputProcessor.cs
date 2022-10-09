@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2020 Skurdt
+ * Copyright (c) 2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -88,87 +88,87 @@ namespace SK.Libretro.Unity
 
         private void RegisterJoypadCallbacks()
         {
-            _inputActions.RetroPad.DPadUp.started     += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_UP);
-            _inputActions.RetroPad.DPadUp.canceled    += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_UP);
-            _inputActions.RetroPad.DPadDown.started   += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_DOWN);
-            _inputActions.RetroPad.DPadDown.canceled  += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_DOWN);
-            _inputActions.RetroPad.DPadLeft.started   += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_LEFT);
-            _inputActions.RetroPad.DPadLeft.canceled  += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_LEFT);
-            _inputActions.RetroPad.DPadRight.started  += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_RIGHT);
-            _inputActions.RetroPad.DPadRight.canceled += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_RIGHT);
-            _inputActions.RetroPad.Start.started      += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_START);
-            _inputActions.RetroPad.Start.canceled     += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_START);
-            _inputActions.RetroPad.Select.started     += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_SELECT);
-            _inputActions.RetroPad.Select.canceled    += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_SELECT);
-            _inputActions.RetroPad.A.started          += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_A);
-            _inputActions.RetroPad.A.canceled         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_A);
-            _inputActions.RetroPad.B.started          += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_B);
-            _inputActions.RetroPad.B.canceled         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_B);
-            _inputActions.RetroPad.X.started          += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_X);
-            _inputActions.RetroPad.X.canceled         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_X);
-            _inputActions.RetroPad.Y.started          += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_Y);
-            _inputActions.RetroPad.Y.canceled         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_Y);
-            _inputActions.RetroPad.L1.started         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_L);
-            _inputActions.RetroPad.L1.canceled        += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_L);
-            _inputActions.RetroPad.L2.started         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_L2);
-            _inputActions.RetroPad.L2.canceled        += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_L2);
-            _inputActions.RetroPad.L3.started         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_L3);
-            _inputActions.RetroPad.L3.canceled        += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_L3);
-            _inputActions.RetroPad.R1.started         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_R);
-            _inputActions.RetroPad.R1.canceled        += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_R);
-            _inputActions.RetroPad.R2.started         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_R2);
-            _inputActions.RetroPad.R2.canceled        += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_R2);
-            _inputActions.RetroPad.R3.started         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_R3);
-            _inputActions.RetroPad.R3.canceled        += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_R3);
+            _inputActions.Emulation.DPadUp.started     += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_UP);
+            _inputActions.Emulation.DPadUp.canceled    += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_UP);
+            _inputActions.Emulation.DPadDown.started   += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_DOWN);
+            _inputActions.Emulation.DPadDown.canceled  += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_DOWN);
+            _inputActions.Emulation.DPadLeft.started   += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_LEFT);
+            _inputActions.Emulation.DPadLeft.canceled  += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_LEFT);
+            _inputActions.Emulation.DPadRight.started  += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_RIGHT);
+            _inputActions.Emulation.DPadRight.canceled += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_RIGHT);
+            _inputActions.Emulation.Start.started      += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_START);
+            _inputActions.Emulation.Start.canceled     += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_START);
+            _inputActions.Emulation.Select.started     += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_SELECT);
+            _inputActions.Emulation.Select.canceled    += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_SELECT);
+            _inputActions.Emulation.A.started          += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_A);
+            _inputActions.Emulation.A.canceled         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_A);
+            _inputActions.Emulation.B.started          += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_B);
+            _inputActions.Emulation.B.canceled         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_B);
+            _inputActions.Emulation.X.started          += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_X);
+            _inputActions.Emulation.X.canceled         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_X);
+            _inputActions.Emulation.Y.started          += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_Y);
+            _inputActions.Emulation.Y.canceled         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_Y);
+            _inputActions.Emulation.L1.started         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_L);
+            _inputActions.Emulation.L1.canceled        += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_L);
+            _inputActions.Emulation.L2.started         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_L2);
+            _inputActions.Emulation.L2.canceled        += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_L2);
+            _inputActions.Emulation.L3.started         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_L3);
+            _inputActions.Emulation.L3.canceled        += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_L3);
+            _inputActions.Emulation.R1.started         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_R);
+            _inputActions.Emulation.R1.canceled        += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_R);
+            _inputActions.Emulation.R2.started         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_R2);
+            _inputActions.Emulation.R2.canceled        += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_R2);
+            _inputActions.Emulation.R3.started         += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_R3);
+            _inputActions.Emulation.R3.canceled        += ctx => JoypadCallback(RETRO_DEVICE_ID_JOYPAD_R3);
         }
 
         private void RegisterMouseCallbacks()
         {
-            _inputActions.RetroPad.MousePositionDelta.performed += ctx => (MouseX, MouseY) = ctx.ReadValue<Vector2>().ToShort();
-            _inputActions.RetroPad.MousePositionDelta.canceled  += ctx => MouseX = MouseY = 0;
-            _inputActions.RetroPad.MouseWheelDelta.performed    += ctx => MouseWheel = ctx.ReadValue<Vector2>().y.ToShort();
-            _inputActions.RetroPad.MouseWheelDelta.canceled     += ctx => MouseWheel = 0;
-            _inputActions.RetroPad.MouseLeftButton.started      += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_LEFT);
-            _inputActions.RetroPad.MouseLeftButton.canceled     += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_LEFT);
-            _inputActions.RetroPad.MouseRightButton.started     += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_RIGHT);
-            _inputActions.RetroPad.MouseRightButton.canceled    += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_RIGHT);
-            _inputActions.RetroPad.MouseMiddleButton.started    += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_MIDDLE);
-            _inputActions.RetroPad.MouseMiddleButton.canceled   += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_MIDDLE);
-            _inputActions.RetroPad.MouseForwardButton.started   += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_BUTTON_4);
-            _inputActions.RetroPad.MouseForwardButton.canceled  += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_BUTTON_4);
-            _inputActions.RetroPad.MouseBackButton.started      += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_BUTTON_5);
-            _inputActions.RetroPad.MouseBackButton.canceled     += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_BUTTON_5);
+            _inputActions.Emulation.MousePositionDelta.performed += ctx => (MouseX, MouseY) = ctx.ReadValue<Vector2>().ToShort();
+            _inputActions.Emulation.MousePositionDelta.canceled  += ctx => MouseX = MouseY = 0;
+            _inputActions.Emulation.MouseWheelDelta.performed    += ctx => MouseWheel = ctx.ReadValue<Vector2>().y.ToShort();
+            _inputActions.Emulation.MouseWheelDelta.canceled     += ctx => MouseWheel = 0;
+            _inputActions.Emulation.MouseLeftButton.started      += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_LEFT);
+            _inputActions.Emulation.MouseLeftButton.canceled     += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_LEFT);
+            _inputActions.Emulation.MouseRightButton.started     += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_RIGHT);
+            _inputActions.Emulation.MouseRightButton.canceled    += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_RIGHT);
+            _inputActions.Emulation.MouseMiddleButton.started    += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_MIDDLE);
+            _inputActions.Emulation.MouseMiddleButton.canceled   += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_MIDDLE);
+            _inputActions.Emulation.MouseForwardButton.started   += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_BUTTON_4);
+            _inputActions.Emulation.MouseForwardButton.canceled  += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_BUTTON_4);
+            _inputActions.Emulation.MouseBackButton.started      += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_BUTTON_5);
+            _inputActions.Emulation.MouseBackButton.canceled     += ctx => MouseCallback(RETRO_DEVICE_ID_MOUSE_BUTTON_5);
         }
 
         private void RegisterLightgunCallbacks()
         {
-            _inputActions.RetroPad.LightgunTrigger.started       += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_TRIGGER);
-            _inputActions.RetroPad.LightgunTrigger.canceled      += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_TRIGGER);
-            _inputActions.RetroPad.LightgunReload.started        += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_RELOAD);
-            _inputActions.RetroPad.LightgunReload.canceled       += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_RELOAD);
-            _inputActions.RetroPad.LightgunA.started             += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_AUX_A);
-            _inputActions.RetroPad.LightgunA.canceled            += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_AUX_A);
-            _inputActions.RetroPad.LightgunB.started             += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_AUX_B);
-            _inputActions.RetroPad.LightgunB.canceled            += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_AUX_B);
-            _inputActions.RetroPad.LightgunStart.started         += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_START);
-            _inputActions.RetroPad.LightgunStart.canceled        += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_START);
-            _inputActions.RetroPad.LightgunSelect.started        += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_SELECT);
-            _inputActions.RetroPad.LightgunSelect.canceled       += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_SELECT);
-            _inputActions.RetroPad.LightgunC.started             += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_AUX_C);
-            _inputActions.RetroPad.LightgunC.canceled            += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_AUX_C);
-            _inputActions.RetroPad.LightgunDPadUp.started        += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_DPAD_UP);
-            _inputActions.RetroPad.LightgunDPadUp.canceled       += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_DPAD_UP);
-            _inputActions.RetroPad.LightgunDPadDown.started      += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_DPAD_DOWN);
-            _inputActions.RetroPad.LightgunDPadDown.canceled     += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_DPAD_DOWN);
-            _inputActions.RetroPad.LightgunDPadLeft.started      += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_DPAD_LEFT);
-            _inputActions.RetroPad.LightgunDPadLeft.canceled     += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_DPAD_LEFT);
-            _inputActions.RetroPad.LightgunDPadRight.started     += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_DPAD_RIGHT);
-            _inputActions.RetroPad.LightgunDPadRight.canceled    += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_DPAD_RIGHT);
+            _inputActions.Emulation.LightgunTrigger.started       += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_TRIGGER);
+            _inputActions.Emulation.LightgunTrigger.canceled      += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_TRIGGER);
+            _inputActions.Emulation.LightgunReload.started        += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_RELOAD);
+            _inputActions.Emulation.LightgunReload.canceled       += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_RELOAD);
+            _inputActions.Emulation.LightgunA.started             += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_AUX_A);
+            _inputActions.Emulation.LightgunA.canceled            += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_AUX_A);
+            _inputActions.Emulation.LightgunB.started             += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_AUX_B);
+            _inputActions.Emulation.LightgunB.canceled            += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_AUX_B);
+            _inputActions.Emulation.LightgunStart.started         += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_START);
+            _inputActions.Emulation.LightgunStart.canceled        += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_START);
+            _inputActions.Emulation.LightgunSelect.started        += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_SELECT);
+            _inputActions.Emulation.LightgunSelect.canceled       += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_SELECT);
+            _inputActions.Emulation.LightgunC.started             += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_AUX_C);
+            _inputActions.Emulation.LightgunC.canceled            += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_AUX_C);
+            _inputActions.Emulation.LightgunDPadUp.started        += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_DPAD_UP);
+            _inputActions.Emulation.LightgunDPadUp.canceled       += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_DPAD_UP);
+            _inputActions.Emulation.LightgunDPadDown.started      += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_DPAD_DOWN);
+            _inputActions.Emulation.LightgunDPadDown.canceled     += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_DPAD_DOWN);
+            _inputActions.Emulation.LightgunDPadLeft.started      += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_DPAD_LEFT);
+            _inputActions.Emulation.LightgunDPadLeft.canceled     += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_DPAD_LEFT);
+            _inputActions.Emulation.LightgunDPadRight.started     += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_DPAD_RIGHT);
+            _inputActions.Emulation.LightgunDPadRight.canceled    += ctx => LightgunCallback(RETRO_DEVICE_ID_LIGHTGUN_DPAD_RIGHT);
         }
 
         private void RegisterAnalogCallbacks()
         {
-            _inputActions.RetroPad.AnalogLeft.performed += ctx =>
+            _inputActions.Emulation.AnalogLeft.performed += ctx =>
             {
                 (AnalogLeftX, AnalogLeftY) = ctx.ReadValue<Vector2>().ToShort(0x7fff);
                 if (AnalogDirectionsToDigital)
@@ -179,7 +179,7 @@ namespace SK.Libretro.Unity
                     _joypadButtons.SetBitIf(RETRO_DEVICE_ID_JOYPAD_RIGHT, AnalogLeftX < 0);
                 }
             };
-            _inputActions.RetroPad.AnalogLeft.canceled += ctx =>
+            _inputActions.Emulation.AnalogLeft.canceled += ctx =>
             {
                 AnalogLeftX = AnalogLeftY = 0;
                 if (AnalogDirectionsToDigital)
@@ -190,8 +190,8 @@ namespace SK.Libretro.Unity
                     _joypadButtons.UnsetBit(RETRO_DEVICE_ID_JOYPAD_RIGHT);
                 }
             };
-            _inputActions.RetroPad.AnalogRight.performed += ctx => (AnalogRightX, AnalogRightY) = ctx.ReadValue<Vector2>().ToShort(0x7fff);
-            _inputActions.RetroPad.AnalogRight.canceled  += ctx => AnalogRightX = AnalogRightY = 0;
+            _inputActions.Emulation.AnalogRight.performed += ctx => (AnalogRightX, AnalogRightY) = ctx.ReadValue<Vector2>().ToShort(0x7fff);
+            _inputActions.Emulation.AnalogRight.canceled  += ctx => AnalogRightX = AnalogRightY = 0;
         }
         private void JoypadCallback(in uint id) => _joypadButtons.ToggleBit(id);
         private void MouseCallback(in uint id) => _mouseButtons.ToggleBit(id);

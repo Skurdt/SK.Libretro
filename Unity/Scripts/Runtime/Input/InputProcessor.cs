@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2020 Skurdt
+ * Copyright (c) 2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,8 +42,7 @@ namespace SK.Libretro.Unity
             Logger.Instance.LogInfo($"Player #{player.playerIndex} joined ({player.currentControlScheme}).");
             if (!_controls.ContainsKey(player.playerIndex))
             {
-                PlayerInputProcessor processor = player.GetComponent<PlayerInputProcessor>();
-                if (processor != null)
+                if (player.TryGetComponent(out PlayerInputProcessor processor))
                 {
                     processor.AnalogDirectionsToDigital = AnalogToDigital;
                     _controls.Add(player.playerIndex, processor);

@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2020 Skurdt
+ * Copyright (c) 2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ namespace SK.Libretro.Unity
     {
         public static readonly string DefaultMainDirectory = Application.streamingAssetsPath + "/libretro~";
 
+        public bool AllowGLCoresInEditor = true;
         [MainDirectory]
         public string MainDirectory      = DefaultMainDirectory;
         public string ShaderTextureName  = "_MainTex";

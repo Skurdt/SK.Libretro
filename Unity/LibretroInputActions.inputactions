@@ -2,7 +2,7 @@
     "name": "LibretroInputActions",
     "maps": [
         {
-            "name": "RetroPad",
+            "name": "Emulation",
             "id": "639a1fe9-28e1-41ea-a98f-20b729bf505d",
             "actions": [
                 {
@@ -1182,22 +1182,7 @@
                 },
                 {
                     "devicePath": "<Mouse>",
-                    "isOptional": true,
-                    "isOR": false
-                },
-                {
-                    "devicePath": "<XRController>",
-                    "isOptional": true,
-                    "isOR": false
-                },
-                {
-                    "devicePath": "<XRController>{LeftHand}",
-                    "isOptional": true,
-                    "isOR": false
-                },
-                {
-                    "devicePath": "<XRController>{RightHand}",
-                    "isOptional": true,
+                    "isOptional": false,
                     "isOR": false
                 }
             ]

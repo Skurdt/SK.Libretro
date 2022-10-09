@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2020 Skurdt
+ * Copyright (c) 2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,8 @@
 
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -34,183 +32,80 @@ using UnityEngine.InputSystem;
 
 namespace SK.Libretro.Unity
 {
-    internal sealed class Bridge : IDisposable
+    internal class Bridge : IDisposable
     {
-        private enum ThreadCommandType
+        public virtual bool Running
         {
-            SaveStateWithScreenshot,
-            SaveStateWithoutScreenshot,
-            LoadState,
-            SaveSRAM,
-            LoadSRAM,
-            EnableInput,
-            DisableInput,
-            SetDiskIndex,
-            SetControllerPortDevice
+            get => _running;
+            protected set => _running = value;
         }
 
-        private struct ThreadCommand
+        public virtual bool Paused
         {
-            public ThreadCommandType Type;
-            public object Param0;
-            public object Param1;
+            get => _paused;
+            protected set => _paused = value;
         }
 
-        public event Action OnInstanceStarted;
-        public event Action OnInstanceStopped;
-
-        public bool AllowGLCoresInEditor
+        public virtual int FastForwardFactor
         {
-            get
-            {
-                lock (_lock)
-                    return _allowGLCoresInEditor;
-            }
-            set
-            {
-                lock (_lock)
-                    _allowGLCoresInEditor = value;
-            }
+            get => _fastForwardFactor;
+            set => _fastForwardFactor = math.clamp(value, 2, 32);
         }
-        private volatile bool _allowGLCoresInEditor;
 
-        public bool Running
+        public virtual bool FastForward
         {
-            get
-            {
-                lock (_lock)
-                    return _running;
-            }
-            private set
-            {
-                lock (_lock)
-                    _running = value;
-            }
+            get => _fastForward;
+            set => _fastForward = value;
         }
-        private volatile bool _running;
 
-        public bool Paused
+        public virtual bool Rewind
         {
-            get
-            {
-                lock (_lock)
-                    return _paused;
-            }
-            private set
-            {
-                lock (_lock)
-                    _paused = value;
-            }
+            get => _rewind;
+            set => _rewind = value;
         }
-        private volatile bool _paused;
 
-        public int FastForwardFactor
+        public virtual bool InputEnabled
         {
-            get
-            {
-                lock (_lock)
-                    return _fastForwardFactor;
-            }
-            set
-            {
-                lock (_lock)
-                    _fastForwardFactor = math.clamp(value, 2, 32);
-            }
+            get => _inputEnabled;
+            set => _inputEnabled = value;
         }
-        private int _fastForwardFactor = 8;
 
-        public bool FastForward
-        {
-            get
-            {
-                lock (_lock)
-                    return _fastForward;
-            }
-            set
-            {
-                lock (_lock)
-                    _fastForward = value;
-            }
-        }
-        private volatile bool _fastForward;
+        public ControllersMap ControllersMap { get; protected set; }
 
-        public bool Rewind
-        {
-            get
-            {
-                lock (_lock)
-                    return _rewind;
-            }
-            set
-            {
-                lock (_lock)
-                    _rewind = value;
-            }
-        }
-        private volatile bool _rewind;
+        protected event Action OnInstanceStarted;
+        protected event Action OnInstanceStopped;
 
-        public bool InputEnabled
-        {
-            get
-            {
-                lock (_lock)
-                    return _inputEnabled;
-            }
+        protected BridgeSettings Settings { get; private set; }
+        protected string CoreName { get; private set; }
+        protected string GamesDirectory { get; private set; }
+        protected string[] GameNames { get; private set; }
 
-            set
-            {
-                lock (_lock)
-                    _inputEnabled = value;
-
-                if (InputEnabled)
-                    _threadCommands.Enqueue(new ThreadCommand { Type = ThreadCommandType.EnableInput });
-                else
-                    _threadCommands.Enqueue(new ThreadCommand { Type = ThreadCommandType.DisableInput });
-            }
-        }
-        private volatile bool _inputEnabled;
-
-        public ControllersMap ControllersMap { get; private set; }
+        protected readonly System.Diagnostics.Stopwatch _stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        protected IInputProcessor _inputProcessor;
+        protected IAudioProcessor _audioProcessor;
+        protected int _currentStateSlot;
+        protected double _startTime;
+        protected double _accumulator;
 
         private static bool _firstInstance = true;
-
         private readonly LibretroInstance _instanceComponent;
         private readonly Renderer _screen;
-        private readonly Transform _viewer;
-        private readonly BridgeSettings _settings;
-
-        private readonly object _lock                                   = new();
-        private readonly ManualResetEventSlim _manualResetEvent         = new(false);
-        private readonly ConcurrentQueue<ThreadCommand> _threadCommands = new();
-
-        private readonly System.Diagnostics.Stopwatch _stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-        private readonly MaterialPropertyBlock _materialPropertyBlock;
         private readonly int _shaderTextureId;
-
-        private string _coreName;
-        private string _gamesDirectory;
-        private string[] _gameNames;
-
-        private Thread _thread;
-        private Exception _threadException;
-        private IInputProcessor _inputProcessor;
-        private IAudioProcessor _audioProcessor;
         private Texture2D _texture;
-        private double _startTime;
-        private double _accumulator;
         private Coroutine _screenshotCoroutine;
+        private bool _running;
+        private bool _paused;
+        private int _fastForwardFactor = 8;
+        private bool _fastForward;
+        private bool _rewind;
+        private bool _inputEnabled;
 
-        private volatile int _currentStateSlot;
+        private Wrapper _wrapper;
 
         public Bridge(LibretroInstance instance)
         {
             if (_firstInstance)
             {
-                MainThreadDispatcher mainThreadDispatcher = UnityEngine.Object.FindObjectOfType<MainThreadDispatcher>();
-                if (mainThreadDispatcher == null)
-                    _ = new GameObject("MainThreadDispatcher", typeof(MainThreadDispatcher));
-
                 Logger.Instance.AddDebughandler(Debug.Log, true);
                 Logger.Instance.AddInfoHandler(Debug.Log, true);
                 Logger.Instance.AddWarningHandler(Debug.LogWarning, true);
@@ -222,31 +117,22 @@ namespace SK.Libretro.Unity
 
             _instanceComponent = instance;
             _screen            = instance.Renderer;
-            _viewer            = instance.Viewer;
-            _settings          = instance.Settings;
+            Settings           = instance.Settings;
 
-            _materialPropertyBlock = new MaterialPropertyBlock();
-
-            _shaderTextureId = Shader.PropertyToID(_settings.ShaderTextureName);
+            _shaderTextureId = Shader.PropertyToID(Settings.ShaderTextureName);
         }
 
-        public void Dispose()
-        {
+        public virtual void Dispose() =>
             StopContent();
-            _ = _thread?.Join(1000);
-
-            _thread = null;
-            _manualResetEvent.Dispose();
-        }
 
         public void SetContent(string coreName, string gamesDirectory, string[] gameNames)
         {
             if (Running)
                 return;
 
-            _coreName       = coreName;
-            _gamesDirectory = gamesDirectory;
-            _gameNames      = gameNames;
+            CoreName       = coreName;
+            GamesDirectory = gamesDirectory;
+            GameNames      = gameNames;
         }
 
         public void StartContent(Action instanceStartedCallback, Action instanceStoppedCallback)
@@ -254,7 +140,7 @@ namespace SK.Libretro.Unity
             if (Running)
                 return;
 
-            if (string.IsNullOrWhiteSpace(_coreName))
+            if (string.IsNullOrWhiteSpace(CoreName))
             {
                 Debug.LogError("Core is not set");
                 return;
@@ -270,16 +156,15 @@ namespace SK.Libretro.Unity
                 playerInputManager.playerPrefab = Resources.Load<GameObject>("pfLibretroUserInput");
             }
 
-            _inputProcessor = playerInputManager.GetComponent<IInputProcessor>();
-            if (_inputProcessor == null)
+            if (!playerInputManager.TryGetComponent(out _inputProcessor))
                 _inputProcessor = playerInputManager.gameObject.AddComponent<InputProcessor>();
 
-            _inputProcessor.AnalogToDigital = _settings.AnalogToDigital;
+            _inputProcessor.AnalogToDigital = Settings.AnalogToDigital;
 
             GameObject go = _screen.gameObject;
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-            AudioProcessor unityAudio = go != null ? go.GetComponentInChildren<AudioProcessor>() : null;
-            _audioProcessor = unityAudio != null ? unityAudio : (IAudioProcessor)new NAudio.AudioProcessor();
+            AudioProcessor unityAudio = go ? go.GetComponentInChildren<AudioProcessor>() : null;
+            _audioProcessor = unityAudio ? unityAudio : new NAudio.AudioProcessor();
 #else
             AudioProcessor unityAudio = go != null ? go.GetComponentInChildren<AudioProcessor>(true) : null;
             if (unityAudio != null)
@@ -294,38 +179,113 @@ namespace SK.Libretro.Unity
                 _audioProcessor = audioProcessorGameObject.AddComponent<AudioProcessor>();
             }
 #endif
-            if (!Directory.Exists(_settings.MainDirectory))
-                _settings.MainDirectory = BridgeSettings.DefaultMainDirectory;
+            if (!Directory.Exists(Settings.MainDirectory))
+                Settings.MainDirectory = BridgeSettings.DefaultMainDirectory;
 
             OnInstanceStarted += instanceStartedCallback;
             OnInstanceStopped += instanceStoppedCallback;
 
-            _thread = new Thread(LibretroThread)
-            {
-                Name         = $"LibretroThread_{_coreName}_{(_gameNames.Length > 0 ? _gameNames[0] : "nogame")}",
-                IsBackground = true,
-                Priority     = System.Threading.ThreadPriority.Lowest
-            };
-            _thread.SetApartmentState(ApartmentState.STA);
-            _thread.Start();
+            StartContent();
         }
 
-        public void PauseContent()
+        protected virtual void StartContent()
+        {
+            try
+            {
+                _ = _instanceComponent.StartCoroutine(RunLoop());
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
+        }
+
+        private IEnumerator RunLoop()
+        {
+            _wrapper = new((TargetPlatform)Application.platform, Settings.MainDirectory);
+            if (!_wrapper.StartContent(CoreName, GamesDirectory, GameNames?[0]))
+            {
+                Debug.LogError("Failed to start core/game combination");
+                yield break;
+            }
+
+            if (GameNames != null)
+                foreach (string gameName in GameNames)
+                    _ = _wrapper.Disk?.AddImageIndex();
+
+            if (_wrapper.Core.HwAccelerated)
+            {
+                // Running gl cores only works in builds, or if a debugger is attached to Unity instance. Set "_allowGLCoresInEditor" to true to bypass this.
+                if (Application.isEditor && !Settings.AllowGLCoresInEditor)
+                {
+                    _wrapper.StopContent();
+                    Debug.LogError("Starting hardware accelerated cores is not supported in the editor");
+                    yield break;
+                }
+
+                _wrapper.InitHardwareContext();
+            }
+
+            IGraphicsProcessor graphicsProcessor = new GraphicsProcessor(_wrapper.Game.VideoWidth, _wrapper.Game.VideoHeight, SetTexture);
+            _wrapper.Graphics.Init(graphicsProcessor);
+            _wrapper.Graphics.Enabled = true;
+
+            _wrapper.Audio.Init(_audioProcessor);
+            _wrapper.Audio.Enabled = true;
+
+            _wrapper.Input.Init(_inputProcessor);
+            _wrapper.Input.Enabled = true;
+
+            ControllersMap = _wrapper.Input.DeviceMap;
+
+            _wrapper.RewindEnabled = Settings.RewindEnabled;
+
+            double gameFrameTime = 1.0 / _wrapper.Game.VideoFps;
+
+            InvokeOnStartedEvent();
+
+            Running = true;
+            while (Running)
+            {
+                if (Paused)
+                    yield return null;
+
+                _wrapper.RewindEnabled = Settings.RewindEnabled;
+
+                if (Settings.RewindEnabled)
+                    _wrapper.PerformRewind = Rewind;
+
+                double currentTime = _stopwatch.Elapsed.TotalSeconds;
+                double dt = currentTime - _startTime;
+                _startTime = currentTime;
+
+                double targetFrameTime = FastForward && FastForwardFactor > 0 ? gameFrameTime / FastForwardFactor : gameFrameTime;
+                if ((_accumulator += dt) >= targetFrameTime)
+                {
+                    _wrapper.RunFrame();
+                    _accumulator = 0.0;
+                }
+
+                yield return null;
+            }
+
+            _wrapper.StopContent();
+        }
+
+        public virtual void PauseContent()
         {
             if (!Running || Paused)
                 return;
 
             Paused = true;
-            _manualResetEvent.Reset();
         }
 
-        public void ResumeContent()
+        public virtual void ResumeContent()
         {
             if (!Running || !Paused)
                 return;
 
             Paused = false;
-            _manualResetEvent.Set();
         }
 
         public void StopContent()
@@ -341,194 +301,57 @@ namespace SK.Libretro.Unity
             OnInstanceStopped?.Invoke();
         }
 
-        public void SetStateSlot(string slot)
+        public virtual void SetStateSlot(string slot)
         {
-            lock (_lock)
-                if (int.TryParse(slot, out int slotInt))
-                    _currentStateSlot = slotInt;
+            if (int.TryParse(slot, out int slotInt))
+                _currentStateSlot = slotInt;
         }
 
-        public void SetStateSlot(int slot)
+        public virtual void SetStateSlot(int slot) =>
+            _currentStateSlot = slot;
+
+        public virtual void SaveStateWithScreenshot()
         {
-            lock(_lock)
-                _currentStateSlot = slot;
+            if (_wrapper.Serialization.SaveState(_currentStateSlot, out string screenshotPath))
+                TakeScreenshot(screenshotPath);
         }
 
-        public void SaveStateWithScreenshot() => _threadCommands.Enqueue(new ThreadCommand { Type = ThreadCommandType.SaveStateWithScreenshot });
+        public virtual void SaveStateWithoutScreenshot() =>
+            _wrapper.Serialization.SaveState(_currentStateSlot);
 
-        public void SaveStateWithoutScreenshot() => _threadCommands.Enqueue(new ThreadCommand { Type = ThreadCommandType.SaveStateWithoutScreenshot });
+        public virtual void LoadState() =>
+            _wrapper.Serialization.LoadState(_currentStateSlot);
 
-        public void LoadState() => _threadCommands.Enqueue(new ThreadCommand { Type = ThreadCommandType.LoadState });
+        public virtual void SaveSRAM() =>
+            _wrapper.Serialization.SaveSRAM();
 
-        public void SaveSRAM() => _threadCommands.Enqueue(new ThreadCommand { Type = ThreadCommandType.SaveSRAM });
+        public virtual void LoadSRAM() =>
+            _wrapper.Serialization.LoadSRAM();
 
-        public void LoadSRAM() => _threadCommands.Enqueue(new ThreadCommand { Type = ThreadCommandType.LoadSRAM });
-
-        public void SetDiskIndex(int index) => _threadCommands.Enqueue(new ThreadCommand { Type = ThreadCommandType.SetDiskIndex, Param0 = index });
-
-        public void TakeScreenshot(string screenshotPath)
+        public virtual void SetDiskIndex(int index)
         {
-            MainThreadDispatcher mainThreadDispatcher = MainThreadDispatcher.Instance;
-            if (mainThreadDispatcher == null)
-                return;
-
-            mainThreadDispatcher.Enqueue(() =>
-            {
-                if (_screenshotCoroutine == null && _texture != null && Running)
-                    _screenshotCoroutine = _instanceComponent.StartCoroutine(CoSaveScreenshot(screenshotPath));
-            });
+            if (GameNames.Length > index)
+                _ = _wrapper.Disk?.SetImageIndexAuto((uint)index, $"{GamesDirectory}/{GameNames[index]}");
         }
 
-        public void SetControllerPortDevice(uint port, uint id) => _threadCommands.Enqueue(new ThreadCommand { Type = ThreadCommandType.SetControllerPortDevice, Param0 = port, Param1 = id });
-
-        private void SetTexture(Texture texture)
+        public void TakeScreenshot(string screenshotPath) => MainThreadDispatcher.Enqueue(() =>
         {
-            if (texture == null)
+            if (_screenshotCoroutine == null && _texture && Running)
+                _screenshotCoroutine = _instanceComponent.StartCoroutine(CoSaveScreenshot(screenshotPath));
+        });
+
+        public virtual void SetControllerPortDevice(uint port, uint id) =>
+            _wrapper.Core.retro_set_controller_port_device(port, id);
+
+        protected void InvokeOnStartedEvent() => OnInstanceStarted?.Invoke();
+
+        protected void SetTexture(Texture texture)
+        {
+            if (!texture || !_screen)
                 return;
 
             _texture = texture as Texture2D;
-            if (_screen != null)
-            {
-                _screen.GetPropertyBlock(_materialPropertyBlock, 0);
-                _materialPropertyBlock.SetTexture(_shaderTextureId, _texture);
-                _screen.SetPropertyBlock(_materialPropertyBlock, 0);
-            }
-        }
-
-        private void LibretroThread()
-        {
-            try
-            {
-                Wrapper wrapper = new((TargetPlatform)Application.platform, _settings.MainDirectory);
-                if (!wrapper.StartContent(_coreName, _gamesDirectory, _gameNames?[0]))
-                {
-                    Debug.LogError("Failed to start core/game combination");
-                    return;
-                }
-
-                if (_gameNames != null)
-                    foreach (string gameName in _gameNames)
-                        _ = wrapper.Disk?.AddImageIndex();
-
-                if (wrapper.Core.HwAccelerated)
-                {
-                    // Running gl cores only works in builds, or if a debugger is attached to Unity instance. Set "_allowGLCoresInEditor" to true to bypass this.
-                    if (Application.isEditor && !AllowGLCoresInEditor)
-                    {
-                        wrapper.StopContent();
-                        Debug.LogError("Starting hardware accelerated cores is not supported in the editor");
-                        return;
-                    }
-
-                    wrapper.InitHardwareContext();
-                }
-
-                IGraphicsProcessor graphicsProcessor = new GraphicsProcessor(wrapper.Game.VideoWidth, wrapper.Game.VideoHeight, SetTexture);
-                wrapper.Graphics.Init(graphicsProcessor);
-                wrapper.Graphics.Enabled = true;
-
-                wrapper.Audio.Init(_audioProcessor);
-                wrapper.Audio.Enabled = true;
-
-                wrapper.Input.Init(_inputProcessor);
-                wrapper.Input.Enabled = true;
-
-                ControllersMap = wrapper.Input.DeviceMap;
-
-                wrapper.RewindEnabled = _settings.RewindEnabled;
-
-                double gameFrameTime = 1.0 / wrapper.Game.VideoFps;
-
-                _manualResetEvent.Reset();
-                MainThreadDispatcher mainThreadDispatcher = MainThreadDispatcher.Instance;
-                if (mainThreadDispatcher != null)
-                    mainThreadDispatcher.Enqueue(() =>
-                    {
-                        OnInstanceStarted?.Invoke();
-                        _manualResetEvent.Set();
-                    });
-                _manualResetEvent.Wait();
-
-                Running = true;
-                while (Running)
-                {
-                    lock (_lock)
-                    {
-                        while (_threadCommands.Count > 0)
-                        {
-                            if (_threadCommands.TryDequeue(out ThreadCommand command))
-                            {
-                                lock (_lock)
-                                {
-                                    switch (command.Type)
-                                    {
-                                        case ThreadCommandType.SaveStateWithScreenshot:
-                                            if (wrapper.Serialization.SaveState(_currentStateSlot, out string screenshotPath))
-                                                TakeScreenshot(screenshotPath);
-                                            break;
-                                        case ThreadCommandType.SaveStateWithoutScreenshot:
-                                            _ = wrapper.Serialization.SaveState(_currentStateSlot);
-                                            break;
-                                        case ThreadCommandType.LoadState:
-                                            _ = wrapper.Serialization.LoadState(_currentStateSlot);
-                                            break;
-                                        case ThreadCommandType.SaveSRAM:
-                                            _ = wrapper.Serialization.SaveSRAM();
-                                            break;
-                                        case ThreadCommandType.LoadSRAM:
-                                            _ = wrapper.Serialization.LoadSRAM();
-                                            break;
-                                        case ThreadCommandType.EnableInput:
-                                            wrapper.Input.Enabled = true;
-                                            break;
-                                        case ThreadCommandType.DisableInput:
-                                            wrapper.Input.Enabled = false;
-                                            break;
-                                        case ThreadCommandType.SetDiskIndex:
-                                            int index = (int)command.Param0;
-                                            if (_gameNames.Length > index)
-                                                _ = wrapper.Disk?.SetImageIndexAuto((uint)index, $"{_gamesDirectory}/{_gameNames[index]}");
-                                            break;
-                                        case ThreadCommandType.SetControllerPortDevice:
-                                            wrapper.Core.retro_set_controller_port_device((uint)command.Param0, (uint)command.Param1);
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (Paused)
-                        _manualResetEvent.Wait();
-                    else if (!Running)
-                        break;
-
-                    wrapper.RewindEnabled = _settings.RewindEnabled;
-
-                    if (_settings.RewindEnabled)
-                        wrapper.PerformRewind = Rewind;
-
-                    double currentTime = _stopwatch.Elapsed.TotalSeconds;
-                    double dt          = currentTime - _startTime;
-                    _startTime         = currentTime;
-
-                    double targetFrameTime = FastForward && FastForwardFactor > 0 ? gameFrameTime / FastForwardFactor : gameFrameTime;
-                    if ((_accumulator += dt) >= targetFrameTime)
-                    {
-                        wrapper.RunFrame();
-                        _accumulator = 0.0;
-                    }
-                }
-
-                wrapper.StopContent();
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-                _threadException = e;
-            }
+            _screen.material.SetTexture(_shaderTextureId, _texture);
         }
 
         private IEnumerator CoSaveScreenshot(string screenshotPath)
