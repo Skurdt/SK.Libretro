@@ -143,7 +143,7 @@ namespace SK.Libretro
 
         private const int REWIND_FRAMES_INTERVAL = 10;
 
-        private readonly List<IntPtr> _unmanagedPointers = new();
+        private readonly List<IntPtr> _unsafeStrings = new();
 
         private Language _optionLanguage = Language.English;
         private string _optionUserName   = "LibretroUnityFE's Awesome User";
@@ -155,7 +155,7 @@ namespace SK.Libretro
         {
             TargetPlatform = targetPlatform;
 
-            if (MainDirectory == null)
+            if (MainDirectory is null)
             {
                 MainDirectory        = !string.IsNullOrWhiteSpace(baseDirectory) ? baseDirectory : "libretro";
                 CoresDirectory       = $"{MainDirectory}/cores";
@@ -242,7 +242,7 @@ namespace SK.Libretro
             Game.Stop();
             Core.Stop();
 
-            FreeUnmanagedPointers();
+            PointerUtilities.Free(_unsafeStrings);
         }
 
         public void InitHardwareContext() => Marshal.GetDelegateForFunctionPointer<retro_hw_context_reset_t>(HwRenderInterface.context_reset).Invoke();
@@ -272,11 +272,11 @@ namespace SK.Libretro
 
         public ControllersMap DeviceMap => Input.DeviceMap;
 
-        internal unsafe char* GetUnsafeString(string source)
+        internal IntPtr GetUnsafeString(string source)
         {
             IntPtr ptr = Marshal.StringToHGlobalAnsi(source);
-            _unmanagedPointers.Add(ptr);
-            return (char*)ptr;
+            _unsafeStrings.Add(ptr);
+            return ptr;
         }
 
         private void FrameTimeRestart() => _frameTimeLast = System.Diagnostics.Stopwatch.GetTimestamp();
@@ -293,15 +293,6 @@ namespace SK.Libretro
                 delta = FrameTimeInterface.reference;
             _frameTimeLast = current;
             FrameTimeInterfaceCallback(delta * 1000);
-        }
-
-        private void FreeUnmanagedPointers()
-        {
-            for (int i = 0; i < _unmanagedPointers.Count; ++i)
-            {
-                if (_unmanagedPointers[i] != IntPtr.Zero)
-                    Marshal.FreeHGlobal(_unmanagedPointers[i]);
-            }
         }
     }
 }

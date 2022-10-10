@@ -23,7 +23,6 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using static SK.Libretro.Header;
 
 namespace SK.Libretro
 {
@@ -100,7 +99,8 @@ namespace SK.Libretro
         {
             if (Running)
             {
-                //_wrapper.Core.retro_unload_game();
+                //FIXME(Tom): This sometimes crashes
+                _wrapper.Core.retro_unload_game();
                 Running = false;
             }
 

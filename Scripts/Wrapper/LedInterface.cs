@@ -20,19 +20,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using System;
-using System.Runtime.InteropServices;
-using static SK.Libretro.Header;
-
 namespace SK.Libretro
 {
     internal sealed class LedInterface
     {
-        private readonly retro_led_interface _interface = new()
-        {
-            set_led_state = (int led, int state) => { }
-        };
-
-        public LedInterface(IntPtr data) => Marshal.StructureToPtr(_interface, data, true);
+        public readonly retro_led_interface Interface = new();
     }
 }

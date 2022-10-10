@@ -24,7 +24,7 @@ using System.Runtime.CompilerServices;
 
 namespace SK.Libretro
 {
-    public static class Maths
+    internal static class Maths
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Clamp(int val, int min, int max) => Max(min, Min(max, val));
@@ -45,7 +45,7 @@ namespace SK.Libretro
         public static float Max(float val, float max) => (float.IsNaN(val) || val > max) ? val : max;
     }
 
-    public static class MathsExtensions
+    internal static class MathsExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Clamp(this int val, int min, int max) => Maths.Clamp(val, min, max);

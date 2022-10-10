@@ -26,7 +26,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 #endif
 using System.Text.RegularExpressions;
-using static SK.Libretro.Header;
 
 namespace SK.Libretro
 {

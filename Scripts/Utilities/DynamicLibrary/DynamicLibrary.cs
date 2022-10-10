@@ -30,7 +30,8 @@ namespace SK.Libretro
     {
         public readonly string Extension;
 
-        protected string Path { get; private set; }
+        public string Path { get; private set; }
+
         protected string Name { get; private set; }
 
         protected IntPtr _nativeHandle;

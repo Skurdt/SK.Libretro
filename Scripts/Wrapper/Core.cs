@@ -49,10 +49,12 @@ namespace SK.Libretro
         public retro_get_memory_data_t retro_get_memory_data;
         public retro_get_memory_size_t retro_get_memory_size;
 
+        public string Path => System.IO.Path.GetDirectoryName(_dll.Path);
         public int Rotation { get; set; }
         public int PerformanceLevel { get; set; }
         public bool HwAccelerated { get; set; }
         public bool SupportNoGame { get; set; }
+        public bool SupportsAchievements { get; set; }
 
         public string Name { get; private set; }
         public uint ApiVersion { get; private set; }
@@ -166,7 +168,7 @@ namespace SK.Libretro
             lock (_serializeLock)
             {
                 CoreOptions = Deserialize($"{Wrapper.CoreOptionsDirectory}/{Name}.json") ?? new CoreOptions();
-                GameOptions = Deserialize($"{Wrapper.CoreOptionsDirectory}/{Name}/{_wrapper.Game.Name}.json") ?? ClassUtils.DeepCopy(CoreOptions);
+                GameOptions = Deserialize($"{Wrapper.CoreOptionsDirectory}/{Name}/{_wrapper.Game.Name}.json") ?? ClassUtilities.DeepCopy(CoreOptions);
             }
 
             static CoreOptions Deserialize(string path)
@@ -196,7 +198,7 @@ namespace SK.Libretro
                 if (!Directory.Exists(tempDirectory))
                     _ = Directory.CreateDirectory(tempDirectory);
 
-                string instancePath = Path.Combine(tempDirectory, $"{Name}_{Guid.NewGuid()}.{_dll.Extension}");
+                string instancePath = System.IO.Path.Combine(tempDirectory, $"{Name}_{Guid.NewGuid()}.{_dll.Extension}");
                 File.Copy(corePath, instancePath);
 
                 _dll.Load(instancePath);

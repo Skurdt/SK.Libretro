@@ -20,15 +20,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using System;
-using System.Runtime.InteropServices;
-using static SK.Libretro.Header;
-
 namespace SK.Libretro
 {
     internal sealed class PerfInterface
     {
-        private readonly retro_perf_callback _callback = new()
+        public readonly retro_perf_callback Callback = new()
         {
             get_time_usec    = () => 0,
             get_cpu_features = () => 0,
@@ -38,7 +34,5 @@ namespace SK.Libretro
             perf_stop        = (ref retro_perf_counter counter) => {},
             perf_log         = () => {}
         };
-
-        public PerfInterface(IntPtr data) => Marshal.StructureToPtr(_callback, data, true);
     }
 }

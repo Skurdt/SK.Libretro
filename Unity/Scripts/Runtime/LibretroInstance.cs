@@ -49,10 +49,10 @@ namespace SK.Libretro.Unity
         public bool FastForward { get => _libretro.FastForward; set => _libretro.FastForward = value; }
         public bool Rewind { get => _libretro.Rewind; set => _libretro.Rewind = value; }
 
-        private Bridge _libretro;
+        private BridgeMainThread _libretro;
 
         private void Awake() =>
-            _libretro = UseSeparateThread ? new BridgeSeparateThread(this) : new Bridge(this);
+            _libretro = UseSeparateThread ? new BridgeSeparateThread(this) : new BridgeMainThread(this);
 
         private void OnDisable() =>
             StopContent();

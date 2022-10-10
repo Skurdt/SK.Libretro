@@ -28,6 +28,20 @@ namespace SK.Libretro
 {
     public static class FileSystem
     {
+        public static string GetOrCreateDirectory(string path)
+        {
+            try
+            {
+                if (!Directory.Exists(path))
+                    _ = Directory.CreateDirectory(path);
+                return path;
+            }
+            catch (System.Exception)
+            {
+                throw;
+            }
+        }
+
         public static bool FileExists(string path) => File.Exists(path);
 
         public static bool CreateFile(string path)

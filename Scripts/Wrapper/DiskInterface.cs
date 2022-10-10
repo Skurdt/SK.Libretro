@@ -23,7 +23,6 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using static SK.Libretro.Header;
 
 namespace SK.Libretro
 {
@@ -37,7 +36,7 @@ namespace SK.Libretro
         public DiskInterface(Wrapper wrapper, retro_disk_control_callback callback)
         {
             _wrapper  = wrapper;
-            _callback = new retro_disk_control_ext_callback()
+            _callback = new()
             {
                 set_eject_state     = callback.set_eject_state     ?? ((bool ejected) => false),
                 get_eject_state     = callback.get_eject_state     ?? (() => false),
@@ -55,7 +54,7 @@ namespace SK.Libretro
         public DiskInterface(Wrapper wrapper, retro_disk_control_ext_callback callback)
         {
             _wrapper  = wrapper;
-            _callback = new retro_disk_control_ext_callback()
+            _callback = new()
             {
                 set_eject_state     = callback.set_eject_state     ?? ((bool ejected) => false),
                 get_eject_state     = callback.get_eject_state     ?? (() => false),
@@ -69,10 +68,19 @@ namespace SK.Libretro
                 get_image_label     = callback.get_image_label     ?? ((uint index, IntPtr label, ulong len) => false)
             };
         }
-        public bool SetEjectState(bool ejected) => _callback.set_eject_state(ejected);
-        public bool GetEjectState() => _callback.get_eject_state();
-        public uint GetImageIndex() => _callback.get_image_index();
-        public bool SetImageIndex(uint index) => _callback.set_image_index(index);
+
+        public bool SetEjectState(bool ejected) =>
+            _callback.set_eject_state(ejected);
+
+        public bool GetEjectState() =>
+            _callback.get_eject_state();
+
+        public uint GetImageIndex() =>
+            _callback.get_image_index();
+
+        public bool SetImageIndex(uint index) =>
+            _callback.set_image_index(index);
+
         public bool SetImageIndexAuto(uint index, string path)
         {
             if (_callback.get_eject_state())
@@ -115,11 +123,23 @@ namespace SK.Libretro
 
             return false;
         }
-        public uint GetNumImages() => _callback.get_num_images();
-        public bool ReplaceImageIndex(uint index, ref retro_game_info info) => _callback.replace_image_index(index, ref info);
-        public bool AddImageIndex() => _callback.add_image_index();
-        public bool SetInitialImage(uint index, IntPtr path) => _callback.set_initial_image(index, path);
-        public bool GetImagePath(uint index, IntPtr path, ulong len) => _callback.get_image_path(index, path, len);
-        public bool GetImageLabel(uint index, IntPtr label, ulong len) => _callback.get_image_label(index, label, len);
+
+        public uint GetNumImages() =>
+            _callback.get_num_images();
+        
+        public bool ReplaceImageIndex(uint index, ref retro_game_info info) =>
+            _callback.replace_image_index(index, ref info);
+        
+        public bool AddImageIndex() =>
+            _callback.add_image_index();
+        
+        public bool SetInitialImage(uint index, IntPtr path) =>
+            _callback.set_initial_image(index, path);
+        
+        public bool GetImagePath(uint index, IntPtr path, ulong len) =>
+            _callback.get_image_path(index, path, len);
+        
+        public bool GetImageLabel(uint index, IntPtr label, ulong len) =>
+            _callback.get_image_label(index, label, len);
     }
 }
