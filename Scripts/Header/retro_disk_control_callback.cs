@@ -22,31 +22,43 @@
 
 using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
-    //typedef bool (RETRO_CALLCONV *retro_set_eject_state_t)(bool ejected);
+    // typedef bool (RETRO_CALLCONV *retro_set_eject_state_t)(bool ejected);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate bool retro_set_eject_state_t(bool ejected);
-    //typedef bool (RETRO_CALLCONV *retro_get_eject_state_t)(void);
+    [return: MarshalAs(UnmanagedType.U1)]
+    internal delegate bool retro_set_eject_state_t([MarshalAs(UnmanagedType.U1)] bool ejected);
+    
+    // typedef bool (RETRO_CALLCONV *retro_get_eject_state_t)(void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return: MarshalAs(UnmanagedType.U1)]
     internal delegate bool retro_get_eject_state_t();
-    //typedef unsigned (RETRO_CALLCONV *retro_get_image_index_t)(void);
+   
+    // typedef unsigned (RETRO_CALLCONV *retro_get_image_index_t)(void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate uint retro_get_image_index_t();
-    //typedef bool (RETRO_CALLCONV *retro_set_image_index_t)(unsigned index);
+    
+    // typedef bool (RETRO_CALLCONV *retro_set_image_index_t)(unsigned index);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return: MarshalAs(UnmanagedType.U1)]
     internal delegate bool retro_set_image_index_t(uint index);
-    //typedef unsigned (RETRO_CALLCONV *retro_get_num_images_t)(void);
+    
+    // typedef unsigned (RETRO_CALLCONV *retro_get_num_images_t)(void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate uint retro_get_num_images_t();
-    //typedef bool (RETRO_CALLCONV *retro_replace_image_index_t)(unsigned index, const struct retro_game_info *info);
+    
+    // typedef bool (RETRO_CALLCONV *retro_replace_image_index_t)(unsigned index, const struct retro_game_info *info);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return: MarshalAs(UnmanagedType.U1)]
     internal delegate bool retro_replace_image_index_t(uint index, ref retro_game_info info);
-    //typedef bool (RETRO_CALLCONV *retro_add_image_index_t)(void);
+    
+    // typedef bool (RETRO_CALLCONV *retro_add_image_index_t)(void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return: MarshalAs(UnmanagedType.U1)]
     internal delegate bool retro_add_image_index_t();
 
-    internal struct retro_disk_control_callback
+    [StructLayout(LayoutKind.Sequential)]
+    internal sealed class retro_disk_control_callback
     {
         public retro_set_eject_state_t set_eject_state;
         public retro_get_eject_state_t get_eject_state;

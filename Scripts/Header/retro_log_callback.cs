@@ -23,7 +23,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     // typedef void (RETRO_CALLCONV* retro_log_printf_t)(enum retro_log_level level, const char* fmt, ...);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

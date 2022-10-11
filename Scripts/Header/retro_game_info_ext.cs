@@ -21,9 +21,9 @@
  * SOFTWARE. */
 
 using System;
-using size_t = System.UInt64;
+using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     internal struct retro_game_info_ext
     {
@@ -35,8 +35,8 @@ namespace SK.Libretro
         public IntPtr ext;          // const char*
         public IntPtr meta;         // const char*
         public IntPtr data;         // const void*
-        public size_t size;
-        public bool file_in_archive;
-        public bool persistent_data;
+        public nuint size;
+        [MarshalAs(UnmanagedType.U1)] public bool file_in_archive;
+        [MarshalAs(UnmanagedType.U1)] public bool persistent_data;
     }
 }

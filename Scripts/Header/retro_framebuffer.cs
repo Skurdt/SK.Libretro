@@ -21,16 +21,15 @@
  * SOFTWARE. */
 
 using System;
-using size_t = System.UInt64;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     internal struct retro_framebuffer
     {
         public IntPtr data; // void*
         public uint width;
         public uint height;
-        public size_t pitch;
+        public nuint pitch;
         public retro_pixel_format format;
         public uint access_flags;
         public uint memory_flags;

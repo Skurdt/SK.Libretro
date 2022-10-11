@@ -23,7 +23,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     // typedef bool (RETRO_CALLCONV* retro_core_options_update_display_callback_t) (void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

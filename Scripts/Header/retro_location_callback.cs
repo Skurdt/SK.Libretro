@@ -23,7 +23,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     // typedef void (RETRO_CALLCONV *retro_location_set_interval_t) (unsigned interval_ms, unsigned interval_distance);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

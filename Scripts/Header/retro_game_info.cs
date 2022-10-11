@@ -21,15 +21,14 @@
  * SOFTWARE. */
 
 using System;
-using size_t = System.UInt64;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     internal struct retro_game_info
     {
         public IntPtr path; // const char*
         public IntPtr data; // const void*
-        public size_t size;
+        public nuint size;
         public IntPtr meta; // const char*
     }
 }

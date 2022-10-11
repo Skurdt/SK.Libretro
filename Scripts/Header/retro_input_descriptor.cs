@@ -23,13 +23,13 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     [StructLayout(LayoutKind.Sequential)]
     internal sealed class retro_input_descriptor
     {
         public uint port;
-        public uint device;
+        public RETRO_DEVICE device;
         public uint index;
         public uint id;
         public IntPtr desc; // const char*

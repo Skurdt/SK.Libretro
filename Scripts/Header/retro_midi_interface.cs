@@ -23,7 +23,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     // typedef bool (RETRO_CALLCONV *retro_midi_input_enabled_t)(void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

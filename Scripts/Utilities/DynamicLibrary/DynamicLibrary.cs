@@ -82,10 +82,15 @@ namespace SK.Libretro
             {
                 throw new Exception($"Failed to free library '{Name}' at path '{Path}' ({e.Message})");
             }
-            finally
+
+            try
             {
                 if (deleteFile && File.Exists(Path))
                     File.Delete(Path);
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Failed to delete file '{Name}' at path '{Path}' ({e.Message})");
             }
         }
 

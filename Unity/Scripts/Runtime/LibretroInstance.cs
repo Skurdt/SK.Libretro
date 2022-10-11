@@ -20,6 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using SK.Libretro.Header;
 using System;
 using UnityEngine;
 
@@ -51,11 +52,16 @@ namespace SK.Libretro.Unity
 
         private BridgeMainThread _libretro;
 
-        private void Awake() =>
-            _libretro = UseSeparateThread ? new BridgeSeparateThread(this) : new BridgeMainThread(this);
-
         private void OnDisable() =>
             StopContent();
+
+        private void Update()
+        {
+            if (_libretro is null || UseSeparateThread)
+                return;
+
+            _libretro.TickMainThread();
+        }
 
         public void Initialize(string coreName, string gamesDirectory, params string[] gameNames)
         {
@@ -73,7 +79,8 @@ namespace SK.Libretro.Unity
 
         public void StartContent()
         {
-            SetContent();
+            _libretro = UseSeparateThread ? new BridgeSeparateThread(this) : new BridgeMainThread(this);
+            _libretro.SetContent(CoreName, GamesDirectory, GameNames);
             _libretro.StartContent(OnInstanceStarted, OnInstanceStopped);
         }
 
@@ -90,8 +97,9 @@ namespace SK.Libretro.Unity
             _libretro = null;
         }
 
-        public void SetControllerPortDevice(uint port, uint id) =>
+        public void SetControllerPortDevice(uint port, RETRO_DEVICE id) =>
             _libretro.SetControllerPortDevice(port, id);
+
         public void SaveStateWithScreenshot() =>
             _libretro.SaveStateWithScreenshot();
 
@@ -106,8 +114,5 @@ namespace SK.Libretro.Unity
 
         public void SetDiskIndex(int index) =>
             _libretro.SetDiskIndex(index);
-
-        private void SetContent() =>
-            _libretro.SetContent(CoreName, GamesDirectory, GameNames);
     }
 }

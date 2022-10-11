@@ -20,6 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using SK.Libretro.Header;
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
@@ -184,8 +185,8 @@ namespace SK.Libretro.Unity
         public override void SetDiskIndex(int index) =>
             _threadCommands.Enqueue(new SetDiskIndexThreadCommand(GamesDirectory, GameNames, index));
 
-        public override void SetControllerPortDevice(uint port, uint id) =>
-            _threadCommands.Enqueue(new SetControllerPortDeviceThreadCommand(port, id));
+        public override void SetControllerPortDevice(uint port, RETRO_DEVICE device) =>
+            _threadCommands.Enqueue(new SetControllerPortDeviceThreadCommand(port, device));
 
         public override void TakeScreenshot(string screenshotPath) =>
             MainThreadDispatcher.Enqueue(() => base.TakeScreenshot(screenshotPath));
@@ -212,6 +213,9 @@ namespace SK.Libretro.Unity
             });
             _manualResetEvent.Wait();
         }
+
+        protected override IGraphicsProcessor GetGraphicsProcessor(int videoWidth, int videoHeight) =>
+            new GraphicsProcessorSeparateThread(videoWidth, videoHeight, SetTexture);
 
         private void LibretroThread()
         {
@@ -255,22 +259,21 @@ namespace SK.Libretro.Unity
                     Thread.Sleep(1);
                 }
 
-                wrapper.StopContent();
+                lock (_lock)
+                    wrapper.StopContent();
             }
             catch (Exception e)
             {
                 Debug.LogException(e);
             }
         }
-        protected override IGraphicsProcessor GetGraphicsProcessor(int videoWidth, int videoHeight) =>
-            new GraphicsProcessorSeparateThread(videoWidth, videoHeight, SetTexture);
 
         private interface IThreadCommand
         {
             public void Execute(Wrapper wrapper);
         }
 
-        private sealed class EnableInputThreadCommand : IThreadCommand
+        private struct EnableInputThreadCommand : IThreadCommand
         {
             private readonly bool _enabled;
 
@@ -281,7 +284,7 @@ namespace SK.Libretro.Unity
                 wrapper.Input.Enabled = _enabled;
         }
 
-        private sealed class SaveStateWithScreenshotThreadCommand : IThreadCommand
+        private struct SaveStateWithScreenshotThreadCommand : IThreadCommand
         {
             private readonly int _currentStateSlot;
             private readonly Action<string> _takeScreenshotFunc;
@@ -296,7 +299,7 @@ namespace SK.Libretro.Unity
             }
         }
 
-        private sealed class SaveStateWithoutScreenshotThreadCommand : IThreadCommand
+        private struct SaveStateWithoutScreenshotThreadCommand : IThreadCommand
         {
             private readonly int _currentStateSlot;
 
@@ -307,7 +310,7 @@ namespace SK.Libretro.Unity
                 wrapper.Serialization.SaveState(_currentStateSlot);
         }
 
-        private sealed class LoadStateThreadCommand : IThreadCommand
+        private struct LoadStateThreadCommand : IThreadCommand
         {
             private readonly int _currentStateSlot;
 
@@ -318,19 +321,19 @@ namespace SK.Libretro.Unity
                 wrapper.Serialization.LoadState(_currentStateSlot);
         }
 
-        private sealed class SaveSRAMThreadCommand : IThreadCommand
+        private struct SaveSRAMThreadCommand : IThreadCommand
         {
             public void Execute(Wrapper wrapper) =>
                 wrapper.Serialization.SaveSRAM();
         }
 
-        private sealed class LoadSRAMThreadCommand : IThreadCommand
+        private struct LoadSRAMThreadCommand : IThreadCommand
         {
             public void Execute(Wrapper wrapper) =>
                 wrapper.Serialization.LoadSRAM();
         }
 
-        private sealed class SetDiskIndexThreadCommand : IThreadCommand
+        private struct SetDiskIndexThreadCommand : IThreadCommand
         {
             private readonly string _gamesDirectory;
             private readonly string[] _gameNames;
@@ -346,70 +349,16 @@ namespace SK.Libretro.Unity
             }
         }
 
-        private sealed class SetControllerPortDeviceThreadCommand : IThreadCommand
+        private struct SetControllerPortDeviceThreadCommand : IThreadCommand
         {
             private readonly uint _port;
-            private readonly uint _id;
+            private readonly RETRO_DEVICE _device;
             
-            public SetControllerPortDeviceThreadCommand(uint port, uint id) =>
-                (_port, _id) = (port, id);
+            public SetControllerPortDeviceThreadCommand(uint port, RETRO_DEVICE device) =>
+                (_port, _device) = (port, device);
             
             public void Execute(Wrapper wrapper) =>
-                wrapper.Core.retro_set_controller_port_device(_port, _id);
+                wrapper.Core.retro_set_controller_port_device(_port, _device);
         }
-
-        //private enum ThreadCommandType
-        //{
-        //    SaveStateWithScreenshot,
-        //    SaveStateWithoutScreenshot,
-        //    LoadState,
-        //    SaveSRAM,
-        //    LoadSRAM,
-        //    EnableInput,
-        //    DisableInput,
-        //    SetDiskIndex,
-        //    SetControllerPortDevice
-        //}
-
-        //private interface IThreadCommand
-        //{
-        //    public ThreadCommandType Type { get; init; }
-        //}
-
-        //private struct ThreadCommand0 : IThreadCommand
-        //{
-        //    public ThreadCommandType Type { get; init; }
-        //    public ThreadCommand0(ThreadCommandType type) =>
-        //        Type = type;
-        //}
-
-        //private struct ThreadCommand1<T> : IThreadCommand
-        //{
-        //    public ThreadCommandType Type { get; init; }
-        //    public readonly T Arg;
-
-        //    public ThreadCommand1(ThreadCommandType type, T arg) =>
-        //        (Type, Arg) = (type, arg);
-        //}
-
-        //private struct ThreadCommand2<T> : IThreadCommand
-        //{
-        //    public ThreadCommandType Type { get; init; }
-        //    public readonly T Arg0;
-        //    public readonly T Arg1;
-
-        //    public ThreadCommand2(ThreadCommandType type, T arg0, T arg1) =>
-        //        (Type, Arg0, Arg1) = (type, arg0, arg1);
-        //}
-
-        //private struct ThreadCommand2<T1, T2> : IThreadCommand
-        //{
-        //    public ThreadCommandType Type { get; init; }
-        //    public readonly T1 Arg0;
-        //    public readonly T2 Arg1;
-
-        //    public ThreadCommand2(ThreadCommandType type, T1 arg0, T2 arg1) =>
-        //        (Type, Arg0, Arg1) = (type, arg0, arg1);
-        //}
     }
 }

@@ -23,7 +23,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     // typedef bool (RETRO_CALLCONV *retro_camera_start_t) (void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -37,7 +37,7 @@ namespace SK.Libretro
     internal delegate void retro_camera_lifetime_status_t();
     // typedef void (RETRO_CALLCONV *retro_camera_frame_raw_framebuffer_t) (const uint32_t* buffer, unsigned width, unsigned height, size_t pitch);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate void retro_camera_frame_raw_framebuffer_t(UIntPtr buffer, uint width, uint height, ulong pitch);
+    internal delegate void retro_camera_frame_raw_framebuffer_t(UIntPtr buffer, uint width, uint height, nuint pitch);
     // typedef void (RETRO_CALLCONV *retro_camera_frame_opengl_texture_t) (unsigned texture_id, unsigned texture_target, const float* affine);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate void retro_camera_frame_opengl_texture_t(uint texture_id, uint texture_target, ref float affine);

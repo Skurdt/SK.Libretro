@@ -22,7 +22,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     // typedef bool (RETRO_CALLCONV *retro_set_rumble_state_t)(unsigned port, enum retro_rumble_effect effect, uint16_t strength);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

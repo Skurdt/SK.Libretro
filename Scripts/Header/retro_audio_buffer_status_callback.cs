@@ -23,7 +23,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     // typedef void (RETRO_CALLCONV* retro_audio_buffer_status_callback_t)(bool active, unsigned occupancy, bool underrun_likely);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

@@ -20,6 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using SK.Libretro.Header;
 using System;
 using System.Collections;
 using System.IO;
@@ -101,6 +102,7 @@ namespace SK.Libretro.Unity
         private Wrapper _wrapper;
         private Texture2D _texture;
         private Coroutine _screenshotCoroutine;
+        private double _gameFrameTime;
 
         public BridgeMainThread(LibretroInstance instance)
         {
@@ -117,7 +119,7 @@ namespace SK.Libretro.Unity
 
             _instanceComponent = instance;
             _screen            = instance.Renderer;
-            _settings           = instance.Settings;
+            _settings          = instance.Settings;
 
             _shaderTextureId = Shader.PropertyToID(_settings.ShaderTextureName);
         }
@@ -188,6 +190,43 @@ namespace SK.Libretro.Unity
             StartContent();
         }
 
+        public void StopContent()
+        {
+            if (!Running)
+                return;
+
+            if (Paused)
+                ResumeContent();
+
+            Running = false;
+
+            OnInstanceStopped?.Invoke();
+
+            _wrapper?.StopContent();
+        }
+
+        public void TickMainThread()
+        {
+            if (!Running || Paused)
+                return;
+
+            _wrapper.RewindEnabled = _settings.RewindEnabled;
+
+            if (_settings.RewindEnabled)
+                _wrapper.PerformRewind = Rewind;
+
+            double currentTime = _stopwatch.Elapsed.TotalSeconds;
+            double dt = currentTime - _startTime;
+            _startTime = currentTime;
+
+            double targetFrameTime = FastForward && FastForwardFactor > 0 ? _gameFrameTime / FastForwardFactor : _gameFrameTime;
+            if ((_accumulator += dt) >= targetFrameTime)
+            {
+                _wrapper.RunFrame();
+                _accumulator = 0.0;
+            }
+        }
+
         public virtual void PauseContent()
         {
             if (!Running || Paused)
@@ -202,19 +241,6 @@ namespace SK.Libretro.Unity
                 return;
 
             Paused = false;
-        }
-
-        public void StopContent()
-        {
-            if (!Running)
-                return;
-
-            if (Paused)
-                ResumeContent();
-
-            Running = false;
-
-            OnInstanceStopped?.Invoke();
         }
 
         public virtual void SetStateSlot(string slot)
@@ -250,22 +276,20 @@ namespace SK.Libretro.Unity
                 _ = _wrapper.Disk?.SetImageIndexAuto((uint)index, $"{GamesDirectory}/{GameNames[index]}");
         }
 
+        public virtual void SetControllerPortDevice(uint port, RETRO_DEVICE device) =>
+            _wrapper.Core.retro_set_controller_port_device(port, device);
+
         public virtual void TakeScreenshot(string screenshotPath)
         {
             if (_screenshotCoroutine is null && _texture && Running)
                 _screenshotCoroutine = _instanceComponent.StartCoroutine(CoSaveScreenshot(screenshotPath));
         }
 
-        public virtual void SetControllerPortDevice(uint port, uint id) =>
-            _wrapper.Core.retro_set_controller_port_device(port, id);
-
-        protected virtual void InvokeOnStartedEvent() => OnInstanceStarted?.Invoke();
-
         protected virtual void StartContent()
         {
             try
             {
-                _ = _instanceComponent.StartCoroutine(CoRunLoop());
+                _wrapper = InitializeWrapper();
             }
             catch (Exception e)
             {
@@ -273,12 +297,14 @@ namespace SK.Libretro.Unity
             }
         }
 
+        protected virtual void InvokeOnStartedEvent() => OnInstanceStarted?.Invoke();
+
         protected virtual IGraphicsProcessor GetGraphicsProcessor(int videoWidth, int videoHeight) =>
             new GraphicsProcessor(videoWidth, videoHeight, SetTexture);
 
         protected Wrapper InitializeWrapper()
         {
-            Wrapper wrapper = new((TargetPlatform)Application.platform, _settings.MainDirectory);
+            Wrapper wrapper = new((RuntimePlatform)Application.platform, _settings.MainDirectory);
             if (!wrapper.StartContent(CoreName, GamesDirectory, GameNames?[0]))
             {
                 Debug.LogError("Failed to start core/game combination");
@@ -289,9 +315,10 @@ namespace SK.Libretro.Unity
                 for (int i = 0; i < GameNames.Length; ++i)
                     _ = wrapper.Disk?.AddImageIndex();
 
+            IGraphicsProcessor graphicsProcessor = GetGraphicsProcessor(wrapper.Game.VideoWidth, wrapper.Game.VideoHeight);
+            GraphicsFrameHandlerBase graphicsFrameHandler;
             if (wrapper.Core.HwAccelerated)
             {
-                // Running gl cores only works in builds, or if a debugger is attached to Unity instance. Set "_allowGLCoresInEditor" to true to bypass this.
                 if (Application.isEditor && !_settings.AllowGLCoresInEditor)
                 {
                     wrapper.StopContent();
@@ -299,11 +326,21 @@ namespace SK.Libretro.Unity
                     return null;
                 }
 
+                graphicsFrameHandler = new GraphicsFrameHandlerOpenGLXRGB8888VFlip(graphicsProcessor, wrapper.OpenGL);
+
                 wrapper.InitHardwareContext();
             }
+            else
+                graphicsFrameHandler = wrapper.Graphics.PixelFormat switch
+                {
+                    retro_pixel_format.RETRO_PIXEL_FORMAT_0RGB1555 => new GraphicsFrameHandlerSoftware0RGB1555(graphicsProcessor),
+                    retro_pixel_format.RETRO_PIXEL_FORMAT_XRGB8888 => new GraphicsFrameHandlerSoftwareXRGB8888(graphicsProcessor),
+                    retro_pixel_format.RETRO_PIXEL_FORMAT_RGB565   => new GraphicsFrameHandlerSoftwareRGB565(graphicsProcessor),
+                    retro_pixel_format.RETRO_PIXEL_FORMAT_UNKNOWN
+                    or _ => new GraphicsFrameHandlerNull(graphicsProcessor)
+                };
 
-            IGraphicsProcessor graphicsProcessor = GetGraphicsProcessor(wrapper.Game.VideoWidth, wrapper.Game.VideoHeight);
-            wrapper.Graphics.Init(graphicsProcessor);
+            wrapper.Graphics.Init(graphicsFrameHandler);
             wrapper.Graphics.Enabled = true;
 
             wrapper.Audio.Init(_audioProcessor);
@@ -316,8 +353,11 @@ namespace SK.Libretro.Unity
 
             wrapper.RewindEnabled = _settings.RewindEnabled;
 
+            _gameFrameTime = 1.0 / wrapper.Game.VideoFps;
+
             InvokeOnStartedEvent();
 
+            Running = true;
             return wrapper;
         }
 
@@ -328,42 +368,6 @@ namespace SK.Libretro.Unity
 
             _texture = texture as Texture2D;
             _screen.material.SetTexture(_shaderTextureId, _texture);
-        }
-
-        private IEnumerator CoRunLoop()
-        {
-            _wrapper = InitializeWrapper();
-            double gameFrameTime = 1.0 / _wrapper.Game.VideoFps;
-
-            Running = true;
-            while (Running)
-            {
-                if (Paused)
-                    yield return null;
-
-                if (!Running)
-                    break;
-
-                _wrapper.RewindEnabled = _settings.RewindEnabled;
-
-                if (_settings.RewindEnabled)
-                    _wrapper.PerformRewind = Rewind;
-
-                double currentTime = _stopwatch.Elapsed.TotalSeconds;
-                double dt = currentTime - _startTime;
-                _startTime = currentTime;
-
-                double targetFrameTime = FastForward && FastForwardFactor > 0 ? gameFrameTime / FastForwardFactor : gameFrameTime;
-                if ((_accumulator += dt) >= targetFrameTime)
-                {
-                    _wrapper.RunFrame();
-                    _accumulator = 0.0;
-                }
-
-                yield return null;
-            }
-
-            _wrapper.StopContent();
         }
 
         private IEnumerator CoSaveScreenshot(string screenshotPath)

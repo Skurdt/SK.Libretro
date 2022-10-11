@@ -21,20 +21,20 @@
  * SOFTWARE. */
 
 using System;
-using size_t = System.UInt64;
-using uint64_t = System.UInt64;
+using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
-    internal struct retro_memory_descriptor
+    [StructLayout(LayoutKind.Sequential)]
+    internal sealed class retro_memory_descriptor
     {
-        public uint64_t flags;
+        public ulong flags;
         public IntPtr ptr;       // void*
-        public size_t offset;
-        public size_t start;
-        public size_t select;
-        public size_t disconnect;
-        public size_t len;
+        public nuint offset;
+        public nuint start;
+        public nuint select;
+        public nuint disconnect;
+        public nuint len;
         public IntPtr addrspace; // const char*
     }
 }

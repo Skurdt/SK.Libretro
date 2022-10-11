@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     internal struct retro_system_av_info
     {

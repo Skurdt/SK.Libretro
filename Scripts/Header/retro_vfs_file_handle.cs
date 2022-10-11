@@ -22,7 +22,7 @@
 
 using System;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     public readonly ref struct retro_vfs_file_handle
     {

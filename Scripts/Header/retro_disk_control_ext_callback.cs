@@ -20,22 +20,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using System;
 using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
-    //typedef bool (RETRO_CALLCONV *retro_set_initial_image_t)(unsigned index, const char *path);
+    // typedef bool (RETRO_CALLCONV *retro_set_initial_image_t)(unsigned index, const char *path);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate bool retro_set_initial_image_t(uint index, IntPtr path);
-    //typedef bool (RETRO_CALLCONV *retro_get_image_path_t)(unsigned index, char *path, size_t len);
+    [return: MarshalAs(UnmanagedType.U1)]
+    internal delegate bool retro_set_initial_image_t(uint index, [MarshalAs(UnmanagedType.LPStr)] string path);
+    
+    // typedef bool (RETRO_CALLCONV *retro_get_image_path_t)(unsigned index, char *path, size_t len);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate bool retro_get_image_path_t(uint index, IntPtr path, ulong len);
-    //typedef bool (RETRO_CALLCONV *retro_get_image_label_t)(unsigned index, char *label, size_t len);
+    [return: MarshalAs(UnmanagedType.U1)]
+    internal delegate bool retro_get_image_path_t(uint index, [MarshalAs(UnmanagedType.LPStr)] ref string path, nuint len);
+    
+    // typedef bool (RETRO_CALLCONV *retro_get_image_label_t)(unsigned index, char *label, size_t len);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate bool retro_get_image_label_t(uint index, IntPtr label, ulong len);
+    [return: MarshalAs(UnmanagedType.U1)]
+    internal delegate bool retro_get_image_label_t(uint index, [MarshalAs(UnmanagedType.LPStr)] ref string label, nuint len);
 
-    internal struct retro_disk_control_ext_callback
+    [StructLayout(LayoutKind.Sequential)]
+    internal sealed class retro_disk_control_ext_callback
     {
         public retro_set_eject_state_t set_eject_state;
         public retro_get_eject_state_t get_eject_state;

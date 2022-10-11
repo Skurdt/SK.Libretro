@@ -22,7 +22,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     // Equivalent of retro_core_option_value[RETRO_NUM_CORE_OPTION_VALUES_MAX] array
     [StructLayout(LayoutKind.Sequential)]

@@ -23,7 +23,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     // typedef void (RETRO_CALLCONV *retro_hw_context_reset_t)(void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -33,21 +33,22 @@ namespace SK.Libretro
     internal delegate UIntPtr retro_hw_get_current_framebuffer_t();
     // typedef retro_proc_address_t (RETRO_CALLCONV *retro_hw_get_proc_address_t)(const char* sym);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate IntPtr retro_hw_get_proc_address_t(string sym);
+    internal delegate IntPtr retro_hw_get_proc_address_t([MarshalAs(UnmanagedType.LPStr)] string sym);
 
-    internal struct retro_hw_render_callback
+    [StructLayout(LayoutKind.Sequential)]
+    internal sealed class retro_hw_render_callback
     {
         public retro_hw_context_type context_type;
         public IntPtr context_reset;               // retro_hw_context_reset_t
         public IntPtr get_current_framebuffer;     // retro_hw_get_current_framebuffer_t
         public IntPtr get_proc_address;            // retro_hw_get_proc_address_t
-        public bool depth;
-        public bool stencil;
-        public bool bottom_left_origin;
+        [MarshalAs(UnmanagedType.U1)] public bool depth;
+        [MarshalAs(UnmanagedType.U1)] public bool stencil;
+        [MarshalAs(UnmanagedType.U1)] public bool bottom_left_origin;
         public uint version_major;
         public uint version_minor;
-        public bool cache_context;
+        [MarshalAs(UnmanagedType.U1)] public bool cache_context;
         public IntPtr context_destroy;             // retro_hw_context_reset_t
-        public bool debug_context;
+        [MarshalAs(UnmanagedType.U1)] public bool debug_context;
     }
 }

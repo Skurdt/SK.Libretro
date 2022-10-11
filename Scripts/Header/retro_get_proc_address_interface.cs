@@ -23,7 +23,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     // typedef retro_proc_address_t (RETRO_CALLCONV *retro_get_proc_address_t)(const char* sym);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

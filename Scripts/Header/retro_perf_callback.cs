@@ -22,7 +22,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     // typedef retro_time_t (RETRO_CALLCONV *retro_perf_get_time_usec_t)(void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

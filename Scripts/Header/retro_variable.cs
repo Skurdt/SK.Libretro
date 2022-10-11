@@ -23,7 +23,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     [StructLayout(LayoutKind.Sequential)]
     internal sealed class retro_variable

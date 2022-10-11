@@ -22,7 +22,7 @@
 
 using System;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     internal struct retro_system_info
     {

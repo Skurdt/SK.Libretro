@@ -21,16 +21,15 @@
  * SOFTWARE. */
 
 using System;
-using retro_perf_tick_t = System.UInt64;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
     internal struct retro_perf_counter
     {
         public IntPtr ident; // const char*
-        public retro_perf_tick_t start;
-        public retro_perf_tick_t total;
-        public retro_perf_tick_t call_cnt;
+        public ulong start;
+        public ulong total;
+        public ulong call_cnt;
         public bool registered;
     }
 }

@@ -20,6 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using SK.Libretro.Header;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
@@ -58,24 +59,60 @@ namespace SK.Libretro.Unity
                 _ = _controls.Remove(player.playerIndex);
         }
 
-        public short JoypadButton(int port, uint button) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.JoypadButton(button) : (short)0;
-        public short JoypadButtons(int port)             => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.JoypadButtons : (short)0;
+        public short JoypadButton(int port, RETRO_DEVICE_ID_JOYPAD button) =>
+            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.JoypadButton(button) : (short)0;
+        
+        public short JoypadButtons(int port) =>
+            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.JoypadButtons : (short)0;
 
-        public short MouseX(int port)                   => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.MouseX : (short)0;
-        public short MouseY(int port)                   => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? (short)-processor.MouseY : (short)0;
-        public short MouseWheel(int port)               => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.MouseWheel : (short)0;
-        public short MouseButton(int port, uint button) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.MouseButton(button) : (short)0;
+        public short MouseX(int port) =>
+            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.MouseX : (short)0;
+        
+        public short MouseY(int port) =>
+            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? (short)-processor.MouseY : (short)0;
+        
+        public short MouseWheel(int port) =>
+            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.MouseWheel : (short)0;
+        public short MouseButton(int port, RETRO_DEVICE_ID_MOUSE button) =>
+            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.MouseButton(button) : (short)0;
 
-        public short KeyboardKey(int port, uint key) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.KeyboardKey(key) : (short)0;
+        public short KeyboardKey(int port, retro_key key) =>
+            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.KeyboardKey(key) : (short)0;
 
-        public short LightgunX(int port)                   => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.LightgunX : (short)0;
-        public short LightgunY(int port)                   => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.LightgunY : (short)0;
-        public bool LightgunIsOffscreen(int port)          => _controls.TryGetValue(port, out PlayerInputProcessor processor) && processor.LightgunIsOffscreen;
-        public short LightgunButton(int port, uint button) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.LightgunButton(button) : (short)0;
+        public short LightgunX(int port) =>
+            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.LightgunX : (short)0;
+        
+        public short LightgunY(int port) =>
+            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.LightgunY : (short)0;
+        
+        public bool LightgunIsOffscreen(int port) =>
+            _controls.TryGetValue(port, out PlayerInputProcessor processor) && processor.LightgunIsOffscreen;
+        
+        public short LightgunButton(int port, RETRO_DEVICE_ID_LIGHTGUN button) =>
+            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.LightgunButton(button) : (short)0;
 
-        public short AnalogLeftX(int port)  => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.AnalogLeftX : (short)0;
-        public short AnalogLeftY(int port)  => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? (short)-processor.AnalogLeftY : (short)0;
-        public short AnalogRightX(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.AnalogRightX : (short)0;
-        public short AnalogRightY(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? (short)-processor.AnalogRightY : (short)0;
+        public short AnalogLeftX(int port)  =>
+            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.AnalogLeftX : (short)0;
+        
+        public short AnalogLeftY(int port)  =>
+            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? (short)-processor.AnalogLeftY : (short)0;
+        
+        public short AnalogRightX(int port) =>
+            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.AnalogRightX : (short)0;
+        
+        public short AnalogRightY(int port) =>
+            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? (short)-processor.AnalogRightY : (short)0;
+        
+        public short PointerX(int port) =>
+            0;
+
+        public short PointerY(int port) =>
+            0;
+
+        public short PointerPressed(int port) =>
+            0;
+
+        public short PointerCount(int port) =>
+            0;
     }
 }

@@ -21,10 +21,12 @@
  * SOFTWARE. */
 
 using System;
+using System.Runtime.InteropServices;
 
-namespace SK.Libretro
+namespace SK.Libretro.Header
 {
-    internal struct retro_vfs_interface_info
+    [StructLayout(LayoutKind.Sequential)]
+    internal sealed class retro_vfs_interface_info
     {
         public uint required_interface_version;
         public IntPtr iface; // retro_vfs_interface*

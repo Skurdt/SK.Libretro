@@ -38,6 +38,8 @@ namespace SK.Libretro
 
         public static int ReadByte(this IntPtr ptr) => ptr.IsNotNull() ? Marshal.ReadByte(ptr) : 0;
 
+        public static ushort ReadUInt16(this IntPtr ptr) => Convert.ToUInt16(ptr.IsNotNull() ? Marshal.ReadInt16(ptr) : 0);
+
         public static int ReadInt32(this IntPtr ptr) => ptr.IsNotNull() ? Marshal.ReadInt32(ptr) : 0;
 
         public static uint ReadUInt32(this IntPtr ptr) => ptr.IsNotNull() ? Convert.ToUInt32(Marshal.ReadInt32(ptr)) : 0;
