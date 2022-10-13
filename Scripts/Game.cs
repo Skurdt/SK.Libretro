@@ -22,6 +22,7 @@
 
 using SK.Libretro.Header;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -29,23 +30,20 @@ namespace SK.Libretro
 {
     internal sealed class Game
     {
-        public double VideoFps => SystemAVInfo.timing.fps;
-        public int VideoWidth => (int)SystemAVInfo.geometry.max_width;
-        public int VideoHeight => (int)SystemAVInfo.geometry.max_height;
-
-        public string Name { get; private set; }
         public bool Running { get; private set; }
+        public string Name { get; private set; }
+        public SystemAVInfo SystemAVInfo { get; private set; }
 
-        public retro_game_info GameInfo          = new();
-        public retro_game_info_ext GameInfoExt   = new();
-        public retro_system_av_info SystemAVInfo = new();
-
-        public ContentOverrides ContentOverrides = new();
+        public retro_game_info GameInfo = new();
 
         private readonly Wrapper _wrapper;
+        private readonly ContentOverrides _contentOverrides = new();
+        private readonly List<retro_system_content_info_override> _systemContentInfoOverrides = new();
 
         private string _path          = "";
         private string _extractedPath = "";
+
+        private retro_game_info_ext _gameInfoExt = new();
 
         public Game(Wrapper wrapper) => _wrapper = wrapper;
 
@@ -111,6 +109,58 @@ namespace SK.Libretro
                 _ = FileSystem.DeleteFile(_extractedPath);
         }
 
+        public void GetGameInfoExt(ref IntPtr data) => Marshal.StructureToPtr(_gameInfoExt, data, true);
+
+        public void SetSystemAVInfo(retro_system_av_info info) => SystemAVInfo = new(ref info);
+
+        public void SetGeometry(retro_game_geometry geometry)
+        {
+            if (SystemAVInfo.BaseWidth != geometry.base_width
+             || SystemAVInfo.BaseHeight != geometry.base_height
+             || SystemAVInfo.AspectRatio != geometry.aspect_ratio)
+            {
+                SystemAVInfo.SetGeometry(ref geometry);
+                // TODO: Set video aspect ratio if needed
+            }
+        }
+
+        public void SetContentInfoOverride(ref IntPtr data)
+        {
+            _systemContentInfoOverrides.Clear();
+
+            retro_system_content_info_override infoOverride = data.ToStructure<retro_system_content_info_override>();
+            while (infoOverride is not null && infoOverride.extensions.IsNotNull())
+            {
+                _systemContentInfoOverrides.Add(infoOverride);
+
+                string extensionsString = infoOverride.extensions.AsString();
+                string[] extensions = extensionsString.Split('|');
+                foreach (string extension in extensions)
+                    _contentOverrides.Add(extension, infoOverride.need_fullpath, infoOverride.persistent_data);
+
+                data += Marshal.SizeOf(infoOverride);
+                data.ToStructure(infoOverride);
+            }
+        }
+
+        public void FreeGameInfo()
+        {
+            PointerUtilities.Free(ref GameInfo.path);
+            PointerUtilities.Free(ref GameInfo.data);
+            PointerUtilities.Free(ref GameInfo.meta);
+            GameInfo = default;
+
+            PointerUtilities.Free(ref _gameInfoExt.full_path);
+            PointerUtilities.Free(ref _gameInfoExt.archive_path);
+            PointerUtilities.Free(ref _gameInfoExt.archive_file);
+            PointerUtilities.Free(ref _gameInfoExt.dir);
+            PointerUtilities.Free(ref _gameInfoExt.name);
+            PointerUtilities.Free(ref _gameInfoExt.ext);
+            PointerUtilities.Free(ref _gameInfoExt.meta);
+            PointerUtilities.Free(ref _gameInfoExt.data);
+            _gameInfoExt = default;
+        }
+
         private string GetGamePath(string directory, string gameName)
         {
             if (_wrapper.Core.ValidExtensions is null)
@@ -129,22 +179,22 @@ namespace SK.Libretro
         private bool GetGameInfo()
         {
             if (string.IsNullOrWhiteSpace(_path))
-                return _wrapper.Core.SupportNoGame;
+                return _wrapper.EnvironmentVariables.SupportNoGame;
 
-            GameInfo.path = Marshal.StringToHGlobalAnsi(_path);
+            GameInfo.path = _path.AsAllocatedPtr();
 
             string directory = Path.GetDirectoryName(_path);
             string name      = Path.GetFileNameWithoutExtension(_path);
             string extension = Path.GetExtension(_path).TrimStart('.');
 
-            GameInfoExt.full_path       = Marshal.StringToHGlobalAnsi(_path);
-            GameInfoExt.dir             = Marshal.StringToHGlobalAnsi(directory);
-            GameInfoExt.name            = Marshal.StringToHGlobalAnsi(name);
-            GameInfoExt.ext             = Marshal.StringToHGlobalAnsi(extension);
-            GameInfoExt.file_in_archive = false;
-            GameInfoExt.persistent_data = false;
+            _gameInfoExt.full_path       = _path.AsAllocatedPtr();
+            _gameInfoExt.dir             = directory.AsAllocatedPtr();
+            _gameInfoExt.name            = name.AsAllocatedPtr();
+            _gameInfoExt.ext             = extension.AsAllocatedPtr();
+            _gameInfoExt.file_in_archive = false;
+            _gameInfoExt.persistent_data = false;
 
-            (bool result, ContentOverride contentOverride) = ContentOverrides.TryGet(extension);
+            (bool result, ContentOverride contentOverride) = _contentOverrides.TryGet(extension);
             bool needFullPath = result ? contentOverride.NeedFullpath : _wrapper.Core.NeedFullPath;
             if (!needFullPath)
             {
@@ -153,12 +203,12 @@ namespace SK.Libretro
                     using FileStream stream = new(_path, FileMode.Open);
                     byte[] data             = new byte[stream.Length];
                     GameInfo.data           = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
-                    GameInfoExt.data        = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
+                    _gameInfoExt.data        = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
                     GameInfo.size           = (nuint)data.Length;
-                    GameInfoExt.size        = (nuint)data.Length;
+                    _gameInfoExt.size        = (nuint)data.Length;
                     _ = stream.Read(data, 0, (int)stream.Length);
                     Marshal.Copy(data, 0, GameInfo.data, data.Length);
-                    Marshal.Copy(data, 0, GameInfoExt.data, data.Length);
+                    Marshal.Copy(data, 0, _gameInfoExt.data, data.Length);
                 }
                 catch (Exception)
                 {
@@ -176,7 +226,8 @@ namespace SK.Libretro
                 if (!_wrapper.Core.retro_load_game(ref GameInfo))
                     return false;
 
-                _wrapper.Core.retro_get_system_av_info(out SystemAVInfo);
+                _wrapper.Core.retro_get_system_av_info(out retro_system_av_info info);
+                SystemAVInfo = new(ref info);
                 return true;
             }
             catch (Exception e)
@@ -185,24 +236,6 @@ namespace SK.Libretro
             }
 
             return false;
-        }
-
-        public void FreeGameInfo()
-        {
-            PointerUtilities.Free(ref GameInfo.path);
-            PointerUtilities.Free(ref GameInfo.data);
-            PointerUtilities.Free(ref GameInfo.meta);
-            GameInfo = default;
-
-            PointerUtilities.Free(ref GameInfoExt.full_path);
-            PointerUtilities.Free(ref GameInfoExt.archive_path);
-            PointerUtilities.Free(ref GameInfoExt.archive_file);
-            PointerUtilities.Free(ref GameInfoExt.dir);
-            PointerUtilities.Free(ref GameInfoExt.name);
-            PointerUtilities.Free(ref GameInfoExt.ext);
-            PointerUtilities.Free(ref GameInfoExt.meta);
-            PointerUtilities.Free(ref GameInfoExt.data);
-            GameInfoExt = default;
         }
     }
 }

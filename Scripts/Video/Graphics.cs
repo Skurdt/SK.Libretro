@@ -22,37 +22,39 @@
 
 using SK.Libretro.Header;
 using System;
-using static SK.Libretro.Header.RETRO;
 
 namespace SK.Libretro
 {
-    internal sealed class Graphics
+    internal sealed class Graphics : IDisposable
     {
         public readonly retro_video_refresh_t Callback;
 
         public bool Enabled { get; set; }
-        public bool UseCoreRotation { get; set; }
-        public retro_pixel_format PixelFormat { get; set; }
+        public retro_pixel_format PixelFormat { get; private set; }
 
         private GraphicsFrameHandlerBase _frameHandler;
 
-        public unsafe Graphics(bool useCoreRotation)
+        public Graphics() => Callback = CallbackCall;
+
+        public void Init(GraphicsFrameHandlerBase frameHandler, bool enabled)
         {
-            Callback        = CallbackCall;
-            UseCoreRotation = useCoreRotation;
+            _frameHandler = frameHandler;
+            Enabled = enabled;
         }
 
-        public void Init(GraphicsFrameHandlerBase frameHandler) =>
-            _frameHandler = frameHandler;
+        public void Dispose() => _frameHandler.Dispose();
 
-        public void DeInit() =>
-            _frameHandler?.DeInit();
+        public void SetPixelFormat(int pixelFormat) =>
+            PixelFormat = pixelFormat switch
+            {
+                0 or 1 or 2 => (retro_pixel_format)pixelFormat,
+                _ => retro_pixel_format.RETRO_PIXEL_FORMAT_UNKNOWN
+            };
 
-        public unsafe void CallbackCall(IntPtr data, uint width, uint height, nuint pitch)
+        private unsafe void CallbackCall(IntPtr data, uint width, uint height, nuint pitch)
         {
-            if (data == null || !Enabled)
-                return;
-            _frameHandler.ProcessFrame(data, width, height, pitch);
+            if (data.IsNotNull() && Enabled)
+                _frameHandler.ProcessFrame(data, width, height, pitch);
         }
     }
 }

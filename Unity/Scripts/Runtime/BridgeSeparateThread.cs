@@ -222,7 +222,7 @@ namespace SK.Libretro.Unity
             try
             {
                 Wrapper wrapper = InitializeWrapper();
-                double gameFrameTime = 1.0 / wrapper.Game.VideoFps;
+                double gameFrameTime = 1.0 / wrapper.Game.SystemAVInfo.Fps;
 
                 Running = true;
                 while (Running)

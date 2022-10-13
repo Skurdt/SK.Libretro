@@ -45,14 +45,14 @@ namespace SK.Libretro
         protected override void LoadLibrary()
         {
             _nativeHandle = PlatformLoadLibrary(Path);
-            if (_nativeHandle == IntPtr.Zero)
+            if (_nativeHandle.IsNull())
                 throw new Exception(GetLastErrorMessage());
         }
 
         protected override IntPtr GetProcAddress(string functionName)
         {
             IntPtr procAddress = PlatformGetProcAddress(_nativeHandle, functionName);
-            return procAddress != IntPtr.Zero ? procAddress : throw new Exception(GetLastErrorMessage());
+            return procAddress.IsNotNull() ? procAddress : throw new Exception(GetLastErrorMessage());
         }
 
         protected override void FreeLibrary()

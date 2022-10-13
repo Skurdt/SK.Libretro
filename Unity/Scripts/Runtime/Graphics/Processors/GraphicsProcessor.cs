@@ -29,7 +29,9 @@ namespace SK.Libretro.Unity
     internal class GraphicsProcessor : IGraphicsProcessor
     {
         private readonly Action<Texture> _onTextureRecreated;
+
         private Texture2D _texture;
+        private JobHandle _jobHandle;
 
         public GraphicsProcessor(int width, int height, Action<Texture> textureRecreatedCallback, FilterMode filterMode = FilterMode.Point)
         {
@@ -39,21 +41,28 @@ namespace SK.Libretro.Unity
 
         public virtual void Construct(int width, int height, FilterMode filterMode = FilterMode.Point) => CreateTexture(width, height, filterMode);
 
-        public virtual void DeInit() => DestroyTexture();
+        public virtual void Dispose()
+        {
+            if (!_jobHandle.IsCompleted)
+                _jobHandle.Complete();
+
+            UnityEngine.Object.Destroy(_texture);
+        }
 
         public unsafe virtual void ProcessFrame0RGB1555(ushort* data, int width, int height, int pitch)
         {
             CreateTexture(width, height);
 
-            new Frame0RGB1555Job
+            _jobHandle = new Frame0RGB1555Job
             {
                 SourceData = data,
                 Width = width,
                 Height = height,
                 PitchPixels = pitch / sizeof(ushort),
                 TextureData = _texture.GetRawTextureData<uint>()
-            }.Schedule().Complete();
+            }.Schedule();
 
+            _jobHandle.Complete();
             _texture.Apply();
         }
 
@@ -61,15 +70,16 @@ namespace SK.Libretro.Unity
         {
             CreateTexture(width, height);
 
-            new FrameXRGB8888Job
+            _jobHandle = new FrameXRGB8888Job
             {
                 SourceData = data,
                 Width = width,
                 Height = height,
                 PitchPixels = pitch / sizeof(uint),
                 TextureData = _texture.GetRawTextureData<uint>()
-            }.Schedule().Complete();
+            }.Schedule();
 
+            _jobHandle.Complete();
             _texture.Apply();
         }
 
@@ -77,15 +87,16 @@ namespace SK.Libretro.Unity
         {
             CreateTexture(width, height);
 
-            new FrameXRGB8888VFlipJob
+            _jobHandle = new FrameXRGB8888VFlipJob
             {
                 SourceData = data,
                 Width = width,
                 Height = height,
                 PitchPixels = pitch / sizeof(uint),
                 TextureData = _texture.GetRawTextureData<uint>()
-            }.Schedule().Complete();
+            }.Schedule();
 
+            _jobHandle.Complete();
             _texture.Apply();
         }
 
@@ -93,15 +104,16 @@ namespace SK.Libretro.Unity
         {
             CreateTexture(width, height);
 
-            new FrameRGB565Job
+            _jobHandle = new FrameRGB565Job
             {
                 SourceData = data,
                 Width = width,
                 Height = height,
                 PitchPixels = pitch / sizeof(ushort),
                 TextureData = _texture.GetRawTextureData<uint>()
-            }.Schedule().Complete();
+            }.Schedule();
 
+            _jobHandle.Complete();
             _texture.Apply();
         }
 
@@ -109,7 +121,7 @@ namespace SK.Libretro.Unity
         {
             if (!_texture || _texture.width != width || _texture.height != height)
             {
-                DestroyTexture();
+                UnityEngine.Object.Destroy(_texture);
                 _texture = new Texture2D(width, height, TextureFormat.BGRA32, false)
                 {
                     filterMode = filterMode
@@ -117,12 +129,6 @@ namespace SK.Libretro.Unity
 
                 _onTextureRecreated(_texture);
             }
-        }
-
-        private void DestroyTexture()
-        {
-            if (_texture)
-                UnityEngine.Object.Destroy(_texture);
         }
     }
 }

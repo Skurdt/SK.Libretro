@@ -20,11 +20,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using System;
+
 namespace SK.Libretro
 {
-    internal interface IGraphicsProcessor
+    internal interface IGraphicsProcessor : IDisposable
     {
-        void DeInit();
         unsafe void ProcessFrame0RGB1555(ushort* data, int width, int height, int pitch);
         unsafe void ProcessFrameXRGB8888(uint* data, int width, int height, int pitch);
         unsafe void ProcessFrameXRGB8888VFlip(uint* data, int width, int height, int pitch);

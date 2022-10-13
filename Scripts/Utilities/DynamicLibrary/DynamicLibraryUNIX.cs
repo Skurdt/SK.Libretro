@@ -50,23 +50,23 @@ namespace SK.Libretro
         {
             _nativeHandle = PlatformLoadLibrary(Path, RTLD_NOW);
             IntPtr error  = PlatformLibraryError();
-            if (error != IntPtr.Zero)
-                throw new Exception(Marshal.PtrToStringAnsi(error));
+            if (error.IsNotNull())
+                throw new Exception(error.AsString());
         }
 
         protected sealed override IntPtr GetProcAddress(string functionName)
         {
             IntPtr procAddress = PlatformGetProcAddress(_nativeHandle, functionName);
             IntPtr error       = PlatformLibraryError();
-            return error == IntPtr.Zero ? procAddress : throw new Exception(Marshal.PtrToStringAnsi(error));
+            return error.IsNull() ? procAddress : throw new Exception(error.AsString());
         }
 
         protected sealed override void FreeLibrary()
         {
             _ = PlatformFreeLibrary(_nativeHandle);
             IntPtr error = PlatformLibraryError();
-            if (error != IntPtr.Zero)
-                throw new Exception(Marshal.PtrToStringAnsi(error));
+            if (error.IsNotNull())
+                throw new Exception(error.AsString());
         }
     }
 }

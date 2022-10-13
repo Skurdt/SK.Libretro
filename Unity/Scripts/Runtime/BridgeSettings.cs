@@ -27,7 +27,7 @@ namespace SK.Libretro.Unity
     [System.Serializable]
     public sealed class BridgeSettings
     {
-        public static readonly string DefaultMainDirectory = Application.streamingAssetsPath + "/libretro~";
+        public static string DefaultMainDirectory => Application.streamingAssetsPath + "/libretro~";
 
         public bool AllowGLCoresInEditor = true;
         [MainDirectory]

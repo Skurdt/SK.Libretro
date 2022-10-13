@@ -58,7 +58,7 @@ namespace SK.Libretro
 
         public T GetFunction<T>(string functionName) where T : Delegate
         {
-            if (_nativeHandle == IntPtr.Zero)
+            if (_nativeHandle.IsNull())
                 throw new Exception($"Library '{Name}' at path '{Path}' not loaded, cannot get function '{functionName}'");
 
             try
@@ -75,8 +75,9 @@ namespace SK.Libretro
         {
             try
             {
-                if (_nativeHandle != IntPtr.Zero)
+                if (_nativeHandle.IsNotNull())
                     FreeLibrary();
+                _nativeHandle = IntPtr.Zero;
             }
             catch (Exception e)
             {

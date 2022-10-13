@@ -207,7 +207,7 @@ namespace SK.Libretro
                     return false;
 
                 IntPtr saveData = _wrapper.Core.retro_get_memory_data(RETRO_MEMORY.SAVE_RAM);
-                if (saveData == IntPtr.Zero)
+                if (saveData.IsNull())
                     return false;
 
                 byte[] data = new byte[saveSize];
@@ -238,7 +238,7 @@ namespace SK.Libretro
                     return false;
 
                 IntPtr saveData = _wrapper.Core.retro_get_memory_data(RETRO_MEMORY.SAVE_RAM);
-                if (saveData == IntPtr.Zero)
+                if (saveData.IsNull())
                     return false;
 
                 string coreDirectory = $"{Wrapper.SavesDirectory}/{_wrapper.Core.Name}";

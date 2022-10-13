@@ -32,7 +32,7 @@ namespace SK.Libretro
         public readonly bool NeedFullPath;
         public readonly bool BlockExtract;
 
-        public SystemInfo(retro_system_info systemInfo)
+        public SystemInfo(ref retro_system_info systemInfo)
         {
             LibraryName     = systemInfo.library_name.AsString();
             LibraryVersion  = systemInfo.library_version.AsString();

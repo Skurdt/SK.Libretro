@@ -26,11 +26,11 @@ namespace SK.Libretro
 {
     internal sealed class GraphicsFrameHandlerOpenGLXRGB8888VFlip : GraphicsFrameHandlerBase
     {
-        private readonly OpenGL _gl;
+        private readonly OpenGLHelperWindow _window;
 
-        public GraphicsFrameHandlerOpenGLXRGB8888VFlip(IGraphicsProcessor processor, OpenGL gl)
+        public GraphicsFrameHandlerOpenGLXRGB8888VFlip(IGraphicsProcessor processor, OpenGLHelperWindow window)
         : base(processor) =>
-            _gl = gl;
+            _window = window;
 
         public unsafe override void ProcessFrame(IntPtr data, uint width, uint height, nuint pitch)
         {
@@ -38,10 +38,10 @@ namespace SK.Libretro
             byte[] bufferSrc = new byte[bufferSize];
             fixed (byte* bufferSrcPtr = bufferSrc)
             {
-                _gl.glReadPixels(0, 0, (int)width, (int)height, OpenGL.GL_BGRA, OpenGL.GL_UNSIGNED_BYTE, bufferSrcPtr);
+                GL.ReadPixels(0, 0, (int)width, (int)height, GL.BGRA, GL.UNSIGNED_BYTE, bufferSrcPtr);
                 _processor.ProcessFrameXRGB8888VFlip((uint*)bufferSrcPtr, (int)width, (int)height, (int)width * 4);
             }
-            _gl.SwapBuffers();
+            _window.SwapBuffers();
         }
     }
 }

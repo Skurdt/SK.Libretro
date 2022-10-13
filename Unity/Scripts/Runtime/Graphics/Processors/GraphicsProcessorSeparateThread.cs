@@ -35,8 +35,8 @@ namespace SK.Libretro.Unity
         public override void Construct(int width, int height, FilterMode filterMode = FilterMode.Point) =>
             MainThreadDispatcher.Enqueue(() => base.Construct(width, height, filterMode));
 
-        public override void DeInit() =>
-            MainThreadDispatcher.Enqueue(() => base.DeInit());
+        public override void Dispose() =>
+            MainThreadDispatcher.Enqueue(() => base.Dispose());
 
         public unsafe override void ProcessFrame0RGB1555(ushort* data, int width, int height, int pitch) =>
             MainThreadDispatcher.Enqueue(() => base.ProcessFrame0RGB1555(data, width, height, pitch));

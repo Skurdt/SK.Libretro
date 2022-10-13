@@ -35,14 +35,6 @@ namespace SK.Libretro
 
         private readonly Wrapper _wrapper;
 
-        private readonly List<retro_subsystem_info> _subsystemInfo = new();
-
-        private readonly List<retro_input_descriptor> _inputDescriptors = new();
-        private readonly List<retro_controller_info> _controllerInfo = new();
-        private readonly List<retro_controller_description> _controllerDescriptions = new();
-
-        private readonly List<retro_system_content_info_override> _systemContentInfoOverrides = new();
-
         public Environment(Wrapper wrapper)
         {
             Callback = CallbackCall;
@@ -54,76 +46,76 @@ namespace SK.Libretro
             /************************************************************************************************
              * Frontend to core
              */
-            RETRO_ENVIRONMENT.GET_OVERSCAN                                => GetOverscan(data),
-            RETRO_ENVIRONMENT.GET_CAN_DUPE                                => GetCanDupe(data),
-            RETRO_ENVIRONMENT.GET_SYSTEM_DIRECTORY                        => GetSystemDirectory(data),
-            RETRO_ENVIRONMENT.GET_VARIABLE                                => GetVariable(data),
-            RETRO_ENVIRONMENT.GET_VARIABLE_UPDATE                         => GetVariableUpdate(data),
-            RETRO_ENVIRONMENT.GET_LIBRETRO_PATH                           => GetLibretroPath(data),
-            RETRO_ENVIRONMENT.GET_RUMBLE_INTERFACE                        => GetRumbleInterface(data),
-            RETRO_ENVIRONMENT.GET_INPUT_DEVICE_CAPABILITIES               => GetInputDeviceCapabilities(data),
+            RETRO_ENVIRONMENT.GET_OVERSCAN                                => GetOverscan(ref data),
+            RETRO_ENVIRONMENT.GET_CAN_DUPE                                => GetCanDupe(ref data),
+            RETRO_ENVIRONMENT.GET_SYSTEM_DIRECTORY                        => GetSystemDirectory(ref data),
+            RETRO_ENVIRONMENT.GET_VARIABLE                                => GetVariable(ref data),
+            RETRO_ENVIRONMENT.GET_VARIABLE_UPDATE                         => GetVariableUpdate(ref data),
+            RETRO_ENVIRONMENT.GET_LIBRETRO_PATH                           => GetLibretroPath(ref data),
+            RETRO_ENVIRONMENT.GET_RUMBLE_INTERFACE                        => GetRumbleInterface(ref data),
+            RETRO_ENVIRONMENT.GET_INPUT_DEVICE_CAPABILITIES               => GetInputDeviceCapabilities(ref data),
             RETRO_ENVIRONMENT.GET_SENSOR_INTERFACE                        => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
             RETRO_ENVIRONMENT.GET_CAMERA_INTERFACE                        => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
-            RETRO_ENVIRONMENT.GET_LOG_INTERFACE                           => GetLogInterface(data),
-            RETRO_ENVIRONMENT.GET_PERF_INTERFACE                          => GetPerfInterface(data),
+            RETRO_ENVIRONMENT.GET_LOG_INTERFACE                           => GetLogInterface(ref data),
+            RETRO_ENVIRONMENT.GET_PERF_INTERFACE                          => GetPerfInterface(ref data),
             RETRO_ENVIRONMENT.GET_LOCATION_INTERFACE                      => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
-            RETRO_ENVIRONMENT.GET_CORE_ASSETS_DIRECTORY                   => GetCoreAssetsDirectory(data),
-            RETRO_ENVIRONMENT.GET_SAVE_DIRECTORY                          => GetSaveDirectory(data),
-            RETRO_ENVIRONMENT.GET_USERNAME                                => GetUsername(data),
-            RETRO_ENVIRONMENT.GET_LANGUAGE                                => GetLanguage(data),
+            RETRO_ENVIRONMENT.GET_CORE_ASSETS_DIRECTORY                   => GetCoreAssetsDirectory(ref data),
+            RETRO_ENVIRONMENT.GET_SAVE_DIRECTORY                          => GetSaveDirectory(ref data),
+            RETRO_ENVIRONMENT.GET_USERNAME                                => GetUsername(ref data),
+            RETRO_ENVIRONMENT.GET_LANGUAGE                                => GetLanguage(ref data),
             RETRO_ENVIRONMENT.GET_CURRENT_SOFTWARE_FRAMEBUFFER            => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
             RETRO_ENVIRONMENT.GET_HW_RENDER_INTERFACE                     => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
-            RETRO_ENVIRONMENT.GET_VFS_INTERFACE                           => GetVfsInterface(data),
-            RETRO_ENVIRONMENT.GET_LED_INTERFACE                           => GetLedInterface(data),
-            RETRO_ENVIRONMENT.GET_AUDIO_VIDEO_ENABLE                      => GetAudioVideoEnable(data),
+            RETRO_ENVIRONMENT.GET_VFS_INTERFACE                           => GetVfsInterface(ref data),
+            RETRO_ENVIRONMENT.GET_LED_INTERFACE                           => GetLedInterface(ref data),
+            RETRO_ENVIRONMENT.GET_AUDIO_VIDEO_ENABLE                      => GetAudioVideoEnable(ref data),
             RETRO_ENVIRONMENT.GET_MIDI_INTERFACE                          => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
-            RETRO_ENVIRONMENT.GET_FASTFORWARDING                          => GetFastForwarding(data),
+            RETRO_ENVIRONMENT.GET_FASTFORWARDING                          => GetFastForwarding(ref data),
             RETRO_ENVIRONMENT.GET_TARGET_REFRESH_RATE                     => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
-            RETRO_ENVIRONMENT.GET_INPUT_BITMASKS                          => GetInputBitmasks(data),
-            RETRO_ENVIRONMENT.GET_CORE_OPTIONS_VERSION                    => GetCoreOptionsVersion(data),
-            RETRO_ENVIRONMENT.GET_PREFERRED_HW_RENDER                     => GetPreferredHwRender(data),
-            RETRO_ENVIRONMENT.GET_DISK_CONTROL_INTERFACE_VERSION          => GetDiskControlInterfaceVersion(data),
-            RETRO_ENVIRONMENT.GET_MESSAGE_INTERFACE_VERSION               => GetMessageInterfaceVersion(data),
-            RETRO_ENVIRONMENT.GET_INPUT_MAX_USERS                         => GetInputMaxUsers(data),
-            RETRO_ENVIRONMENT.GET_GAME_INFO_EXT                           => GetGameInfoExt(data),
+            RETRO_ENVIRONMENT.GET_INPUT_BITMASKS                          => GetInputBitmasks(ref data),
+            RETRO_ENVIRONMENT.GET_CORE_OPTIONS_VERSION                    => GetCoreOptionsVersion(ref data),
+            RETRO_ENVIRONMENT.GET_PREFERRED_HW_RENDER                     => GetPreferredHwRender(ref data),
+            RETRO_ENVIRONMENT.GET_DISK_CONTROL_INTERFACE_VERSION          => GetDiskControlInterfaceVersion(ref data),
+            RETRO_ENVIRONMENT.GET_MESSAGE_INTERFACE_VERSION               => GetMessageInterfaceVersion(ref data),
+            RETRO_ENVIRONMENT.GET_INPUT_MAX_USERS                         => GetInputMaxUsers(ref data),
+            RETRO_ENVIRONMENT.GET_GAME_INFO_EXT                           => GetGameInfoExt(ref data),
             RETRO_ENVIRONMENT.GET_THROTTLE_STATE                          => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
             RETRO_ENVIRONMENT.GET_SAVESTATE_CONTEXT                       => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
 
             /************************************************************************************************
              * Core to frontend
              */
-            RETRO_ENVIRONMENT.SET_ROTATION                                => SetRotation(data),
-            RETRO_ENVIRONMENT.SET_MESSAGE                                 => SetMessage(data),
-            RETRO_ENVIRONMENT.SHUTDOWN                                    => Shutdown(data),
-            RETRO_ENVIRONMENT.SET_PERFORMANCE_LEVEL                       => SetPerformanceLevel(data),
-            RETRO_ENVIRONMENT.SET_PIXEL_FORMAT                            => SetPixelFormat(data),
-            RETRO_ENVIRONMENT.SET_INPUT_DESCRIPTORS                       => SetInputDescriptors(data),
-            RETRO_ENVIRONMENT.SET_KEYBOARD_CALLBACK                       => SetKeyboardCallback(data),
-            RETRO_ENVIRONMENT.SET_DISK_CONTROL_INTERFACE                  => SetDiskControlInterface(data),
-            RETRO_ENVIRONMENT.SET_HW_RENDER                               => SetHwRender(data),
-            RETRO_ENVIRONMENT.SET_VARIABLES                               => SetVariables(data),
-            RETRO_ENVIRONMENT.SET_SUPPORT_NO_GAME                         => SetSupportNoGame(data),
-            RETRO_ENVIRONMENT.SET_FRAME_TIME_CALLBACK                     => SetFrameTimeCallback(data),
-            RETRO_ENVIRONMENT.SET_AUDIO_CALLBACK                          => SetAudioCallback(data),
-            RETRO_ENVIRONMENT.SET_SYSTEM_AV_INFO                          => SetSystemAvInfo(data),
+            RETRO_ENVIRONMENT.SET_ROTATION                                => SetRotation(ref data),
+            RETRO_ENVIRONMENT.SET_MESSAGE                                 => SetMessage(ref data),
+            RETRO_ENVIRONMENT.SHUTDOWN                                    => Shutdown(),
+            RETRO_ENVIRONMENT.SET_PERFORMANCE_LEVEL                       => SetPerformanceLevel(ref data),
+            RETRO_ENVIRONMENT.SET_PIXEL_FORMAT                            => SetPixelFormat(ref data),
+            RETRO_ENVIRONMENT.SET_INPUT_DESCRIPTORS                       => SetInputDescriptors(ref data),
+            RETRO_ENVIRONMENT.SET_KEYBOARD_CALLBACK                       => SetKeyboardCallback(ref data),
+            RETRO_ENVIRONMENT.SET_DISK_CONTROL_INTERFACE                  => SetDiskControlInterface(ref data),
+            RETRO_ENVIRONMENT.SET_HW_RENDER                               => SetHwRender(ref data),
+            RETRO_ENVIRONMENT.SET_VARIABLES                               => SetVariables(ref data),
+            RETRO_ENVIRONMENT.SET_SUPPORT_NO_GAME                         => SetSupportNoGame(ref data),
+            RETRO_ENVIRONMENT.SET_FRAME_TIME_CALLBACK                     => SetFrameTimeCallback(ref data),
+            RETRO_ENVIRONMENT.SET_AUDIO_CALLBACK                          => SetAudioCallback(ref data),
+            RETRO_ENVIRONMENT.SET_SYSTEM_AV_INFO                          => SetSystemAvInfo(ref data),
             RETRO_ENVIRONMENT.SET_PROC_ADDRESS_CALLBACK                   => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
-            RETRO_ENVIRONMENT.SET_SUBSYSTEM_INFO                          => SetSubsystemInfo(data),
-            RETRO_ENVIRONMENT.SET_CONTROLLER_INFO                         => SetControllerInfo(data),
-            RETRO_ENVIRONMENT.SET_MEMORY_MAPS                             => SetMemoryMaps(data),
-            RETRO_ENVIRONMENT.SET_GEOMETRY                                => SetGeometry(data),
-            RETRO_ENVIRONMENT.SET_SUPPORT_ACHIEVEMENTS                    => SetSupportAchievements(data),
+            RETRO_ENVIRONMENT.SET_SUBSYSTEM_INFO                          => SetSubsystemInfo(ref data),
+            RETRO_ENVIRONMENT.SET_CONTROLLER_INFO                         => SetControllerInfo(ref data),
+            RETRO_ENVIRONMENT.SET_MEMORY_MAPS                             => SetMemoryMaps(ref data),
+            RETRO_ENVIRONMENT.SET_GEOMETRY                                => SetGeometry(ref data),
+            RETRO_ENVIRONMENT.SET_SUPPORT_ACHIEVEMENTS                    => SetSupportAchievements(ref data),
             RETRO_ENVIRONMENT.SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
-            RETRO_ENVIRONMENT.SET_SERIALIZATION_QUIRKS                    => SetSerializationQuirks(data),
+            RETRO_ENVIRONMENT.SET_SERIALIZATION_QUIRKS                    => SetSerializationQuirks(ref data),
             RETRO_ENVIRONMENT.SET_HW_SHARED_CONTEXT                       => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
-            RETRO_ENVIRONMENT.SET_CORE_OPTIONS                            => SetCoreOptions(data),
-            RETRO_ENVIRONMENT.SET_CORE_OPTIONS_INTL                       => SetCoreOptionsIntl(data),
-            RETRO_ENVIRONMENT.SET_CORE_OPTIONS_DISPLAY                    => SetCoreOptionsDisplay(data),
-            RETRO_ENVIRONMENT.SET_DISK_CONTROL_EXT_INTERFACE              => SetDiskControlExtInterface(data),
-            RETRO_ENVIRONMENT.SET_MESSAGE_EXT                             => SetMessageExt(data),
+            RETRO_ENVIRONMENT.SET_CORE_OPTIONS                            => SetCoreOptions(ref data),
+            RETRO_ENVIRONMENT.SET_CORE_OPTIONS_INTL                       => SetCoreOptionsIntl(ref data),
+            RETRO_ENVIRONMENT.SET_CORE_OPTIONS_DISPLAY                    => SetCoreOptionsDisplay(ref data),
+            RETRO_ENVIRONMENT.SET_DISK_CONTROL_EXT_INTERFACE              => SetDiskControlExtInterface(ref data),
+            RETRO_ENVIRONMENT.SET_MESSAGE_EXT                             => SetMessageExt(ref data),
             RETRO_ENVIRONMENT.SET_AUDIO_BUFFER_STATUS_CALLBACK            => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
             RETRO_ENVIRONMENT.SET_MINIMUM_AUDIO_LATENCY                   => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
             RETRO_ENVIRONMENT.SET_FASTFORWARDING_OVERRIDE                 => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
-            RETRO_ENVIRONMENT.SET_CONTENT_INFO_OVERRIDE                   => SetContentInfoOverride(data),
+            RETRO_ENVIRONMENT.SET_CONTENT_INFO_OVERRIDE                   => SetContentInfoOverride(ref data),
             RETRO_ENVIRONMENT.SET_CORE_OPTIONS_V2                         => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
             RETRO_ENVIRONMENT.SET_CORE_OPTIONS_V2_INTL                    => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
             RETRO_ENVIRONMENT.SET_CORE_OPTIONS_UPDATE_DISPLAY_CALLBACK    => ENVIRONMENT_NOT_IMPLEMENTED(cmd),
@@ -135,19 +127,19 @@ namespace SK.Libretro
         /************************************************************************************************
         * Frontend to core
         */
-        private bool GetOverscan(IntPtr data)
+        private bool GetOverscan(ref IntPtr data)
         {
-            data.Write(_wrapper.OptionCropOverscan);
+            data.Write(_wrapper.Settings.CropOverscan);
             return true;
         }
 
-        private bool GetCanDupe(IntPtr data)
+        private bool GetCanDupe(ref IntPtr data)
         {
             data.Write(true);
             return true;
         }
 
-        private bool GetSystemDirectory(IntPtr data)
+        private bool GetSystemDirectory(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
@@ -159,7 +151,7 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool GetVariable(IntPtr data)
+        private bool GetVariable(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
@@ -189,7 +181,7 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool GetVariableUpdate(IntPtr data)
+        private bool GetVariableUpdate(ref IntPtr data)
         {
             data.Write(_wrapper.UpdateVariables);
 
@@ -200,7 +192,7 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool GetLibretroPath(IntPtr data)
+        private bool GetLibretroPath(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
@@ -211,7 +203,7 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool GetRumbleInterface(IntPtr data)
+        private bool GetRumbleInterface(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
@@ -220,7 +212,7 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool GetInputDeviceCapabilities(IntPtr data)
+        private bool GetInputDeviceCapabilities(ref IntPtr data)
         {
             ulong bits = (1 << (int)RETRO_DEVICE.JOYPAD)
                        | (1 << (int)RETRO_DEVICE.MOUSE)
@@ -233,7 +225,7 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool GetLogInterface(IntPtr data)
+        private bool GetLogInterface(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
@@ -244,7 +236,7 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool GetPerfInterface(IntPtr data)
+        private bool GetPerfInterface(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
@@ -254,7 +246,7 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool GetCoreAssetsDirectory(IntPtr data)
+        private bool GetCoreAssetsDirectory(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
@@ -265,7 +257,7 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool GetSaveDirectory(IntPtr data)
+        private bool GetSaveDirectory(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
@@ -276,27 +268,27 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool GetUsername(IntPtr data)
+        private bool GetUsername(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
 
-            IntPtr stringPtr = _wrapper.GetUnsafeString(_wrapper.OptionUserName);
+            IntPtr stringPtr = _wrapper.GetUnsafeString(_wrapper.Settings.UserName);
             Marshal.StructureToPtr(stringPtr, data, true);
             return true;
         }
 
-        private bool GetLanguage(IntPtr data)
+        private bool GetLanguage(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
 
-            IntPtr stringPtr = _wrapper.GetUnsafeString(_wrapper.OptionLanguage.ToString());
+            IntPtr stringPtr = _wrapper.GetUnsafeString(_wrapper.Settings.Language.ToString());
             Marshal.StructureToPtr(stringPtr, data, true);
             return true;
         }
 
-        private bool GetVfsInterface(IntPtr data)
+        private bool GetVfsInterface(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
@@ -318,7 +310,7 @@ namespace SK.Libretro
             return false;
         }
 
-        private bool GetLedInterface(IntPtr data)
+        private bool GetLedInterface(ref IntPtr data)
         {
 
             if (data.IsNull())
@@ -329,7 +321,7 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool GetAudioVideoEnable(IntPtr data)
+        private bool GetAudioVideoEnable(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
@@ -342,52 +334,52 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool GetFastForwarding(IntPtr data)
+        private bool GetFastForwarding(ref IntPtr data)
         {
             data.Write(false);
             return false;
         }
 
-        private bool GetInputBitmasks(IntPtr data)
+        private bool GetInputBitmasks(ref IntPtr data)
         {
             data.Write(true);
             return true;
         }
 
-        private bool GetCoreOptionsVersion(IntPtr data)
+        private bool GetCoreOptionsVersion(ref IntPtr data)
         {
             data.Write(API_VERSION);
             return true;
         }
 
-        private bool GetPreferredHwRender(IntPtr data)
+        private bool GetPreferredHwRender(ref IntPtr data)
         {
             data.Write((uint)retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE);
             return true;
         }
 
-        private bool GetMessageInterfaceVersion(IntPtr data)
+        private bool GetMessageInterfaceVersion(ref IntPtr data)
         {
             data.Write(MessageInterface.VERSION);
             return true;
         }
 
-        private bool GetInputMaxUsers(IntPtr data)
+        private bool GetInputMaxUsers(ref IntPtr data)
         {
             data.Write(Input.MAX_USERS_SUPPORTED);
             return true;
         }
 
-        private bool GetGameInfoExt(IntPtr data)
+        private bool GetGameInfoExt(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
 
-            Marshal.StructureToPtr(_wrapper.Game.GameInfoExt, data, true);
+            _wrapper.Game.GetGameInfoExt(ref data);
             return true;
         }
 
-        private bool GetDiskControlInterfaceVersion(IntPtr data)
+        private bool GetDiskControlInterfaceVersion(ref IntPtr data)
         {
             data.Write(DiskInterface.VERSION);
             return true;
@@ -396,18 +388,16 @@ namespace SK.Libretro
         /************************************************************************************************
         / Core to frontend
         /***********************************************************************************************/
-        private bool SetRotation(IntPtr data)
+        private bool SetRotation(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
 
-            // Values: 0,  1,   2,   3
-            // Result: 0, 90, 180, 270 degrees
-            _wrapper.Core.Rotation = (int)data.ReadUInt32() * 90;
-            return _wrapper.Graphics.UseCoreRotation;
+            _wrapper.EnvironmentVariables.SetRotation((int)data.ReadUInt32());
+            return _wrapper.Settings.UseCoreRotation;
         }
 
-        private bool SetMessage(IntPtr data)
+        private bool SetMessage(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
@@ -418,104 +408,31 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool SetPerformanceLevel(IntPtr data)
+        private bool SetPerformanceLevel(ref IntPtr data)
         {
-            _wrapper.Core.PerformanceLevel = data.ReadInt32();
+            _wrapper.EnvironmentVariables.SetPerformanceLevel(data.ReadInt32());
             return true;
         }
 
-        private bool SetPixelFormat(IntPtr data)
+        private bool SetPixelFormat(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
 
-            int pixelFormat = data.ReadInt32();
-            _wrapper.Graphics.PixelFormat = pixelFormat switch
-            {
-                0 or 1 or 2 => (retro_pixel_format)pixelFormat,
-                _ => retro_pixel_format.RETRO_PIXEL_FORMAT_UNKNOWN
-            };
+            _wrapper.Graphics.SetPixelFormat(data.ReadInt32());
             return _wrapper.Graphics.PixelFormat != retro_pixel_format.RETRO_PIXEL_FORMAT_UNKNOWN;
         }
 
-        private bool SetInputDescriptors(IntPtr data)
+        private bool SetInputDescriptors(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
 
-            _inputDescriptors.Clear();
-
-            retro_input_descriptor descriptor = data.ToStructure<retro_input_descriptor>();
-            while (descriptor is not null && !descriptor.desc.IsNull())
-            {
-                _inputDescriptors.Add(descriptor);
-
-                if (descriptor.device is RETRO_DEVICE.JOYPAD)
-                {
-                    string desc = descriptor.desc.AsString();
-                    _wrapper.Input.ButtonDescriptions[descriptor.port, descriptor.id] = desc;
-                }
-                else if (descriptor.device is RETRO_DEVICE.ANALOG)
-                {
-                    RETRO_DEVICE_ID_ANALOG id = (RETRO_DEVICE_ID_ANALOG)descriptor.id;
-                    switch (id)
-                    {
-                        case RETRO_DEVICE_ID_ANALOG.X:
-                        {
-                            RETRO_DEVICE_INDEX_ANALOG index = (RETRO_DEVICE_INDEX_ANALOG)descriptor.index;
-                            switch (index)
-                            {
-                                case RETRO_DEVICE_INDEX_ANALOG.LEFT:
-                                {
-                                    string desc = descriptor.desc.AsString();
-                                    _wrapper.Input.ButtonDescriptions[descriptor.port, (int)Input.CustomBinds.ANALOG_LEFT_X_PLUS]  = desc;
-                                    _wrapper.Input.ButtonDescriptions[descriptor.port, (int)Input.CustomBinds.ANALOG_LEFT_X_MINUS] = desc;
-                                }
-                                break;
-                                case RETRO_DEVICE_INDEX_ANALOG.RIGHT:
-                                {
-                                    string desc = descriptor.desc.AsString();
-                                    _wrapper.Input.ButtonDescriptions[descriptor.port, (int)Input.CustomBinds.ANALOG_RIGHT_X_PLUS]  = desc;
-                                    _wrapper.Input.ButtonDescriptions[descriptor.port, (int)Input.CustomBinds.ANALOG_RIGHT_X_MINUS] = desc;
-                                }
-                                break;
-                            }
-                        }
-                        break;
-                        case RETRO_DEVICE_ID_ANALOG.Y:
-                        {
-                            RETRO_DEVICE_INDEX_ANALOG index = (RETRO_DEVICE_INDEX_ANALOG)descriptor.index;
-                            switch (index)
-                            {
-                                case RETRO_DEVICE_INDEX_ANALOG.LEFT:
-                                {
-                                    string desc = descriptor.desc.AsString();
-                                    _wrapper.Input.ButtonDescriptions[descriptor.port, (int)Input.CustomBinds.ANALOG_LEFT_Y_PLUS]  = desc;
-                                    _wrapper.Input.ButtonDescriptions[descriptor.port, (int)Input.CustomBinds.ANALOG_LEFT_Y_MINUS] = desc;
-                                }
-                                break;
-                                case RETRO_DEVICE_INDEX_ANALOG.RIGHT:
-                                {
-                                    string desc = descriptor.desc.AsString();
-                                    _wrapper.Input.ButtonDescriptions[descriptor.port, (int)Input.CustomBinds.ANALOG_RIGHT_Y_PLUS]  = desc;
-                                    _wrapper.Input.ButtonDescriptions[descriptor.port, (int)Input.CustomBinds.ANALOG_RIGHT_Y_MINUS] = desc;
-                                }
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
-
-                data += Marshal.SizeOf(descriptor);
-                data.ToStructure(descriptor);
-            }
-
-            _wrapper.Input.HasInputDescriptors = true;
+            _wrapper.Input.SetInputDescriptors(ref data);
             return true;
         }
 
-        private bool SetKeyboardCallback(IntPtr data)
+        private bool SetKeyboardCallback(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
@@ -524,7 +441,7 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool SetDiskControlInterface(IntPtr data)
+        private bool SetDiskControlInterface(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
@@ -534,30 +451,30 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool SetHwRender(IntPtr data)
+        private bool SetHwRender(ref IntPtr data)
         {
-            if (data.IsNull() || _wrapper.Core.HwAccelerated)
+            if (data.IsNull() || _wrapper.EnvironmentVariables.HwAccelerated)
                 return false;
 
             retro_hw_render_callback callback = data.ToStructure<retro_hw_render_callback>();
             if (callback.context_type is not retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL and not retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE)
                 return false;
 
-            _wrapper.OpenGL = new();
-            if (!_wrapper.OpenGL.Init())
+            _wrapper.OpenGLHelperWindow = new();
+            if (!_wrapper.OpenGLHelperWindow.Init())
                 return false;
 
-            callback.get_current_framebuffer = Marshal.GetFunctionPointerForDelegate(_wrapper.OpenGL.GetCurrentFrameBufferCallback);
-            callback.get_proc_address        = Marshal.GetFunctionPointerForDelegate(_wrapper.OpenGL.GetProcAddressCallback);
+            callback.get_current_framebuffer = _wrapper.OpenGLHelperWindow.GetCurrentFrameBuffer.GetFunctionPointer();
+            callback.get_proc_address        = _wrapper.OpenGLHelperWindow.GetProcAddress.GetFunctionPointer();
 
             _wrapper.HwRenderInterface = callback;
             Marshal.StructureToPtr(_wrapper.HwRenderInterface, data, false);
 
-            _wrapper.Core.HwAccelerated = true;
+            _wrapper.EnvironmentVariables.HwAccelerated = true;
             return true;
         }
 
-        private bool SetVariables(IntPtr data)
+        private bool SetVariables(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
@@ -596,108 +513,71 @@ namespace SK.Libretro
             }
         }
 
-        private bool SetSupportNoGame(IntPtr data)
+        private bool SetSupportNoGame(ref IntPtr data)
         {
-            _wrapper.Core.SupportNoGame = data.IsTrue();
+            _wrapper.EnvironmentVariables.SetSupportNoGame(data.IsTrue());
             return true;
         }
 
-        private bool SetFrameTimeCallback(IntPtr data)
+        private bool SetFrameTimeCallback(ref IntPtr data)
         {
             Logger.Instance.LogInfo("Using FrameTime Callback");
             _wrapper.FrameTimeInterface = data.ToStructure<retro_frame_time_callback>();
             return true;
         }
 
-        private bool SetAudioCallback(IntPtr data)
+        private bool SetAudioCallback(ref IntPtr data)
         {
             _wrapper.Audio.AudioCallback = data.ToStructure<retro_audio_callback>();
             return true;
         }
 
-        private bool SetSystemAvInfo(IntPtr data)
+        private bool SetSystemAvInfo(ref IntPtr data)
         {
-            _wrapper.Game.SystemAVInfo = data.ToStructure<retro_system_av_info>();
+            _wrapper.Game.SetSystemAVInfo(data.ToStructure<retro_system_av_info>());
             return true;
         }
 
-        private bool SetSubsystemInfo(IntPtr data)
-        {
-            if (data.IsNull())
-                return false;
-
-            _subsystemInfo.Clear();
-
-            retro_subsystem_info subsystemInfo = data.ToStructure<retro_subsystem_info>();
-            while (!subsystemInfo.desc.IsNull())
-            {
-                _subsystemInfo.Add(subsystemInfo);
-
-                data += Marshal.SizeOf(subsystemInfo);
-                data.ToStructure(subsystemInfo);
-            }
-
-            return true;
-        }
-
-        private bool SetControllerInfo(IntPtr data)
+        private bool SetSubsystemInfo(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
 
-            _controllerInfo.Clear();
-            _controllerDescriptions.Clear();
-
-            retro_controller_info controllerInfo = data.ToStructure<retro_controller_info>();
-            while (!controllerInfo.types.IsNull())
-            {
-                _controllerInfo.Add(controllerInfo);
-
-                for (int deviceIndex = 0; deviceIndex < controllerInfo.num_types; ++deviceIndex)
-                {
-                    retro_controller_description controllerDescription = controllerInfo.types.ToStructure<retro_controller_description>();
-                    _controllerDescriptions.Add(controllerDescription);
-
-                    controllerInfo.types += Marshal.SizeOf(controllerDescription);
-                    controllerInfo.types.ToStructure(controllerDescription);
-                }
-
-                data += Marshal.SizeOf(controllerInfo);
-                data.ToStructure(controllerInfo);
-            }
-
+            _wrapper.EnvironmentVariables.SetSubsystemInfo(ref data);
             return true;
         }
 
-        private bool SetMemoryMaps(IntPtr data)
+        private bool SetControllerInfo(ref IntPtr data)
+        {
+            if (data.IsNull())
+                return false;
+
+            _wrapper.Input.SetControllerInfo(ref data);
+            return true;
+        }
+
+        private bool SetMemoryMaps(ref IntPtr data)
         {
             _wrapper.Memory = new MemoryMap(data.ToStructure<retro_memory_map>());
             return true;
         }
 
-        private bool SetGeometry(IntPtr data)
+        private bool SetGeometry(ref IntPtr data)
         {
-            if (data != null)
-            {
-                retro_game_geometry geometry = data.ToStructure<retro_game_geometry>();
-                if (_wrapper.Game.SystemAVInfo.geometry.base_width != geometry.base_width
-                 || _wrapper.Game.SystemAVInfo.geometry.base_height != geometry.base_height
-                 || _wrapper.Game.SystemAVInfo.geometry.aspect_ratio != geometry.aspect_ratio)
-                {
-                    _wrapper.Game.SystemAVInfo.geometry = geometry;
-                    // TODO: Set video aspect ratio if needed
-                }
-            }
+            if (data.IsNull())
+                return false;
+
+            _wrapper.Game.SetGeometry(data.ToStructure<retro_game_geometry>());
             return true;
         }
 
-        private bool SetSupportAchievements(IntPtr data)
+        private bool SetSupportAchievements(ref IntPtr data)
         {
-            _wrapper.Core.SupportsAchievements = data.IsTrue();
+            _wrapper.EnvironmentVariables.SetSupportsAchievements(data.IsTrue());
             return false;
         }
 
-        private bool SetSerializationQuirks(IntPtr data)
+        private bool SetSerializationQuirks(ref IntPtr data)
         {
             ulong quirks = data.ReadUInt64();
             // quirks |= Header.RETRO_SERIALIZATION_QUIRK_FRONT_VARIABLE_SIZE;
@@ -705,22 +585,21 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool SetCoreOptions(IntPtr data) =>
-            SetCoreOptionsInternal(data);
+        private bool SetCoreOptions(ref IntPtr data) => SetCoreOptionsInternal(ref data);
 
-        private bool SetCoreOptionsIntl(IntPtr data)
+        private bool SetCoreOptionsIntl(ref IntPtr data)
         {
             if (data.IsNull())
                 return false;
 
             retro_core_options_intl intl = data.ToStructure<retro_core_options_intl>();
-            bool result = SetCoreOptionsInternal(intl.local);
+            bool result = SetCoreOptionsInternal(ref intl.local);
             if (!result)
-                result = SetCoreOptionsInternal(intl.us);
+                result = SetCoreOptionsInternal(ref intl.us);
             return result;
         }
 
-        private bool SetCoreOptionsDisplay(IntPtr data)
+        private bool SetCoreOptionsDisplay(ref IntPtr data)
         {
             retro_core_option_display coreOptionDisplay = data.ToStructure<retro_core_option_display>();
             if (coreOptionDisplay.key.IsNull())
@@ -731,17 +610,16 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool SetDiskControlExtInterface(IntPtr data)
+        private bool SetDiskControlExtInterface(ref IntPtr data)
         {
             retro_disk_control_ext_callback callback = data.ToStructure<retro_disk_control_ext_callback>();
             _wrapper.Disk = new(_wrapper, callback);
             return true;
         }
 
-        private bool Shutdown(IntPtr _) =>
-            false;
+        private bool Shutdown() => false;
 
-        private bool SetMessageExt(IntPtr data)
+        private bool SetMessageExt(ref IntPtr data)
         {
             retro_message_ext messageExt = data.ToStructure<retro_message_ext>();
             Logger.Instance.LogInfo($"{messageExt.msg.AsString()}", nameof(RETRO_ENVIRONMENT.SET_MESSAGE_EXT));
@@ -754,56 +632,41 @@ namespace SK.Libretro
             return true;
         }
 
-        private bool SetContentInfoOverride(IntPtr data)
+        private bool SetContentInfoOverride(ref IntPtr data)
         {
-            _systemContentInfoOverrides.Clear();
-
-            retro_system_content_info_override infoOverride = data.ToStructure<retro_system_content_info_override>();
-            while (infoOverride is not null && infoOverride.extensions.IsNotNull())
-            {
-                _systemContentInfoOverrides.Add(infoOverride);
-
-                string extensionsString = infoOverride.extensions.AsString();
-                string[] extensions     = extensionsString.Split('|');
-                foreach (string extension in extensions)
-                    _wrapper.Game.ContentOverrides.Add(extension, infoOverride.need_fullpath, infoOverride.persistent_data);
-
-                data += Marshal.SizeOf(infoOverride);
-                data.ToStructure(infoOverride);
-            }
-
+            _wrapper.Game.SetContentInfoOverride(ref data);
             return true;
         }
 
-        private bool SetCoreOptionsInternal(IntPtr data)
+        private bool SetCoreOptionsInternal(ref IntPtr data)
         {
             try
             {
                 _wrapper.Core.DeserializeOptions();
 
-                if (data == IntPtr.Zero)
+                if (data.IsNull())
                     return false;
 
                 Type type = typeof(retro_core_option_values);
                 BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
                 FieldInfo[] fields = type.GetFields(bindingFlags);
 
-                retro_core_option_definition optionDefinition = Marshal.PtrToStructure<retro_core_option_definition>(data);
-                while (optionDefinition is not null && optionDefinition.key != IntPtr.Zero)
+                retro_core_option_definition optionDefinition = data.ToStructure<retro_core_option_definition>();
+                while (optionDefinition is not null && optionDefinition.key.IsNotNull())
                 {
-                    string key = Marshal.PtrToStringAnsi(optionDefinition.key);
-                    string description = optionDefinition.desc != IntPtr.Zero ? Marshal.PtrToStringAnsi(optionDefinition.desc) : "";
-                    string info = optionDefinition.info != IntPtr.Zero ? Marshal.PtrToStringAnsi(optionDefinition.info) : "";
-                    string defaultValue = optionDefinition.default_value != IntPtr.Zero ? Marshal.PtrToStringAnsi(optionDefinition.default_value) : "";
+                    string key          = optionDefinition.key.AsString();
+                    string description  = optionDefinition.desc.AsString();
+                    string info         = optionDefinition.info.AsString();
+                    string defaultValue = optionDefinition.default_value.AsString();
 
                     List<string> possibleValues = new();
                     for (int i = 0; i < fields.Length; ++i)
                     {
                         FieldInfo fieldInfo = fields[i];
-                        if (fieldInfo.GetValue(optionDefinition.values) is not retro_core_option_value optionValue || optionValue.value == IntPtr.Zero)
+                        if (fieldInfo.GetValue(optionDefinition.values) is not retro_core_option_value optionValue || optionValue.value.IsNull())
                             continue;
 
-                        possibleValues.Add(Marshal.PtrToStringAnsi(optionValue.value));
+                        possibleValues.Add(optionValue.value.AsString());
                     }
 
                     string value = "";
@@ -818,7 +681,7 @@ namespace SK.Libretro
                         _wrapper.Core.CoreOptions[key].Update(key, description, info, possibleValues.ToArray());
 
                     data += Marshal.SizeOf(optionDefinition);
-                    Marshal.PtrToStructure(data, optionDefinition);
+                    data.ToStructure(optionDefinition);
                 }
 
                 _wrapper.Core.SerializeOptions();

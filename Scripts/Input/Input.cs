@@ -21,7 +21,9 @@
  * SOFTWARE. */
 
 using SK.Libretro.Header;
-using static SK.Libretro.Header.RETRO;
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace SK.Libretro
 {
@@ -121,7 +123,6 @@ namespace SK.Libretro
         public readonly retro_input_state_t StateCallback;
 
         public readonly ControllersMap DeviceMap = new();
-        public readonly string[,] ButtonDescriptions = new string[MAX_USERS, FIRST_META_KEY];
 
         public readonly retro_rumble_interface RumbleInterface = new()
         {
@@ -132,10 +133,16 @@ namespace SK.Libretro
             }
         };
 
-        public bool HasInputDescriptors;
+        public bool HasInputDescriptors { get; private set; }
+
         public retro_keyboard_callback KeyboardCallback;
 
         public bool Enabled { get; set; }
+
+        private readonly List<retro_input_descriptor> _inputDescriptors = new();
+        private readonly List<retro_controller_info> _controllerInfo = new();
+        private readonly List<retro_controller_description> _controllerDescriptions = new();
+        private readonly string[,] _buttonDescriptions = new string[MAX_USERS, FIRST_META_KEY];
 
         private IInputProcessor _processor;
 
@@ -253,5 +260,102 @@ namespace SK.Libretro
 
         private static short BoolToShort(bool boolValue) =>
             (short)(boolValue ? 1 : 0);
+
+        public void SetInputDescriptors(ref IntPtr data)
+        {
+            _inputDescriptors.Clear();
+
+            retro_input_descriptor descriptor = data.ToStructure<retro_input_descriptor>();
+            while (descriptor is not null && !descriptor.desc.IsNull())
+            {
+                _inputDescriptors.Add(descriptor);
+
+                if (descriptor.device is RETRO_DEVICE.JOYPAD)
+                {
+                    string desc = descriptor.desc.AsString();
+                    _buttonDescriptions[descriptor.port, descriptor.id] = desc;
+                }
+                else if (descriptor.device is RETRO_DEVICE.ANALOG)
+                {
+                    RETRO_DEVICE_ID_ANALOG id = (RETRO_DEVICE_ID_ANALOG)descriptor.id;
+                    switch (id)
+                    {
+                        case RETRO_DEVICE_ID_ANALOG.X:
+                        {
+                            RETRO_DEVICE_INDEX_ANALOG index = (RETRO_DEVICE_INDEX_ANALOG)descriptor.index;
+                            switch (index)
+                            {
+                                case RETRO_DEVICE_INDEX_ANALOG.LEFT:
+                                {
+                                    string desc = descriptor.desc.AsString();
+                                    _buttonDescriptions[descriptor.port, (int)Input.CustomBinds.ANALOG_LEFT_X_PLUS] = desc;
+                                    _buttonDescriptions[descriptor.port, (int)Input.CustomBinds.ANALOG_LEFT_X_MINUS] = desc;
+                                }
+                                break;
+                                case RETRO_DEVICE_INDEX_ANALOG.RIGHT:
+                                {
+                                    string desc = descriptor.desc.AsString();
+                                    _buttonDescriptions[descriptor.port, (int)Input.CustomBinds.ANALOG_RIGHT_X_PLUS] = desc;
+                                    _buttonDescriptions[descriptor.port, (int)Input.CustomBinds.ANALOG_RIGHT_X_MINUS] = desc;
+                                }
+                                break;
+                            }
+                        }
+                        break;
+                        case RETRO_DEVICE_ID_ANALOG.Y:
+                        {
+                            RETRO_DEVICE_INDEX_ANALOG index = (RETRO_DEVICE_INDEX_ANALOG)descriptor.index;
+                            switch (index)
+                            {
+                                case RETRO_DEVICE_INDEX_ANALOG.LEFT:
+                                {
+                                    string desc = descriptor.desc.AsString();
+                                    _buttonDescriptions[descriptor.port, (int)Input.CustomBinds.ANALOG_LEFT_Y_PLUS] = desc;
+                                    _buttonDescriptions[descriptor.port, (int)Input.CustomBinds.ANALOG_LEFT_Y_MINUS] = desc;
+                                }
+                                break;
+                                case RETRO_DEVICE_INDEX_ANALOG.RIGHT:
+                                {
+                                    string desc = descriptor.desc.AsString();
+                                    _buttonDescriptions[descriptor.port, (int)Input.CustomBinds.ANALOG_RIGHT_Y_PLUS] = desc;
+                                    _buttonDescriptions[descriptor.port, (int)Input.CustomBinds.ANALOG_RIGHT_Y_MINUS] = desc;
+                                }
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                data += Marshal.SizeOf(descriptor);
+                data.ToStructure(descriptor);
+            }
+
+            HasInputDescriptors = _inputDescriptors.Count > 0;
+        }
+
+        public void SetControllerInfo(ref IntPtr data)
+        {
+            _controllerInfo.Clear();
+            _controllerDescriptions.Clear();
+
+            retro_controller_info controllerInfo = data.ToStructure<retro_controller_info>();
+            while (!controllerInfo.types.IsNull())
+            {
+                _controllerInfo.Add(controllerInfo);
+
+                for (int deviceIndex = 0; deviceIndex < controllerInfo.num_types; ++deviceIndex)
+                {
+                    retro_controller_description controllerDescription = controllerInfo.types.ToStructure<retro_controller_description>();
+                    _controllerDescriptions.Add(controllerDescription);
+
+                    controllerInfo.types += Marshal.SizeOf(controllerDescription);
+                    controllerInfo.types.ToStructure(controllerDescription);
+                }
+
+                data += Marshal.SizeOf(controllerInfo);
+                data.ToStructure(controllerInfo);
+            }
+        }
     }
 }

@@ -96,7 +96,7 @@ namespace SK.Libretro
                 if (!FileSystem.FileExists(filePath))
                     continue;
 
-                _wrapper.Game.GameInfo.path = Marshal.StringToHGlobalAnsi(filePath);
+                _wrapper.Game.GameInfo.path = filePath.AsAllocatedPtr();
                 try
                 {
                     using FileStream stream = new(filePath, FileMode.Open);

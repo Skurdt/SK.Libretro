@@ -22,7 +22,6 @@
 
 using SK.Libretro.Header;
 using System;
-using static SK.Libretro.Header.RETRO;
 
 namespace SK.Libretro
 {
@@ -52,7 +51,7 @@ namespace SK.Libretro
         {
             _processor = audioProcessor;
             if (_processor != null)
-                _processor.Init(Convert.ToInt32(_wrapper.Game.SystemAVInfo.timing.sample_rate));
+                _processor.Init(_wrapper.Game.SystemAVInfo.SampleRate);
         }
 
         public void DeInit()

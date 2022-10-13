@@ -97,6 +97,7 @@ namespace SK.Libretro.Unity
 
         private readonly LibretroInstance _instanceComponent;
         private readonly Renderer _screen;
+        private readonly Material _originalMaterial;
         private readonly int _shaderTextureId;
 
         private Wrapper _wrapper;
@@ -121,11 +122,15 @@ namespace SK.Libretro.Unity
             _screen            = instance.Renderer;
             _settings          = instance.Settings;
 
-            _shaderTextureId = Shader.PropertyToID(_settings.ShaderTextureName);
+            _originalMaterial = new(_screen.material);
+            _shaderTextureId  = Shader.PropertyToID(_settings.ShaderTextureName);
         }
 
-        public virtual void Dispose() =>
+        public virtual void Dispose()
+        {
             StopContent();
+            _screen.material = _originalMaterial;
+        }
 
         public void SetContent(string coreName, string gamesDirectory, string[] gameNames)
         {
@@ -304,7 +309,12 @@ namespace SK.Libretro.Unity
 
         protected Wrapper InitializeWrapper()
         {
-            Wrapper wrapper = new((RuntimePlatform)Application.platform, _settings.MainDirectory);
+            WrapperSettings wrapperSettings = new((RuntimePlatform)Application.platform)
+            {
+                RootDirectory = _settings.MainDirectory
+            };
+
+            Wrapper wrapper = new(wrapperSettings);
             if (!wrapper.StartContent(CoreName, GamesDirectory, GameNames?[0]))
             {
                 Debug.LogError("Failed to start core/game combination");
@@ -315,9 +325,9 @@ namespace SK.Libretro.Unity
                 for (int i = 0; i < GameNames.Length; ++i)
                     _ = wrapper.Disk?.AddImageIndex();
 
-            IGraphicsProcessor graphicsProcessor = GetGraphicsProcessor(wrapper.Game.VideoWidth, wrapper.Game.VideoHeight);
+            IGraphicsProcessor graphicsProcessor = GetGraphicsProcessor(wrapper.Game.SystemAVInfo.MaxWidth, wrapper.Game.SystemAVInfo.MaxHeight);
             GraphicsFrameHandlerBase graphicsFrameHandler;
-            if (wrapper.Core.HwAccelerated)
+            if (wrapper.EnvironmentVariables.HwAccelerated)
             {
                 if (Application.isEditor && !_settings.AllowGLCoresInEditor)
                 {
@@ -326,7 +336,7 @@ namespace SK.Libretro.Unity
                     return null;
                 }
 
-                graphicsFrameHandler = new GraphicsFrameHandlerOpenGLXRGB8888VFlip(graphicsProcessor, wrapper.OpenGL);
+                graphicsFrameHandler = new GraphicsFrameHandlerOpenGLXRGB8888VFlip(graphicsProcessor, wrapper.OpenGLHelperWindow);
 
                 wrapper.InitHardwareContext();
             }
@@ -340,8 +350,7 @@ namespace SK.Libretro.Unity
                     or _ => new GraphicsFrameHandlerNull(graphicsProcessor)
                 };
 
-            wrapper.Graphics.Init(graphicsFrameHandler);
-            wrapper.Graphics.Enabled = true;
+            wrapper.InitGraphics(graphicsFrameHandler, true);
 
             wrapper.Audio.Init(_audioProcessor);
             wrapper.Audio.Enabled = true;
@@ -353,7 +362,7 @@ namespace SK.Libretro.Unity
 
             wrapper.RewindEnabled = _settings.RewindEnabled;
 
-            _gameFrameTime = 1.0 / wrapper.Game.VideoFps;
+            _gameFrameTime = 1.0 / wrapper.Game.SystemAVInfo.Fps;
 
             InvokeOnStartedEvent();
 

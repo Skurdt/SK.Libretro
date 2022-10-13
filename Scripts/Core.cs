@@ -23,12 +23,20 @@
 using SK.Libretro.Header;
 using System;
 using System.IO;
-using static SK.Libretro.Header.RETRO;
 
 namespace SK.Libretro
 {
     internal sealed class Core
     {
+        public bool Initialized { get; private set; }
+        public string Name { get; private set; }
+        public string Path => System.IO.Path.GetDirectoryName(_dll.Path);
+        public uint ApiVersion { get; private set; }
+        public string[] ValidExtensions => _systemInfo.ValidExtensions;
+        public bool NeedFullPath => _systemInfo.NeedFullPath;
+        public CoreOptions CoreOptions { get; private set; }
+        public CoreOptions GameOptions { get; private set; }
+
         public retro_init_t retro_init;
         public retro_deinit_t retro_deinit;
         public retro_api_version_t retro_api_version;
@@ -49,21 +57,6 @@ namespace SK.Libretro
         public retro_get_memory_data_t retro_get_memory_data;
         public retro_get_memory_size_t retro_get_memory_size;
 
-        public string Path => System.IO.Path.GetDirectoryName(_dll.Path);
-        public int Rotation { get; set; }
-        public int PerformanceLevel { get; set; }
-        public bool HwAccelerated { get; set; }
-        public bool SupportNoGame { get; set; }
-        public bool SupportsAchievements { get; set; }
-
-        public string Name { get; private set; }
-        public uint ApiVersion { get; private set; }
-        public string[] ValidExtensions => _systemInfo.ValidExtensions;
-        public bool NeedFullPath => _systemInfo.NeedFullPath;
-        public CoreOptions CoreOptions { get; private set; }
-        public CoreOptions GameOptions { get; private set; }
-        public bool Initialized { get; private set; } = false;
-
         private readonly Wrapper _wrapper;
         private readonly object _serializeLock = new();
 
@@ -74,7 +67,7 @@ namespace SK.Libretro
 
         public bool Start(string coreName)
         {
-            switch (_wrapper.RuntimePlatform)
+            switch (_wrapper.Settings.RuntimePlatform)
             {
                 case RuntimePlatform.WindowsEditor:
                 case RuntimePlatform.WindowsPlayer:
@@ -89,7 +82,7 @@ namespace SK.Libretro
                     _dll = new DynamicLibraryLinux();
                     break;
                 default:
-                    Logger.Instance.LogError($"Runtime platform '{_wrapper.RuntimePlatform}' not supported.");
+                    Logger.Instance.LogError($"Runtime platform '{_wrapper.Settings.RuntimePlatform}' not supported.");
                     return false;
             }
 
@@ -250,7 +243,7 @@ namespace SK.Libretro
         private void GetSystemInfo()
         {
             retro_get_system_info(out retro_system_info systemInfo);
-            _systemInfo = new(systemInfo);
+            _systemInfo = new(ref systemInfo);
         }
 
         private bool SetCallbacks()

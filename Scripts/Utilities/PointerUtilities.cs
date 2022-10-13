@@ -72,7 +72,7 @@ namespace SK.Libretro
 
         public static T ToStructure<T>(this IntPtr ptr) => Marshal.PtrToStructure<T>(ptr);
 
-        public static T GetDelegate<T>(this IntPtr ptr) where T : Delegate => Marshal.GetDelegateForFunctionPointer<T>(ptr);
+        public static T GetDelegate<T>(this IntPtr ptr) where T : Delegate => ptr.IsNotNull() ? Marshal.GetDelegateForFunctionPointer<T>(ptr) : default;
 
         public static IntPtr GetFunctionPointer<T>(this T @delegate) where T : Delegate => Marshal.GetFunctionPointerForDelegate(@delegate);
 
@@ -86,7 +86,7 @@ namespace SK.Libretro
         {
             if (ptr.IsNotNull())
                 Marshal.FreeHGlobal(ptr);
-            ptr = IntPtr.Zero;
+            SetToNull(ref ptr);
         }
 
         public static void Free(IList<IntPtr> ptrs)
@@ -99,5 +99,7 @@ namespace SK.Libretro
 
             ptrs.Clear();
         }
+
+        public static void SetToNull(ref IntPtr ptr) => ptr = IntPtr.Zero;
     }
 }

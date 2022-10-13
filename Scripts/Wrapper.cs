@@ -23,40 +23,12 @@
 using SK.Libretro.Header;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.InteropServices;
 
 namespace SK.Libretro
 {
     internal sealed class Wrapper
     {
-        public enum Language
-        {
-            English,
-            Japanese,
-            French,
-            Spanish,
-            German,
-            Italian,
-            Dutch,
-            Portuguese_brazil,
-            Portuguese_portugal,
-            Russian,
-            Korean,
-            Chinese_traditional,
-            Chinese_simplified,
-            Esperanto,
-            Polish,
-            Vietnamese,
-            Arabic,
-            Greek,
-            Turkish,
-            Slovak,
-            Persian,
-            Hebrew,
-            Asturian
-        }
-
         public static readonly retro_log_level LogLevel = retro_log_level.RETRO_LOG_WARN;
 
         public static string MainDirectory        { get; private set; } = null;
@@ -68,48 +40,12 @@ namespace SK.Libretro
         public static string StatesDirectory      { get; private set; } = null;
         public static string TempDirectory        { get; private set; } = null;
 
-        public bool OptionCropOverscan
-        {
-            get => _optionCropOverscan;
-            set
-            {
-                if (_optionCropOverscan != value)
-                {
-                    _optionCropOverscan = value;
-                    UpdateVariables = true;
-                }
-            }
-        }
-        public string OptionUserName
-        {
-            get => _optionUserName;
-            set
-            {
-                if (!_optionUserName.Equals(value, StringComparison.Ordinal))
-                {
-                    _optionUserName = value;
-                    UpdateVariables = true;
-                }
-            }
-        }
-        public Language OptionLanguage
-        {
-            get => _optionLanguage;
-            set
-            {
-                if (_optionLanguage != value)
-                {
-                    _optionLanguage = value;
-                    UpdateVariables = true;
-                }
-            }
-        }
-
-        public readonly RuntimePlatform RuntimePlatform;
+        public readonly WrapperSettings Settings;
+        public readonly EnvironmentVariables EnvironmentVariables;
         public readonly Core Core;
         public readonly Game Game;
         public readonly Environment Environment;
-        public readonly Graphics Graphics;
+        public Graphics Graphics { get; private set; }
         public readonly Audio Audio;
         public readonly Input Input;
         public readonly Serialization Serialization;
@@ -119,7 +55,7 @@ namespace SK.Libretro
         public bool RewindEnabled = false;
         public bool PerformRewind = false;
 
-        public OpenGL OpenGL;
+        public OpenGLHelperWindow OpenGLHelperWindow;
         public retro_hw_render_callback HwRenderInterface;
         public retro_frame_time_callback FrameTimeInterface;
         public retro_frame_time_callback_t FrameTimeInterfaceCallback;
@@ -130,52 +66,38 @@ namespace SK.Libretro
 
         public bool UpdateVariables = false;
 
-        private const int REWIND_FRAMES_INTERVAL = 10;
+        //private const int REWIND_FRAMES_INTERVAL = 10;
 
         private readonly List<IntPtr> _unsafeStrings = new();
 
-        private Language _optionLanguage = Language.English;
-        private string _optionUserName   = "LibretroUnityFE's Awesome User";
-        private bool _optionCropOverscan = true;
         private long _frameTimeLast      = 0;
-        private uint _totalFrameCount    = 0;
+        //private uint _totalFrameCount    = 0;
 
-        public unsafe Wrapper(RuntimePlatform runtimePlatform, string baseDirectory = null)
+        public unsafe Wrapper(WrapperSettings settings)
         {
-            RuntimePlatform = runtimePlatform;
+            Settings = settings;
 
             if (MainDirectory is null)
             {
-                MainDirectory        = !string.IsNullOrWhiteSpace(baseDirectory) ? baseDirectory : "libretro";
-                CoresDirectory       = $"{MainDirectory}/cores";
-                CoreOptionsDirectory = $"{MainDirectory}/core_options";
-                SystemDirectory      = $"{MainDirectory}/system";
-                CoreAssetsDirectory  = $"{MainDirectory}/core_assets";
-                SavesDirectory       = $"{MainDirectory}/saves";
-                StatesDirectory      = $"{MainDirectory}/states";
-                TempDirectory        = $"{MainDirectory}/temp";
-
-                if (!Directory.Exists(MainDirectory))
-                    _ = Directory.CreateDirectory(MainDirectory);
-
-                if (!Directory.Exists(CoresDirectory))
-                    _ = Directory.CreateDirectory(CoresDirectory);
-
-                if (!Directory.Exists(CoreOptionsDirectory))
-                    _ = Directory.CreateDirectory(CoreOptionsDirectory);
-
-                if (!Directory.Exists(SystemDirectory))
-                    _ = Directory.CreateDirectory(SystemDirectory);
+                MainDirectory        = FileSystem.GetOrCreateDirectory(!string.IsNullOrWhiteSpace(settings.RootDirectory) ? settings.RootDirectory : "libretro");
+                CoresDirectory       = FileSystem.GetOrCreateDirectory($"{MainDirectory}/cores");
+                CoreOptionsDirectory = FileSystem.GetOrCreateDirectory($"{MainDirectory}/core_options");
+                SystemDirectory      = FileSystem.GetOrCreateDirectory($"{MainDirectory}/system");
+                CoreAssetsDirectory  = FileSystem.GetOrCreateDirectory($"{MainDirectory}/core_assets");
+                SavesDirectory       = FileSystem.GetOrCreateDirectory($"{MainDirectory}/saves");
+                StatesDirectory      = FileSystem.GetOrCreateDirectory($"{MainDirectory}/states");
+                TempDirectory        = FileSystem.GetOrCreateDirectory($"{MainDirectory}/temp");
             }
 
-            Core = new Core(this);
-            Game = new Game(this);
+            Core = new(this);
+            Game = new(this);
 
-            Environment   = new Environment(this);
-            Graphics      = new Graphics(false);
-            Audio         = new Audio(this);
-            Input         = new Input();
-            Serialization = new Serialization(this);
+            EnvironmentVariables = new();
+            Environment          = new(this);
+            Graphics             = new();
+            Audio                = new(this);
+            Input                = new();
+            Serialization        = new(this);
 
             LogPrintfCallback = LogInterface.RetroLogPrintf;
         }
@@ -191,16 +113,10 @@ namespace SK.Libretro
                 return false;
             }
 
-            if (FrameTimeInterface.callback != IntPtr.Zero)
+            if (FrameTimeInterface.callback.IsNotNull())
                 FrameTimeInterfaceCallback = Marshal.GetDelegateForFunctionPointer<retro_frame_time_callback_t>(FrameTimeInterface.callback);
 
             if (!Game.Start(gameDirectory, gameName))
-            {
-                StopContent();
-                return false;
-            }
-
-            if (Core.HwAccelerated && OpenGL == null)
             {
                 StopContent();
                 return false;
@@ -219,25 +135,29 @@ namespace SK.Libretro
         {
             Input.DeInit();
             Audio.DeInit();
-            Graphics.DeInit();
+            Graphics?.Dispose();
 
             Game.Stop();
             Core.Stop();
 
+            OpenGLHelperWindow?.Dispose();
+
             PointerUtilities.Free(_unsafeStrings);
         }
 
-        public void InitHardwareContext() => Marshal.GetDelegateForFunctionPointer<retro_hw_context_reset_t>(HwRenderInterface.context_reset).Invoke();
+        public void InitHardwareContext() =>
+            HwRenderInterface.context_reset.GetDelegate<retro_hw_context_reset_t>()
+                                           .Invoke();
 
         public void RunFrame()
         {
             if (!Game.Running || !Core.Initialized)
                 return;
 
-            if (Core.HwAccelerated)
-                OpenGL.PollEvents();
+            if (EnvironmentVariables.HwAccelerated)
+                GLFW.PollEvents();
 
-            _totalFrameCount++;
+            //_totalFrameCount++;
 
             FrameTimeUpdate();
 
@@ -252,11 +172,12 @@ namespace SK.Libretro
             Core.retro_run();
         }
 
-        public ControllersMap DeviceMap => Input.DeviceMap;
+        public void InitGraphics(GraphicsFrameHandlerBase graphicsFrameHandler, bool enabled) =>
+            Graphics.Init(graphicsFrameHandler, enabled);
 
-        internal IntPtr GetUnsafeString(string source)
+        public IntPtr GetUnsafeString(string source)
         {
-            IntPtr ptr = Marshal.StringToHGlobalAnsi(source);
+            IntPtr ptr = source.AsAllocatedPtr();
             _unsafeStrings.Add(ptr);
             return ptr;
         }
