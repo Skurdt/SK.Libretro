@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -122,7 +122,7 @@ namespace SK.Libretro.Unity
             if (!_texture || _texture.width != width || _texture.height != height)
             {
                 UnityEngine.Object.Destroy(_texture);
-                _texture = new Texture2D(width, height, TextureFormat.BGRA32, false)
+                _texture = new Texture2D(width, height, TextureFormat.BGRA32, true, false, true)
                 {
                     filterMode = filterMode
                 };

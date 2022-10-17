@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -195,6 +195,19 @@ namespace SK.Libretro.Unity
             StartContent();
         }
 
+        public void ResetContent()
+        {
+            if (!Running)
+                return;
+
+            if (Paused)
+                ResumeContent();
+
+            Running = false;
+
+            _wrapper?.ResetContent();
+        }
+
         public void StopContent()
         {
             if (!Running)
@@ -254,8 +267,7 @@ namespace SK.Libretro.Unity
                 _currentStateSlot = slotInt;
         }
 
-        public virtual void SetStateSlot(int slot) =>
-            _currentStateSlot = slot;
+        public virtual void SetStateSlot(int slot) => _currentStateSlot = slot;
 
         public virtual void SaveStateWithScreenshot()
         {
@@ -263,17 +275,13 @@ namespace SK.Libretro.Unity
                 TakeScreenshot(screenshotPath);
         }
 
-        public virtual void SaveStateWithoutScreenshot() =>
-            _wrapper.Serialization.SaveState(_currentStateSlot);
+        public virtual void SaveStateWithoutScreenshot() => _wrapper.Serialization.SaveState(_currentStateSlot);
 
-        public virtual void LoadState() =>
-            _wrapper.Serialization.LoadState(_currentStateSlot);
+        public virtual void LoadState() => _wrapper.Serialization.LoadState(_currentStateSlot);
 
-        public virtual void SaveSRAM() =>
-            _wrapper.Serialization.SaveSRAM();
+        public virtual void SaveSRAM() => _wrapper.Serialization.SaveSRAM();
 
-        public virtual void LoadSRAM() =>
-            _wrapper.Serialization.LoadSRAM();
+        public virtual void LoadSRAM() => _wrapper.Serialization.LoadSRAM();
 
         public virtual void SetDiskIndex(int index)
         {
@@ -282,7 +290,7 @@ namespace SK.Libretro.Unity
         }
 
         public virtual void SetControllerPortDevice(uint port, RETRO_DEVICE device) =>
-            _wrapper.Core.retro_set_controller_port_device(port, device);
+            _wrapper.Core.SetControllerPortDevice(port, device);
 
         public virtual void TakeScreenshot(string screenshotPath)
         {
@@ -321,13 +329,13 @@ namespace SK.Libretro.Unity
                 return null;
             }
 
-            if (GameNames != null)
+            if (wrapper.Disk.Enabled && GameNames is not null)
                 for (int i = 0; i < GameNames.Length; ++i)
                     _ = wrapper.Disk?.AddImageIndex();
 
             IGraphicsProcessor graphicsProcessor = GetGraphicsProcessor(wrapper.Game.SystemAVInfo.MaxWidth, wrapper.Game.SystemAVInfo.MaxHeight);
             GraphicsFrameHandlerBase graphicsFrameHandler;
-            if (wrapper.EnvironmentVariables.HwAccelerated)
+            if (wrapper.Core.HwAccelerated)
             {
                 if (Application.isEditor && !_settings.AllowGLCoresInEditor)
                 {
@@ -336,9 +344,8 @@ namespace SK.Libretro.Unity
                     return null;
                 }
 
-                graphicsFrameHandler = new GraphicsFrameHandlerOpenGLXRGB8888VFlip(graphicsProcessor, wrapper.OpenGLHelperWindow);
-
-                wrapper.InitHardwareContext();
+                graphicsFrameHandler = new GraphicsFrameHandlerOpenGLXRGB8888VFlip(graphicsProcessor, wrapper.Graphics.OpenGLHelperWindow);
+                wrapper.Graphics.InitHardwareContext();
             }
             else
                 graphicsFrameHandler = wrapper.Graphics.PixelFormat switch
@@ -347,7 +354,7 @@ namespace SK.Libretro.Unity
                     retro_pixel_format.RETRO_PIXEL_FORMAT_XRGB8888 => new GraphicsFrameHandlerSoftwareXRGB8888(graphicsProcessor),
                     retro_pixel_format.RETRO_PIXEL_FORMAT_RGB565   => new GraphicsFrameHandlerSoftwareRGB565(graphicsProcessor),
                     retro_pixel_format.RETRO_PIXEL_FORMAT_UNKNOWN
-                    or _ => new GraphicsFrameHandlerNull(graphicsProcessor)
+                    or _ => new NullGraphicsFrameHandler(graphicsProcessor)
                 };
 
             wrapper.InitGraphics(graphicsFrameHandler, true);

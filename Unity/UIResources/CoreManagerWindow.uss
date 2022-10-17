@@ -1,0 +1,85 @@
+#Root {
+    flex-grow: 1;
+}
+
+#LeftPanel {
+    flex-grow: 1;
+    min-width: 320px;
+}
+
+#SearchField {
+    margin-left: 18px;
+    margin-right: 18px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+}
+
+#CoreList {
+    flex-grow: 1;
+}
+
+#ItemRoot {
+    flex-direction: row;
+    flex-grow: 1;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 1px;
+    margin-bottom: 1px;
+}
+
+#RightPanel {
+    flex-grow: 1;
+}
+
+#InfoScrollView {
+    flex-grow: 1;
+}
+
+#InfoText {
+    flex-grow: 1;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    white-space: normal;
+}
+
+.core-list-item-processing {
+    background-color: rgb(40, 40, 40);
+}
+
+.core-list-item-not-available {
+    background-color: rgb(80, 0, 0);
+}
+
+.core-list-item-latest {
+    background-color: rgb(0, 80, 0);
+}
+
+.core-list-item-older {
+    background-color: rgb(150, 70, 0);
+}
+
+.core-list-item-label {
+    -unity-text-align: middle-left;
+    font-size: 12px;
+    color: rgb(210, 210, 210);
+    white-space: nowrap;
+    flex-shrink: 1;
+    flex-grow: 0;
+    overflow: hidden;
+    margin-left: 10px;
+}
+
+.core-list-item-flexible-space {
+    flex-grow: 1;
+}
+
+.core-list-item-button {
+    -unity-text-align: middle-center;
+    font-size: 12px;
+    color: rgb(210, 210, 210);
+    width: 100px;
+    max-width: 100px;
+    min-width: 100px;
+}

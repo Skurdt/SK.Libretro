@@ -1,6 +1,6 @@
 /* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -127,10 +127,12 @@ namespace SK.Libretro.Header
 
     // API bool retro_serialize(void* data, size_t size);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return: MarshalAs(UnmanagedType.U1)]
     internal delegate bool retro_serialize_t(IntPtr data, nuint size);
 
     // API bool retro_unserialize(const void* data, size_t size);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return: MarshalAs(UnmanagedType.U1)]
     internal delegate bool retro_unserialize_t(IntPtr data, nuint size);
 
     // API void retro_cheat_reset(void);
@@ -139,7 +141,7 @@ namespace SK.Libretro.Header
 
     // API void retro_cheat_set(unsigned index, bool enabled, const char* code);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate void retro_cheat_set_t(uint index, bool enabled, IntPtr code);
+    internal delegate void retro_cheat_set_t(uint index, [MarshalAs(UnmanagedType.U1)] bool enabled, IntPtr code);
 
     // API bool retro_load_game(const struct retro_game_info *game);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

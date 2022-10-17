@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace SK.Libretro
 {
-    public sealed class CoreInstances : IEnumerable<Core>
+    public sealed class CoreInstances : IEnumerable<Wrapper>
     {
         public static CoreInstances Instance
         {
@@ -39,14 +40,14 @@ namespace SK.Libretro
             }
         }
 
-        public int CoreCount => _cores.Count;
+        public int CoreCount => _wrappers.Count;
 
         private static CoreInstances _instance;
         private static readonly object _lock = new();
 
-        private readonly List<Core> _cores = new();
+        private readonly List<Wrapper> _wrappers = new();
 
-        public bool Contains(string coreName) => _cores.Any(x => x.Name == coreName);
+        public bool Contains(string coreName) => _wrappers.Any(x => x.Core.Name.Equals(coreName, StringComparison.OrdinalIgnoreCase));
 
         public void UpdateCoreOptionValue(string coreName, string key, int index, bool global)
         {
@@ -55,27 +56,27 @@ namespace SK.Libretro
                 if (string.IsNullOrWhiteSpace(key))
                     return;
 
-                Core core = _cores.First(x => x.Name == coreName);
-                if (core != null)
+                Wrapper wrapper = _wrappers.First(x => x.Core.Name.Equals(coreName, StringComparison.OrdinalIgnoreCase));
+                if (wrapper is not null)
                 {
                     if (global)
-                        core.CoreOptions.UpdateValue(key, index);
+                        wrapper.Options.CoreOptions.UpdateValue(key, index);
                     else
-                        core.GameOptions.UpdateValue(key, index);
+                        wrapper.Options.GameOptions.UpdateValue(key, index);
 
-                    core.SerializeOptions(global);
+                    wrapper.Options.Serialize(global);
                 }
             }
         }
 
-        public (CoreOptions, CoreOptions) this[string coreName]
+        public (Options, Options) this[string coreName]
         {
             get
             {
                 lock (_lock)
                 {
-                    Core core = _cores.First(x => x.Name == coreName);
-                    return (core?.CoreOptions, core?.GameOptions);
+                    Wrapper wrapper = _wrappers.First(x => x.Core.Name.Equals(coreName, StringComparison.OrdinalIgnoreCase));
+                    return (wrapper?.Options.CoreOptions, wrapper?.Options.GameOptions);
                 }
             }
         }
@@ -95,15 +96,21 @@ namespace SK.Libretro
         //    }
         //}
 
-        internal void Add(Core core)
+        internal void Add(Wrapper wrapper)
         {
             lock (_lock)
-                if (!_cores.Contains(core))
-                    _cores.Add(core);
+                if (!_wrappers.Contains(wrapper))
+                    _wrappers.Add(wrapper);
         }
 
-        IEnumerator<Core> IEnumerable<Core>.GetEnumerator() => _cores.GetEnumerator();
+        internal void Remove(Wrapper wrapper)
+        {
+            lock (_lock)
+                if (_wrappers.Contains(wrapper))
+                    _ = _wrappers.Remove(wrapper);
+        }
 
-        IEnumerator IEnumerable.GetEnumerator() => _cores.GetEnumerator();
+        IEnumerator<Wrapper> IEnumerable<Wrapper>.GetEnumerator() => _wrappers.GetEnumerator();
+        public IEnumerator GetEnumerator() => GetEnumerator();
     }
 }

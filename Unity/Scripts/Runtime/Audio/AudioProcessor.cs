@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +55,7 @@ namespace SK.Libretro.Unity
                 _audioSource.Play();
         }
 
-        public virtual void DeInit()
+        public virtual void Dispose()
         {
             if (_audioSource)
                 _audioSource.Stop();

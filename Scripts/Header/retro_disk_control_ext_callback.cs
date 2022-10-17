@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using System;
 using System.Runtime.InteropServices;
 
 namespace SK.Libretro.Header
@@ -39,18 +40,17 @@ namespace SK.Libretro.Header
     [return: MarshalAs(UnmanagedType.U1)]
     internal delegate bool retro_get_image_label_t(uint index, [MarshalAs(UnmanagedType.LPStr)] ref string label, nuint len);
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal sealed class retro_disk_control_ext_callback
+    internal struct retro_disk_control_ext_callback
     {
-        public retro_set_eject_state_t set_eject_state;
-        public retro_get_eject_state_t get_eject_state;
-        public retro_get_image_index_t get_image_index;
-        public retro_set_image_index_t set_image_index;
-        public retro_get_num_images_t get_num_images;
-        public retro_replace_image_index_t replace_image_index;
-        public retro_add_image_index_t add_image_index;
-        public retro_set_initial_image_t set_initial_image;
-        public retro_get_image_path_t get_image_path;
-        public retro_get_image_label_t get_image_label;
+        public IntPtr set_eject_state;     // retro_set_eject_state_t
+        public IntPtr get_eject_state;     // retro_get_eject_state_t
+        public IntPtr get_image_index;     // retro_get_image_index_t
+        public IntPtr set_image_index;     // retro_set_image_index_t
+        public IntPtr get_num_images;      // retro_get_num_images_t
+        public IntPtr replace_image_index; // retro_replace_image_index_t
+        public IntPtr add_image_index;     // retro_add_image_index_t
+        public IntPtr set_initial_image;   // retro_set_initial_image_t
+        public IntPtr get_image_path;      // retro_get_image_path_t
+        public IntPtr get_image_label;     // retro_get_image_label_t
     }
 }

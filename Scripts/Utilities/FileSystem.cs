@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ namespace SK.Libretro
                     _ = Directory.CreateDirectory(path);
                 return path;
             }
-            catch (System.Exception)
+            catch
             {
                 throw;
             }
@@ -54,9 +54,8 @@ namespace SK.Libretro
             catch (Exception e)
             {
                 Logger.Instance.LogException(e);
+                return false;
             }
-
-            return false;
         }
 
         public static bool DeleteFile(string path)
@@ -70,9 +69,23 @@ namespace SK.Libretro
             catch (Exception e)
             {
                 Logger.Instance.LogException(e);
+                return false;
             }
+        }
 
-            return false;
+        public static bool MoveFile(string sourcePath, string destinationPath)
+        {
+            try
+            {
+                if (FileExists(sourcePath))
+                    File.Move(sourcePath, destinationPath);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Logger.Instance.LogException(e);
+                return false;
+            }
         }
 
         public static string[] GetFilesInDirectory(string path, string searchPattern, bool includeSubFolders = false)
@@ -84,9 +97,8 @@ namespace SK.Libretro
             catch (Exception e)
             {
                 Logger.Instance.LogException(e);
+                return Array.Empty<string>();
             }
-
-            return null;
         }
 
         public static bool SerializeToJson<T>(T sourceObject, string targetPath)
@@ -100,9 +112,8 @@ namespace SK.Libretro
             catch (Exception e)
             {
                 Logger.Instance.LogException(e);
+                return false;
             }
-
-            return false;
         }
 
         public static T DeserializeFromJson<T>(string sourcePath) where T : class
@@ -110,7 +121,7 @@ namespace SK.Libretro
             try
             {
                 if (!FileExists(sourcePath))
-                    return null;
+                    return default;
 
                 string jsonString = File.ReadAllText(sourcePath);
                 return JsonConvert.DeserializeObject<T>(jsonString);
@@ -118,9 +129,8 @@ namespace SK.Libretro
             catch (Exception e)
             {
                 Logger.Instance.LogException(e);
+                return default;
             }
-
-            return null;
         }
     }
 }

@@ -2,8 +2,10 @@ Shader "Unlit/libretro_crt_geom"
 {
     Properties
     {
-        [MainTexture] _MainTex ("MainTex", 2D) = "white" {}
+        [MainTexture] _MainTex ("MainTex", 2D) = "black" {}
 
+        Width("Width", Float) = 384.0
+        Height("Height", Float) = 384.0
         CRTgamma ("Target Gamma", Float) = 2.4
         monitorgamma ("Monitor Gamma", Float) = 2.2
         d ("Distance", Float) = 1.5
@@ -84,6 +86,8 @@ Shader "Unlit/libretro_crt_geom"
             sampler2D _MainTex;
             float4 _MainTex_ST;
 
+            float Width;
+            float Height;
             float CRTgamma;
             float monitorgamma;
             float d;
@@ -327,10 +331,11 @@ Shader "Unlit/libretro_crt_geom"
 
             fixed4 frag(v2f i) : SV_Target
             {
-                float2 size = float2(384.0, 384.0);
+                float2 size = float2(Width, Height);
+                float2 sizeOut = float2(Width * 100, Height * 100);
                 return crt_geom(size,
                                 size,
-                                size,
+                                sizeOut,
                                 0,
                                 i.sin_cos_angle,
                                 i.stretch,

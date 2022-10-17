@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Packages/com.sk.libretro/Unity/UIResources/CoreManagerWindow.uss?fileID=7433441132597879392&amp;guid=207362698ef9c9a41b10647098dc8d20&amp;type=3#CoreManagerWindow" />
+    <ui:VisualElement name="ItemRoot" focusable="true" class="ItemRoot">
+        <ui:Label tabindex="-1" display-tooltip-when-elided="true" class="core-list-item-label" />
+        <ui:VisualElement class="core-list-item-flexible-space" />
+        <ui:Button display-tooltip-when-elided="true" focusable="false" class="core-list-item-button" />
+    </ui:VisualElement>
+</ui:UXML>

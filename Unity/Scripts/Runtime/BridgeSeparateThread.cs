@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -358,7 +358,7 @@ namespace SK.Libretro.Unity
                 (_port, _device) = (port, device);
             
             public void Execute(Wrapper wrapper) =>
-                wrapper.Core.retro_set_controller_port_device(_port, _device);
+                wrapper.Core.SetControllerPortDevice(_port, _device);
         }
     }
 }

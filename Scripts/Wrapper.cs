@@ -1,6 +1,6 @@
 /* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,30 +41,29 @@ namespace SK.Libretro
         public static string TempDirectory        { get; private set; } = null;
 
         public readonly WrapperSettings Settings;
-        public readonly EnvironmentVariables EnvironmentVariables;
+
         public readonly Core Core;
         public readonly Game Game;
-        public readonly Environment Environment;
-        public Graphics Graphics { get; private set; }
-        public readonly Audio Audio;
-        public readonly Input Input;
-        public readonly Serialization Serialization;
+
+        public readonly EnvironmentHandler Environment;
+        public readonly VFSHandler VFS;
+        public readonly OptionsHandler Options;
+        public readonly GraphicsHandler Graphics;
+        public readonly AudioHandler Audio;
+        public readonly InputHandler Input;
+        public readonly SerializationHandler Serialization;
+        public readonly DiskHandler Disk;
+        public readonly PerfHandler Perf;
+        public readonly LedHandler Led;
+        public readonly MemoryHandler Memory;
 
         public readonly retro_log_printf_t LogPrintfCallback;
 
         public bool RewindEnabled = false;
         public bool PerformRewind = false;
 
-        public OpenGLHelperWindow OpenGLHelperWindow;
-        public retro_hw_render_callback HwRenderInterface;
         public retro_frame_time_callback FrameTimeInterface;
         public retro_frame_time_callback_t FrameTimeInterfaceCallback;
-        public DiskInterface Disk;
-        public PerfInterface Perf;
-        public LedInterface Led;
-        public MemoryMap Memory;
-
-        public bool UpdateVariables = false;
 
         //private const int REWIND_FRAMES_INTERVAL = 10;
 
@@ -92,14 +91,21 @@ namespace SK.Libretro
             Core = new(this);
             Game = new(this);
 
-            EnvironmentVariables = new();
-            Environment          = new(this);
-            Graphics             = new();
-            Audio                = new(this);
-            Input                = new();
-            Serialization        = new(this);
+            Environment       = new(this);
+            VFS               = new();
+            Options           = new(this);
+            Graphics          = new(this);
+            Audio             = new(this);
+            Input             = new();
+            Serialization     = new(this);
+            Disk              = new(this);
+            Perf              = new();
+            Led               = new(null);
+            Memory            = new();
 
             LogPrintfCallback = LogInterface.RetroLogPrintf;
+
+            CoreInstances.Instance.Add(this);
         }
 
         public bool StartContent(string coreName, string gameDirectory, string gameName)
@@ -114,7 +120,7 @@ namespace SK.Libretro
             }
 
             if (FrameTimeInterface.callback.IsNotNull())
-                FrameTimeInterfaceCallback = Marshal.GetDelegateForFunctionPointer<retro_frame_time_callback_t>(FrameTimeInterface.callback);
+                FrameTimeInterfaceCallback = FrameTimeInterface.callback.GetDelegate<retro_frame_time_callback_t>();
 
             if (!Game.Start(gameDirectory, gameName))
             {
@@ -124,37 +130,43 @@ namespace SK.Libretro
 
             FrameTimeRestart();
 
-            ulong size = Core.retro_serialize_size();
+            ulong size = Core.SerializeSize();
             if (size > 0)
                 Serialization.SetStateSize(size);
 
             return true;
         }
 
+        public void ResetContent()
+        {
+            if (!Game.Running || !Core.Initialized)
+                return;
+
+            Core.Reset();
+        }
+
         public void StopContent()
         {
-            Input.DeInit();
-            Audio.DeInit();
-            Graphics?.Dispose();
+            CoreInstances.Instance.Remove(this);
 
-            Game.Stop();
-            Core.Stop();
+            Input.Dispose();
+            Audio.Dispose();
+            Graphics.Dispose();
 
-            OpenGLHelperWindow?.Dispose();
+            Game.Dispose();
+            Core.Dispose();
+
+            VFS.Dispose();
 
             PointerUtilities.Free(_unsafeStrings);
         }
-
-        public void InitHardwareContext() =>
-            HwRenderInterface.context_reset.GetDelegate<retro_hw_context_reset_t>()
-                                           .Invoke();
 
         public void RunFrame()
         {
             if (!Game.Running || !Core.Initialized)
                 return;
 
-            if (EnvironmentVariables.HwAccelerated)
+            if (Core.HwAccelerated)
                 GLFW.PollEvents();
 
             //_totalFrameCount++;
@@ -169,11 +181,78 @@ namespace SK.Libretro
             //        Serialization.RewindSaveState();
             //}
 
-            Core.retro_run();
+            Core.Run();
         }
 
         public void InitGraphics(GraphicsFrameHandlerBase graphicsFrameHandler, bool enabled) =>
             Graphics.Init(graphicsFrameHandler, enabled);
+
+        public bool GetSystemDirectory(IntPtr data)
+        {
+            if (data.IsNull())
+                return false;
+
+            string path = FileSystem.GetOrCreateDirectory($"{MainDirectory}/system");
+
+            IntPtr stringPtr = GetUnsafeString(path);
+            Marshal.StructureToPtr(stringPtr, data, true);
+            return true;
+        }
+
+        public bool GetLibretroPath(IntPtr data)
+        {
+            if (data.IsNull())
+                return false;
+
+            string path = FileSystem.GetOrCreateDirectory(Core.Path);
+            IntPtr stringPtr = GetUnsafeString(path);
+            Marshal.StructureToPtr(stringPtr, data, true);
+            return true;
+        }
+
+        public bool GetCoreAssetsDirectory(IntPtr data)
+        {
+            if (data.IsNull())
+                return false;
+
+            string path = FileSystem.GetOrCreateDirectory($"{CoreAssetsDirectory}/{Core.Name}");
+            IntPtr stringPtr = GetUnsafeString(path);
+            Marshal.StructureToPtr(stringPtr, data, true);
+            return true;
+        }
+
+        public bool GetSaveDirectory(IntPtr data)
+        {
+            if (data.IsNull())
+                return false;
+
+            string path = FileSystem.GetOrCreateDirectory($"{SavesDirectory}/{Core.Name}");
+            IntPtr stringPtr = GetUnsafeString(path);
+            Marshal.StructureToPtr(stringPtr, data, true);
+            return true;
+        }
+
+        public bool GetUsername(IntPtr data)
+        {
+            if (data.IsNull())
+                return false;
+
+            IntPtr stringPtr = GetUnsafeString(Settings.UserName);
+            Marshal.StructureToPtr(stringPtr, data, true);
+            return true;
+        }
+
+        public bool GetLanguage(IntPtr data)
+        {
+            if (data.IsNull())
+                return false;
+
+            IntPtr stringPtr = GetUnsafeString(Settings.Language.ToString());
+            Marshal.StructureToPtr(stringPtr, data, true);
+            return true;
+        }
+
+        public bool Shutdown() => false;
 
         public IntPtr GetUnsafeString(string source)
         {

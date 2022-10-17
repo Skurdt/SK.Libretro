@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Packages/com.sk.libretro/Unity/UIResources/CoreManagerWindow.uss?fileID=7433441132597879392&amp;guid=207362698ef9c9a41b10647098dc8d20&amp;type=3#CoreManagerWindow" />
+    <ui:VisualElement name="Root">
+        <SK.Libretro.Unity.Editor.TwoPaneSplitView fixed-pane-initial-dimension="320">
+            <ui:VisualElement name="LeftPanel">
+                <ui:TextField picking-mode="Ignore" label="Search" name="SearchField" />
+                <ui:ListView focusable="true" name="CoreList" fixed-item-height="20" virtualization-method="DynamicHeight" />
+            </ui:VisualElement>
+            <ui:VisualElement name="RightPanel">
+                <ui:ScrollView scroll-deceleration-rate="0,135" elasticity="0,1" name="InfoScrollView">
+                    <ui:Label tabindex="-1" display-tooltip-when-elided="true" name="InfoText" />
+                </ui:ScrollView>
+            </ui:VisualElement>
+        </SK.Libretro.Unity.Editor.TwoPaneSplitView>
+    </ui:VisualElement>
+</ui:UXML>

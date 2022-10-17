@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,8 +52,7 @@ namespace SK.Libretro.Unity
 
         private BridgeMainThread _libretro;
 
-        private void OnDisable() =>
-            StopContent();
+        private void OnDisable() => StopContent();
 
         private void Update()
         {
@@ -84,11 +83,11 @@ namespace SK.Libretro.Unity
             _libretro.StartContent(OnInstanceStarted, OnInstanceStopped);
         }
 
-        public void PauseContent() =>
-            _libretro.PauseContent();
+        public void PauseContent() => _libretro.PauseContent();
 
-        public void ResumeContent() =>
-            _libretro.ResumeContent();
+        public void ResumeContent() => _libretro.ResumeContent();
+
+        public void ResetContent() => _libretro.ResetContent();
 
         public void StopContent()
         {
@@ -97,22 +96,16 @@ namespace SK.Libretro.Unity
             _libretro = null;
         }
 
-        public void SetControllerPortDevice(uint port, RETRO_DEVICE id) =>
-            _libretro.SetControllerPortDevice(port, id);
+        public void SetControllerPortDevice(uint port, RETRO_DEVICE id) => _libretro.SetControllerPortDevice(port, id);
 
-        public void SaveStateWithScreenshot() =>
-            _libretro.SaveStateWithScreenshot();
+        public void SaveStateWithScreenshot() => _libretro.SaveStateWithScreenshot();
 
-        public void LoadState() =>
-            _libretro.LoadState();
+        public void LoadState() => _libretro.LoadState();
 
-        public void SaveSRAM() =>
-            _libretro.SaveSRAM();
+        public void SaveSRAM() => _libretro.SaveSRAM();
 
-        public void LoadSRAM() =>
-            _libretro.LoadSRAM();
+        public void LoadSRAM() => _libretro.LoadSRAM();
 
-        public void SetDiskIndex(int index) =>
-            _libretro.SetDiskIndex(index);
+        public void SetDiskIndex(int index) => _libretro.SetDiskIndex(index);
     }
 }

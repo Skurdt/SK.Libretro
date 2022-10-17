@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,6 +47,15 @@ namespace SK.Libretro.Header
         PERSIAN             = 20,
         HEBREW              = 21,
         ASTURIAN            = 22,
+        FINNISH             = 23,
+        INDONESIAN          = 24,
+        SWEDISH             = 25,
+        UKRAINIAN           = 26,
+        CZECH               = 27,
+        CATALAN_VALENCIA    = 28,
+        CATALAN             = 29,
+        BRITISH_ENGLISH     = 30,
+
         LAST
     }
 }

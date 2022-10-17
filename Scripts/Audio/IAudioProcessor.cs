@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using System;
+
 namespace SK.Libretro
 {
-    internal interface IAudioProcessor
+    internal interface IAudioProcessor : IDisposable
     {
         void Init(int sampleRate);
-        void DeInit();
         void ProcessSamples(float[] samples);
     }
 }

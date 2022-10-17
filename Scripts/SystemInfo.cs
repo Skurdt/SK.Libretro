@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ namespace SK.Libretro
         public readonly bool NeedFullPath;
         public readonly bool BlockExtract;
 
-        public SystemInfo(ref retro_system_info systemInfo)
+        public SystemInfo(in retro_system_info systemInfo)
         {
             LibraryName     = systemInfo.library_name.AsString();
             LibraryVersion  = systemInfo.library_version.AsString();

@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ namespace SK.Libretro.Unity
         public override void Init(int sampleRate) =>
             MainThreadDispatcher.Enqueue(() => base.Init(sampleRate));
 
-        public override void DeInit() =>
-            MainThreadDispatcher.Enqueue(() => base.DeInit());
+        public override void Dispose() =>
+            MainThreadDispatcher.Enqueue(() => base.Dispose());
     }
 }

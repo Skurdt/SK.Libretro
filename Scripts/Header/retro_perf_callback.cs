@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using System;
 using System.Runtime.InteropServices;
 
 namespace SK.Libretro.Header
@@ -48,12 +49,12 @@ namespace SK.Libretro.Header
 
     internal struct retro_perf_callback
     {
-        public retro_perf_get_time_usec_t get_time_usec;
-        public retro_get_cpu_features_t get_cpu_features;
-        public retro_perf_get_counter_t get_perf_counter;
-        public retro_perf_register_t perf_register;
-        public retro_perf_start_t perf_start;
-        public retro_perf_stop_t perf_stop;
-        public retro_perf_log_t perf_log;
+        public IntPtr get_time_usec;    // retro_perf_get_time_usec_t
+        public IntPtr get_cpu_features; // retro_get_cpu_features_t
+        public IntPtr get_perf_counter; // retro_perf_get_counter_t
+        public IntPtr perf_register;    // retro_perf_register_t
+        public IntPtr perf_start;       // retro_perf_start_t
+        public IntPtr perf_stop;        // retro_perf_stop_t
+        public IntPtr perf_log;         // retro_perf_log_t
     }
 }

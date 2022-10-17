@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@ namespace SK.Libretro.NAudio
         {
             try
             {
-                DeInit();
+                Dispose();
 
                 WaveFormat audioFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate > 0 ? sampleRate : 44100, 2);
                 _bufferedWaveProvider  = new BufferedWaveProvider(audioFormat)
@@ -73,7 +73,7 @@ namespace SK.Libretro.NAudio
             }
         }
 
-        public void DeInit()
+        public void Dispose()
         {
             if (_audioDevice is null)
                 return;

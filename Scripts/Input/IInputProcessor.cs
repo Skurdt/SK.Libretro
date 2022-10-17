@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,6 +47,7 @@ namespace SK.Libretro
         short AnalogLeftY(int port);
         short AnalogRightX(int port);
         short AnalogRightY(int port);
+
         short PointerX(int port);
         short PointerY(int port);
         short PointerPressed(int port);

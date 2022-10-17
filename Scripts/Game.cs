@@ -1,6 +1,6 @@
 /* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,12 @@ using System.Runtime.InteropServices;
 
 namespace SK.Libretro
 {
-    internal sealed class Game
+    internal sealed class Game : IDisposable
     {
         public bool Running { get; private set; }
         public string Name { get; private set; }
         public SystemAVInfo SystemAVInfo { get; private set; }
+        public int Rotation { get; private set; }
 
         public retro_game_info GameInfo = new();
 
@@ -94,38 +95,90 @@ namespace SK.Libretro
             return false;
         }
 
-        public void Stop()
+        public void Dispose()
         {
             if (Running)
             {
-                //FIXME(Tom): This sometimes crashes
-                _wrapper.Core.retro_unload_game();
                 Running = false;
+                _wrapper.Core.UnloadGame();
             }
 
-            FreeGameInfo();
+            try
+            {
+                FreeGameInfo();
+            }
+            catch
+            {
+                throw;
+            }
 
-            if (!string.IsNullOrWhiteSpace(_extractedPath) && FileSystem.FileExists(_extractedPath))
-                _ = FileSystem.DeleteFile(_extractedPath);
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(_extractedPath) && FileSystem.FileExists(_extractedPath))
+                    _ = FileSystem.DeleteFile(_extractedPath);
+            }
+            catch
+            {
+
+                throw;
+            }
         }
 
-        public void GetGameInfoExt(ref IntPtr data) => Marshal.StructureToPtr(_gameInfoExt, data, true);
+        public bool GetGameInfoExt(IntPtr data)
+        {
+            if (data.IsNull())
+                return false;
 
-        public void SetSystemAVInfo(retro_system_av_info info) => SystemAVInfo = new(ref info);
+            Marshal.StructureToPtr(_gameInfoExt, data, true);
+            return true;
+        }
 
-        public void SetGeometry(retro_game_geometry geometry)
+        public bool SetRotation(IntPtr data)
+        {
+            if (data.IsNull())
+                return false;
+
+            // ???????????????????
+            // ? Input ? Degrees ?
+            // ???????????????????
+            // ?     0 ?       0 ?
+            // ?     1 ?      90 ?
+            // ?     2 ?     180 ?
+            // ?     3 ?     270 ?
+            // ???????????????????
+
+            Rotation = (int)data.ReadUInt32() * 90;
+            return _wrapper.Settings.UseCoreRotation;
+        }
+
+        public bool SetGeometry(retro_game_geometry geometry)
         {
             if (SystemAVInfo.BaseWidth != geometry.base_width
              || SystemAVInfo.BaseHeight != geometry.base_height
              || SystemAVInfo.AspectRatio != geometry.aspect_ratio)
             {
                 SystemAVInfo.SetGeometry(ref geometry);
-                // TODO: Set video aspect ratio if needed
+                return true;
             }
+
+            return false;
         }
 
-        public void SetContentInfoOverride(ref IntPtr data)
+        public bool SetSystemAvInfo(IntPtr data)
         {
+            if (data.IsNull())
+                return false;
+
+            retro_system_av_info info = data.ToStructure<retro_system_av_info>();
+            SystemAVInfo = new(ref info);
+            return true;
+        }
+
+        public bool SetContentInfoOverride(IntPtr data)
+        {
+            if (data.IsNull())
+                return false;
+
             _systemContentInfoOverrides.Clear();
 
             retro_system_content_info_override infoOverride = data.ToStructure<retro_system_content_info_override>();
@@ -141,6 +194,8 @@ namespace SK.Libretro
                 data += Marshal.SizeOf(infoOverride);
                 data.ToStructure(infoOverride);
             }
+
+            return true;
         }
 
         public void FreeGameInfo()
@@ -163,10 +218,10 @@ namespace SK.Libretro
 
         private string GetGamePath(string directory, string gameName)
         {
-            if (_wrapper.Core.ValidExtensions is null)
+            if (_wrapper.Core.SystemInfo.ValidExtensions is null)
                 return null;
 
-            foreach (string extension in _wrapper.Core.ValidExtensions)
+            foreach (string extension in _wrapper.Core.SystemInfo.ValidExtensions)
             {
                 string filePath = $"{directory}/{gameName}.{extension}";
                 if (FileSystem.FileExists(filePath))
@@ -179,7 +234,7 @@ namespace SK.Libretro
         private bool GetGameInfo()
         {
             if (string.IsNullOrWhiteSpace(_path))
-                return _wrapper.EnvironmentVariables.SupportNoGame;
+                return _wrapper.Core.SupportNoGame;
 
             GameInfo.path = _path.AsAllocatedPtr();
 
@@ -195,7 +250,7 @@ namespace SK.Libretro
             _gameInfoExt.persistent_data = false;
 
             (bool result, ContentOverride contentOverride) = _contentOverrides.TryGet(extension);
-            bool needFullPath = result ? contentOverride.NeedFullpath : _wrapper.Core.NeedFullPath;
+            bool needFullPath = result ? contentOverride.NeedFullpath : _wrapper.Core.SystemInfo.NeedFullPath;
             if (!needFullPath)
             {
                 try
@@ -223,10 +278,10 @@ namespace SK.Libretro
         {
             try
             {
-                if (!_wrapper.Core.retro_load_game(ref GameInfo))
+                if (!_wrapper.Core.LoadGame(ref GameInfo))
                     return false;
 
-                _wrapper.Core.retro_get_system_av_info(out retro_system_av_info info);
+                _wrapper.Core.GetSystemAVInfo(out retro_system_av_info info);
                 SystemAVInfo = new(ref info);
                 return true;
             }

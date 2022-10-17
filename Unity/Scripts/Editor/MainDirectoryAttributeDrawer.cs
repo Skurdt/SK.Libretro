@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ using UnityEngine;
 namespace SK.Libretro.Unity.Editor
 {
     [CustomPropertyDrawer(typeof(MainDirectoryAttribute))]
-    public sealed class MainDirectoryAttributeDrawer : PropertyDrawer
+    internal sealed class MainDirectoryAttributeDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {

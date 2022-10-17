@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
- * Copyright (c) 2022 Skurdt
+ * Copyright (c) 2021-2022 Skurdt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,11 +22,10 @@
 
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 
 namespace SK.Libretro
 {
-    internal abstract class DynamicLibrary
+    internal abstract class DynamicLibrary : IDisposable
     {
         public readonly string Extension;
 
@@ -36,7 +35,19 @@ namespace SK.Libretro
 
         protected IntPtr _nativeHandle;
 
-        protected DynamicLibrary(string extension) => Extension = extension;
+        private readonly bool _deleteFileOnDispose;
+
+        private bool _disposedValue;
+
+        protected DynamicLibrary(string extension, bool deleteFileOnDispose) => (Extension, _deleteFileOnDispose) = (extension, deleteFileOnDispose);
+
+        ~DynamicLibrary() => DisposeImpl();
+
+        public void Dispose()
+        {
+            DisposeImpl();
+            GC.SuppressFinalize(this);
+        }
 
         public void Load(string path)
         {
@@ -63,35 +74,11 @@ namespace SK.Libretro
 
             try
             {
-                return Marshal.GetDelegateForFunctionPointer<T>(GetProcAddress(functionName));
+                return GetProcAddress(functionName).GetDelegate<T>();
             }
             catch (Exception e)
             {
                 throw new Exception($"Function '{functionName}' not found in library '{Name}' at path '{Path}' ({e.Message})");
-            }
-        }
-
-        public void Free(bool deleteFile = false)
-        {
-            try
-            {
-                if (_nativeHandle.IsNotNull())
-                    FreeLibrary();
-                _nativeHandle = IntPtr.Zero;
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Failed to free library '{Name}' at path '{Path}' ({e.Message})");
-            }
-
-            try
-            {
-                if (deleteFile && File.Exists(Path))
-                    File.Delete(Path);
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Failed to delete file '{Name}' at path '{Path}' ({e.Message})");
             }
         }
 
@@ -100,5 +87,34 @@ namespace SK.Libretro
         protected abstract IntPtr GetProcAddress(string functionName);
 
         protected abstract void FreeLibrary();
+
+        private void DisposeImpl()
+        {
+            if (!_disposedValue)
+            {
+                try
+                {
+                    if (_nativeHandle.IsNotNull())
+                        FreeLibrary();
+                    _nativeHandle = IntPtr.Zero;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception($"Failed to free library '{Name}' at path '{Path}' ({e.Message})");
+                }
+
+                try
+                {
+                    if (_deleteFileOnDispose && File.Exists(Path))
+                        File.Delete(Path);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception($"Failed to delete file '{Name}' at path '{Path}' ({e.Message})");
+                }
+
+                _disposedValue = true;
+            }
+        }
     }
 }
