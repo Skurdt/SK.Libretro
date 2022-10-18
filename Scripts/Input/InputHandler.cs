@@ -27,7 +27,7 @@ using System.Runtime.InteropServices;
 
 namespace SK.Libretro
 {
-    internal sealed class InputHandler : IDisposable
+    internal sealed class InputHandler
     {
         private const int MAX_USERS_SUPPORTED = 2;
 
@@ -119,37 +119,30 @@ namespace SK.Libretro
             BIND_LIST_END_NULL
         };
 
-        public readonly ControllersMap DeviceMap = new();
-
-        public readonly retro_rumble_interface RumbleInterface = new()
-        {
-            set_rumble_state = (uint port, retro_rumble_effect effect, ushort strength) =>
-            {
-                Logger.Instance.LogDebug($"[Rumble] Port: {port} Effect: {effect} Strength: {strength}");
-                return true;
-            }
-        };
-
+        public bool Enabled { get; set; }
         public bool HasInputDescriptors { get; private set; }
 
-        public retro_keyboard_callback KeyboardCallback;
+        public readonly ControllersMap DeviceMap = new();
 
-        public bool Enabled { get; set; }
-
+        private readonly IInputProcessor _processor;
         private readonly retro_input_poll_t _pollCallback;
         private readonly retro_input_state_t _stateCallback;
+        private readonly retro_set_rumble_state_t _setRumbleState;
+
         private readonly List<retro_input_descriptor> _inputDescriptors = new();
         private readonly List<retro_controller_info> _controllerInfo = new();
         private readonly List<retro_controller_description> _controllerDescriptions = new();
         private readonly string[,] _buttonDescriptions = new string[MAX_USERS, FIRST_META_KEY];
 
-        private IInputProcessor _processor;
+        private retro_keyboard_event_t _keyboardEvent;
 
-        public InputHandler() => (_pollCallback, _stateCallback) = (PollCallback, StateCallback);
-
-        public void Init(IInputProcessor inputProcessor) => _processor = inputProcessor ?? new NullInputProcessor();
-
-        public void Dispose() => _processor = null;
+        public InputHandler(IInputProcessor inputProcessor)
+        {
+            _processor      = inputProcessor ?? new NullInputProcessor();
+            _pollCallback   = PollCallback;
+            _stateCallback  = StateCallback;
+            _setRumbleState = SetRumbleState;
+        }
 
         public void SetCoreCallbacks(retro_set_input_poll_t setInputPoll, retro_set_input_state_t setInputState)
         {
@@ -157,32 +150,14 @@ namespace SK.Libretro
             setInputState(_stateCallback);
         }
 
-        public void PollCallback() { }
-
-        public short StateCallback(uint port, RETRO_DEVICE device, uint index, uint id)
-        {
-            if (_processor is null || !Enabled)
-                return 0;
-
-            //device &= RETRO_DEVICE_MASK;
-            return device switch
-            {
-                RETRO_DEVICE.JOYPAD   => ProcessJoypadDevice(port, (RETRO_DEVICE_ID_JOYPAD)id),
-                RETRO_DEVICE.MOUSE    => ProcessMouseDevice(port, (RETRO_DEVICE_ID_MOUSE)id),
-                RETRO_DEVICE.KEYBOARD => ProcessKeyboardDevice(port, (retro_key)id),
-                RETRO_DEVICE.LIGHTGUN => ProcessLightgunDevice(port, (RETRO_DEVICE_ID_LIGHTGUN)id),
-                RETRO_DEVICE.POINTER  => ProcessPointerDevice(port, (RETRO_DEVICE_ID_POINTER)id),
-                RETRO_DEVICE.ANALOG   => ProcessAnalogDevice(port, (RETRO_DEVICE_INDEX_ANALOG)index, (RETRO_DEVICE_ID_ANALOG)id),
-                _ => 0
-            };
-        }
-
         public bool GetRumbleInterface(IntPtr data)
         {
             if (data.IsNull())
                 return false;
 
-            Marshal.StructureToPtr(RumbleInterface, data, true);
+            retro_rumble_interface rumbleInterface = data.ToStructure<retro_rumble_interface>();
+            rumbleInterface.set_rumble_state = _setRumbleState.GetFunctionPointer();
+            Marshal.StructureToPtr(rumbleInterface, data, false);
             return true;
         }
 
@@ -303,7 +278,8 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            KeyboardCallback = data.ToStructure<retro_keyboard_callback>();
+            retro_keyboard_callback callback = data.ToStructure<retro_keyboard_callback>();
+            _keyboardEvent = callback.callback.GetDelegate<retro_keyboard_event_t>();
             return true;
         }
 
@@ -334,6 +310,26 @@ namespace SK.Libretro
             }
 
             return true;
+        }
+
+        private void PollCallback() { }
+
+        private short StateCallback(uint port, RETRO_DEVICE device, uint index, uint id)
+        {
+            if (_processor is null || !Enabled)
+                return 0;
+
+            //device &= RETRO_DEVICE_MASK;
+            return device switch
+            {
+                RETRO_DEVICE.JOYPAD   => ProcessJoypadDevice(port, (RETRO_DEVICE_ID_JOYPAD)id),
+                RETRO_DEVICE.MOUSE    => ProcessMouseDevice(port, (RETRO_DEVICE_ID_MOUSE)id),
+                RETRO_DEVICE.KEYBOARD => ProcessKeyboardDevice(port, (retro_key)id),
+                RETRO_DEVICE.LIGHTGUN => ProcessLightgunDevice(port, (RETRO_DEVICE_ID_LIGHTGUN)id),
+                RETRO_DEVICE.POINTER  => ProcessPointerDevice(port, (RETRO_DEVICE_ID_POINTER)id),
+                RETRO_DEVICE.ANALOG   => ProcessAnalogDevice(port, (RETRO_DEVICE_INDEX_ANALOG)index, (RETRO_DEVICE_ID_ANALOG)id),
+                _ => 0
+            };
         }
 
         private short ProcessJoypadDevice(uint port, RETRO_DEVICE_ID_JOYPAD id) => id is RETRO_DEVICE_ID_JOYPAD.MASK
@@ -411,6 +407,9 @@ namespace SK.Libretro
             },
             _ => 0
         };
+
+        private bool SetRumbleState(uint port, retro_rumble_effect effect, ushort strength) =>
+            _processor.SetRumbleState(port, effect, strength);
 
         private static short BoolToShort(bool boolValue) => (short)(boolValue ? 1 : 0);
     }

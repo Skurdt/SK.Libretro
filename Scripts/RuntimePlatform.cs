@@ -23,7 +23,7 @@
 namespace SK.Libretro
 {
     // Mimic Unity's RuntimePlatform
-    internal enum RuntimePlatform
+    public enum RuntimePlatform
     {
         OSXEditor          = 0,
         OSXPlayer          = 1,

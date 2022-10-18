@@ -52,5 +52,7 @@ namespace SK.Libretro
         public short PointerY(int port) => 0;
         public short PointerPressed(int port) => 0;
         public short PointerCount(int port) => 0;
+
+        public bool SetRumbleState(uint port, retro_rumble_effect effect, ushort strength) => true;
     }
 }

@@ -20,10 +20,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using System;
+
 namespace SK.Libretro
 {
-    internal sealed class MessageInterface
+    internal interface ILogger
     {
-        public const int VERSION = 1;
+        void SetLogLevel(LogLevel level);
+        void LogDebug(string message, string caller);
+        void LogInfo(string message, string caller);
+        void LogWarning(string message, string caller);
+        void LogError(string message, string caller);
+        void LogException(Exception exception, string caller);
     }
 }

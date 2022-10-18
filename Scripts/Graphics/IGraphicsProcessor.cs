@@ -24,7 +24,7 @@ using System;
 
 namespace SK.Libretro
 {
-    internal interface IGraphicsProcessor : IDisposable
+    public interface IGraphicsProcessor : IDisposable
     {
         unsafe void ProcessFrame0RGB1555(ushort* data, int width, int height, int pitch);
         unsafe void ProcessFrameXRGB8888(uint* data, int width, int height, int pitch);

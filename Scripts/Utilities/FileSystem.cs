@@ -21,7 +21,6 @@
  * SOFTWARE. */
 
 using Newtonsoft.Json;
-using System;
 using System.IO;
 
 namespace SK.Libretro
@@ -44,47 +43,41 @@ namespace SK.Libretro
 
         public static bool FileExists(string path) => File.Exists(path);
 
-        public static bool CreateFile(string path)
+        public static void CreateFile(string path)
         {
             try
             {
                 using FileStream fs = File.Create(path);
-                return true;
             }
-            catch (Exception e)
+            catch
             {
-                Logger.Instance.LogException(e);
-                return false;
+                throw;
             }
         }
 
-        public static bool DeleteFile(string path)
+        public static void DeleteFile(string path)
         {
             try
             {
                 if (FileExists(path))
                     File.Delete(path);
-                return true;
             }
-            catch (Exception e)
+            catch
             {
-                Logger.Instance.LogException(e);
-                return false;
+                throw;
             }
         }
 
-        public static bool MoveFile(string sourcePath, string destinationPath)
+        public static void MoveFile(string sourcePath, string destinationPath)
         {
             try
             {
                 if (FileExists(sourcePath))
                     File.Move(sourcePath, destinationPath);
-                return true;
             }
-            catch (Exception e)
+            catch
             {
-                Logger.Instance.LogException(e);
-                return false;
+                throw;
             }
         }
 
@@ -94,25 +87,22 @@ namespace SK.Libretro
             {
                 return Directory.GetFiles(path, searchPattern, includeSubFolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
             }
-            catch (Exception e)
+            catch
             {
-                Logger.Instance.LogException(e);
-                return Array.Empty<string>();
+                throw;
             }
         }
 
-        public static bool SerializeToJson<T>(T sourceObject, string targetPath)
+        public static void SerializeToJson<T>(T sourceObject, string targetPath)
         {
             try
             {
                 string jsonString = JsonConvert.SerializeObject(sourceObject, Formatting.Indented);
                 File.WriteAllText(targetPath, jsonString);
-                return true;
             }
-            catch (Exception e)
+            catch
             {
-                Logger.Instance.LogException(e);
-                return false;
+                throw;
             }
         }
 
@@ -126,10 +116,9 @@ namespace SK.Libretro
                 string jsonString = File.ReadAllText(sourcePath);
                 return JsonConvert.DeserializeObject<T>(jsonString);
             }
-            catch (Exception e)
+            catch
             {
-                Logger.Instance.LogException(e);
-                return default;
+                throw;
             }
         }
     }

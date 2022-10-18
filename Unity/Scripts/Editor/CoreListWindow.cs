@@ -37,7 +37,7 @@ namespace SK.Libretro.Unity.Editor
 
         public static void ShowWindow(string coresDirectory, System.Action<string> coreSelectedCallback)
         {
-            RuntimePlatform runtimePlatform;
+            UnityEngine.RuntimePlatform runtimePlatform;
             try
             {
                 runtimePlatform = GetCurrentPlatform();
@@ -55,9 +55,10 @@ namespace SK.Libretro.Unity.Editor
 
             string filter = runtimePlatform switch
             {
-                RuntimePlatform.OSXEditor     => "*.dylib",
-                RuntimePlatform.LinuxEditor   => "*.so",
-                _                             => "*.dll" // WindowsEditor
+                UnityEngine.RuntimePlatform.OSXEditor     => "*.dylib",
+                UnityEngine.RuntimePlatform.LinuxEditor   => "*.so",
+                UnityEngine.RuntimePlatform.WindowsEditor => "*.dll",
+                _ => "*.*"
             };
 
             _coreNames = Directory.EnumerateFiles(coresDirectory, filter, SearchOption.TopDirectoryOnly)
@@ -95,13 +96,13 @@ namespace SK.Libretro.Unity.Editor
             }
         }
 
-        private static RuntimePlatform GetCurrentPlatform()
+        private static UnityEngine.RuntimePlatform GetCurrentPlatform()
         {
             switch (Application.platform)
             {
-                case RuntimePlatform.LinuxEditor:
-                case RuntimePlatform.OSXEditor:
-                case RuntimePlatform.WindowsEditor:
+                case UnityEngine.RuntimePlatform.LinuxEditor:
+                case UnityEngine.RuntimePlatform.OSXEditor:
+                case UnityEngine.RuntimePlatform.WindowsEditor:
                     return Application.platform;
                 default:
                 {

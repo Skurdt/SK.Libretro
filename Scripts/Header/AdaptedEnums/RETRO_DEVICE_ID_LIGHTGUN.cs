@@ -22,7 +22,7 @@
 
 namespace SK.Libretro.Header
 {
-    internal enum RETRO_DEVICE_ID_LIGHTGUN
+    public enum RETRO_DEVICE_ID_LIGHTGUN
     {
         SCREEN_X     = 13,
         SCREEN_Y     = 14,

@@ -267,11 +267,31 @@ namespace SK.Libretro
             }
         }
 
-        private int Remove(string path) =>
-            FileSystem.DeleteFile(path) ? 0 : -1;
+        private int Remove(string path)
+        {
+            try
+            {
+                FileSystem.DeleteFile(path);
+                return 0;
+            }
+            catch
+            {
+                return -1;
+            }
+        }
 
-        private int Rename(string old_path, string new_path) =>
-            FileSystem.MoveFile(old_path, new_path) ? 0 : -1;
+        private int Rename(string old_path, string new_path)
+        {
+            try
+            {
+                FileSystem.MoveFile(old_path, new_path);
+                return 0;
+            }
+            catch
+            {
+                return -1;
+            }
+        }
 
         private long Truncate(ref retro_vfs_file_handle stream, long length)
         {

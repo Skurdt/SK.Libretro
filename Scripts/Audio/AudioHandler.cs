@@ -33,25 +33,30 @@ namespace SK.Libretro
         private const float NORMALIZED_GAIN = GAIN / 0x8000;
 
         private readonly Wrapper _wrapper;
+        private readonly IAudioProcessor _processor;
         private readonly retro_audio_sample_t _sampleCallback;
         private readonly retro_audio_sample_batch_t _sampleBatchCallback;
-
-        private IAudioProcessor _processor;
 
         private retro_audio_callback_t _audioCallback;
         private retro_audio_set_state_callback_t _audioCallbackSetState;
         private retro_audio_buffer_status_callback_t _audioBufferStatusCallback;
         private uint _minimumLatency;
 
-        public AudioHandler(Wrapper wrapper) => (_wrapper, _sampleCallback, _sampleBatchCallback) = (wrapper, SampleCallback, SampleBatchCallback);
-
-        public void Init(IAudioProcessor audioProcessor)
+        public AudioHandler(Wrapper wrapper, IAudioProcessor audioProcessor)
         {
-            _processor = audioProcessor ?? new NullAudioProcessor();
+            _wrapper             = wrapper;
+            _processor           = audioProcessor ?? new NullAudioProcessor();
+            _sampleCallback      = SampleCallback;
+            _sampleBatchCallback = SampleBatchCallback;
+        }
+
+        public void Init(bool enabled)
+        {
+            Enabled = enabled;
             _processor.Init(_wrapper.Game.SystemAVInfo.SampleRate);
         }
 
-        public void Dispose() => _processor?.Dispose();
+        public void Dispose() => _processor.Dispose();
 
         public void SetCoreCallbacks(retro_set_audio_sample_t setAudioSample, retro_set_audio_sample_batch_t setAudioSampleBatch)
         {

@@ -67,9 +67,9 @@ namespace SK.Libretro.NAudio
                 _audioDevice.Init(_volumeProvider);
                 _audioDevice.Play();
             }
-            catch (Exception e)
+            catch
             {
-                Logger.Instance.LogException(e);
+                throw;
             }
         }
 

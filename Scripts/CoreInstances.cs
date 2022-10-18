@@ -60,11 +60,11 @@ namespace SK.Libretro
                 if (wrapper is not null)
                 {
                     if (global)
-                        wrapper.Options.CoreOptions.UpdateValue(key, index);
+                        wrapper.OptionsHandler.CoreOptions.UpdateValue(key, index);
                     else
-                        wrapper.Options.GameOptions.UpdateValue(key, index);
+                        wrapper.OptionsHandler.GameOptions.UpdateValue(key, index);
 
-                    wrapper.Options.Serialize(global);
+                    wrapper.OptionsHandler.Serialize(global);
                 }
             }
         }
@@ -76,7 +76,7 @@ namespace SK.Libretro
                 lock (_lock)
                 {
                     Wrapper wrapper = _wrappers.First(x => x.Core.Name.Equals(coreName, StringComparison.OrdinalIgnoreCase));
-                    return (wrapper?.Options.CoreOptions, wrapper?.Options.GameOptions);
+                    return (wrapper?.OptionsHandler.CoreOptions, wrapper?.OptionsHandler.GameOptions);
                 }
             }
         }

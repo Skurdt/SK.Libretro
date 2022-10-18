@@ -24,7 +24,7 @@ using System;
 
 namespace SK.Libretro
 {
-    internal interface ILedProcessor : IDisposable
+    public interface ILedProcessor : IDisposable
     {
         void SetState(int led, int state);
     }

@@ -107,22 +107,19 @@ namespace SK.Libretro
 
         public bool Start(string coreName)
         {
-            switch (_wrapper.Settings.RuntimePlatform)
+            switch (_wrapper.Settings.Platform)
             {
-                case RuntimePlatform.WindowsEditor:
-                case RuntimePlatform.WindowsPlayer:
+                case Platform.Win:
                     _dll = new DynamicLibraryWindows(true);
                     break;
-                case RuntimePlatform.OSXEditor:
-                case RuntimePlatform.OSXPlayer:
+                case Platform.OSX:
                     _dll = new DynamicLibraryOSX(true);
                     break;
-                case RuntimePlatform.LinuxEditor:
-                case RuntimePlatform.LinuxPlayer:
+                case Platform.Linux:
                     _dll = new DynamicLibraryLinux(true);
                     break;
                 default:
-                    Logger.Instance.LogError($"Runtime platform '{_wrapper.Settings.RuntimePlatform}' not supported.");
+                    _wrapper.LogHandler.LogError($"Runtime platform '{_wrapper.Settings.Platform}' not supported.", "SK.Libretro.Core.Start");
                     return false;
             }
 
@@ -228,7 +225,7 @@ namespace SK.Libretro
                 string corePath = $"{Wrapper.CoresDirectory}/{Name}_libretro.{_dll.Extension}";
                 if (!FileSystem.FileExists(corePath))
                 {
-                    Logger.Instance.LogError($"Core '{Name}' at path '{corePath}' not found.");
+                    _wrapper.LogHandler.LogError($"Core '{Name}' at path '{corePath}' not found.", "SK.Libretro.Core.LoadLibrary");
                     return false;
                 }
 
@@ -244,7 +241,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.Instance.LogException(e);
+                _wrapper.LogHandler.LogException(e);
                 Dispose();
                 return false;
             }
@@ -285,7 +282,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.Instance.LogException(e);
+                _wrapper.LogHandler.LogException(e);
                 Dispose();
                 return false;
             }
@@ -299,10 +296,10 @@ namespace SK.Libretro
 
         private void SetCallbacks()
         {
-            _wrapper.Environment.SetCoreCallback(_retro_set_environment);
-            _wrapper.Graphics.SetCoreCallback(_retro_set_video_refresh);
-            _wrapper.Audio.SetCoreCallbacks(_retro_set_audio_sample, _retro_set_audio_sample_batch);
-            _wrapper.Input.SetCoreCallbacks(_retro_set_input_poll, _retro_set_input_state);
+            _wrapper.EnvironmentHandler.SetCoreCallback(_retro_set_environment);
+            _wrapper.GraphicsHandler.SetCoreCallback(_retro_set_video_refresh);
+            _wrapper.AudioHandler.SetCoreCallbacks(_retro_set_audio_sample, _retro_set_audio_sample_batch);
+            _wrapper.InputHandler.SetCoreCallbacks(_retro_set_input_poll, _retro_set_input_state);
         }
     }
 }

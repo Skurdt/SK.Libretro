@@ -31,33 +31,33 @@ namespace SK.Libretro
     {
         public static readonly retro_log_level LogLevel = retro_log_level.RETRO_LOG_WARN;
 
-        public static string MainDirectory        { get; private set; } = null;
-        public static string CoresDirectory       { get; private set; } = null;
-        public static string CoreOptionsDirectory { get; private set; } = null;
-        public static string SystemDirectory      { get; private set; } = null;
-        public static string CoreAssetsDirectory  { get; private set; } = null;
-        public static string SavesDirectory       { get; private set; } = null;
-        public static string StatesDirectory      { get; private set; } = null;
-        public static string TempDirectory        { get; private set; } = null;
+        public static string MainDirectory       { get; private set; } = null;
+        public static string CoresDirectory      { get; private set; } = null;
+        public static string SystemDirectory     { get; private set; } = null;
+        public static string CoreAssetsDirectory { get; private set; } = null;
+        public static string OptionsDirectory    { get; private set; } = null;
+        public static string SavesDirectory      { get; private set; } = null;
+        public static string StatesDirectory     { get; private set; } = null;
+        public static string TempDirectory       { get; private set; } = null;
 
         public readonly WrapperSettings Settings;
 
         public readonly Core Core;
         public readonly Game Game;
 
-        public readonly EnvironmentHandler Environment;
-        public readonly VFSHandler VFS;
-        public readonly OptionsHandler Options;
-        public readonly GraphicsHandler Graphics;
-        public readonly AudioHandler Audio;
-        public readonly InputHandler Input;
-        public readonly SerializationHandler Serialization;
-        public readonly DiskHandler Disk;
-        public readonly PerfHandler Perf;
-        public readonly LedHandler Led;
-        public readonly MemoryHandler Memory;
-
-        public readonly retro_log_printf_t LogPrintfCallback;
+        public readonly EnvironmentHandler EnvironmentHandler;
+        public readonly GraphicsHandler GraphicsHandler;
+        public readonly AudioHandler AudioHandler;
+        public readonly InputHandler InputHandler;
+        public readonly LogHandler LogHandler;
+        public readonly OptionsHandler OptionsHandler;
+        public readonly VFSHandler VFSHandler;
+        public readonly SerializationHandler SerializationHandler;
+        public readonly DiskHandler DiskHandler;
+        public readonly PerfHandler PerfHandler;
+        public readonly LedHandler LedHandler;
+        public readonly MessageHandler MessageHandler;
+        public readonly MemoryHandler MemoryHandler;
 
         public bool RewindEnabled = false;
         public bool PerformRewind = false;
@@ -78,32 +78,36 @@ namespace SK.Libretro
 
             if (MainDirectory is null)
             {
-                MainDirectory        = FileSystem.GetOrCreateDirectory(!string.IsNullOrWhiteSpace(settings.RootDirectory) ? settings.RootDirectory : "libretro");
-                CoresDirectory       = FileSystem.GetOrCreateDirectory($"{MainDirectory}/cores");
-                CoreOptionsDirectory = FileSystem.GetOrCreateDirectory($"{MainDirectory}/core_options");
-                SystemDirectory      = FileSystem.GetOrCreateDirectory($"{MainDirectory}/system");
-                CoreAssetsDirectory  = FileSystem.GetOrCreateDirectory($"{MainDirectory}/core_assets");
-                SavesDirectory       = FileSystem.GetOrCreateDirectory($"{MainDirectory}/saves");
-                StatesDirectory      = FileSystem.GetOrCreateDirectory($"{MainDirectory}/states");
-                TempDirectory        = FileSystem.GetOrCreateDirectory($"{MainDirectory}/temp");
+                MainDirectory       = FileSystem.GetOrCreateDirectory(!string.IsNullOrWhiteSpace(settings.MainDirectory) ? settings.MainDirectory : "libretro");
+                CoresDirectory      = FileSystem.GetOrCreateDirectory($"{MainDirectory}/cores");
+                SystemDirectory     = FileSystem.GetOrCreateDirectory($"{MainDirectory}/system");
+                CoreAssetsDirectory = FileSystem.GetOrCreateDirectory($"{MainDirectory}/core_assets");
+                OptionsDirectory    = FileSystem.GetOrCreateDirectory($"{MainDirectory}/core_options");
+                SavesDirectory      = FileSystem.GetOrCreateDirectory($"{MainDirectory}/saves");
+                StatesDirectory     = FileSystem.GetOrCreateDirectory($"{MainDirectory}/states");
+                TempDirectory       = FileSystem.GetOrCreateDirectory($"{MainDirectory}/temp");
             }
 
             Core = new(this);
             Game = new(this);
 
-            Environment       = new(this);
-            VFS               = new();
-            Options           = new(this);
-            Graphics          = new(this);
-            Audio             = new(this);
-            Input             = new();
-            Serialization     = new(this);
-            Disk              = new(this);
-            Perf              = new();
-            Led               = new(null);
-            Memory            = new();
-
-            LogPrintfCallback = LogInterface.RetroLogPrintf;
+            EnvironmentHandler       = new(this);
+            GraphicsHandler          = new(this);
+            AudioHandler             = new(this, settings.AudioProcessor);
+            InputHandler             = new(settings.InputProcessor);
+            LogHandler               = settings.Platform switch
+            {
+                Platform.Win => new LogHandlerWin(settings.LogProcessor),
+                _            => new LogHandler(settings.LogProcessor),
+            };
+            OptionsHandler           = new(this);
+            VFSHandler               = new();
+            SerializationHandler     = new(this);
+            DiskHandler              = new(this);
+            PerfHandler              = new();
+            LedHandler               = new(settings.LedProcessor);
+            MessageHandler           = new(this, settings.MessageProcessor);
+            MemoryHandler            = new();
 
             CoreInstances.Instance.Add(this);
         }
@@ -132,7 +136,7 @@ namespace SK.Libretro
 
             ulong size = Core.SerializeSize();
             if (size > 0)
-                Serialization.SetStateSize(size);
+                SerializationHandler.SetStateSize(size);
 
             return true;
         }
@@ -149,14 +153,13 @@ namespace SK.Libretro
         {
             CoreInstances.Instance.Remove(this);
 
-            Input.Dispose();
-            Audio.Dispose();
-            Graphics.Dispose();
-
             Game.Dispose();
             Core.Dispose();
 
-            VFS.Dispose();
+            GraphicsHandler.Dispose();
+            AudioHandler.Dispose();
+            LedHandler.Dispose();
+            VFSHandler.Dispose();
 
             PointerUtilities.Free(_unsafeStrings);
         }
@@ -185,7 +188,10 @@ namespace SK.Libretro
         }
 
         public void InitGraphics(GraphicsFrameHandlerBase graphicsFrameHandler, bool enabled) =>
-            Graphics.Init(graphicsFrameHandler, enabled);
+            GraphicsHandler.Init(graphicsFrameHandler, enabled);
+
+        public void InitAudio(bool enabled) =>
+            AudioHandler.Init(enabled);
 
         public bool GetSystemDirectory(IntPtr data)
         {

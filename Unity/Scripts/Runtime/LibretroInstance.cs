@@ -50,7 +50,7 @@ namespace SK.Libretro.Unity
         public bool FastForward { get => _libretro.FastForward; set => _libretro.FastForward = value; }
         public bool Rewind { get => _libretro.Rewind; set => _libretro.Rewind = value; }
 
-        private BridgeMainThread _libretro;
+        private Instance _libretro;
 
         private void OnDisable() => StopContent();
 
@@ -78,7 +78,9 @@ namespace SK.Libretro.Unity
 
         public void StartContent()
         {
-            _libretro = UseSeparateThread ? new BridgeSeparateThread(this) : new BridgeMainThread(this);
+            _libretro = UseSeparateThread
+                      ? new InstanceSeparateThread(this)
+                      : new InstanceMainThread(this);
             _libretro.SetContent(CoreName, GamesDirectory, GameNames);
             _libretro.StartContent(OnInstanceStarted, OnInstanceStopped);
         }

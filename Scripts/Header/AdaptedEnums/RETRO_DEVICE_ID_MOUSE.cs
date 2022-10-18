@@ -22,7 +22,7 @@
 
 namespace SK.Libretro.Header
 {
-    internal enum RETRO_DEVICE_ID_MOUSE
+    public enum RETRO_DEVICE_ID_MOUSE
     {
         X               = 0,
         Y               = 1,

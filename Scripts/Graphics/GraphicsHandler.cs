@@ -38,7 +38,8 @@ namespace SK.Libretro
         private GraphicsFrameHandlerBase _frameHandler;
         private retro_hw_render_callback _hwRenderInterface;
 
-        public GraphicsHandler(Wrapper wrapper) => (_wrapper, _refreshCallback) = (wrapper, RefreshCallback);
+        public GraphicsHandler(Wrapper wrapper) =>
+            (_wrapper, _refreshCallback) = (wrapper, RefreshCallback);
 
         public void Init(GraphicsFrameHandlerBase frameHandler, bool enabled)
         {
@@ -131,7 +132,7 @@ namespace SK.Libretro
 
         private unsafe void RefreshCallback(IntPtr data, uint width, uint height, nuint pitch)
         {
-            if (data.IsNotNull() && Enabled)
+            if (Enabled)
                 _frameHandler.ProcessFrame(data, width, height, pitch);
         }
     }

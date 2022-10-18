@@ -24,7 +24,7 @@ using SK.Libretro.Header;
 
 namespace SK.Libretro
 {
-    internal interface IInputProcessor
+    public interface IInputProcessor
     {
         bool AnalogToDigital { get; set; }
 
@@ -52,5 +52,7 @@ namespace SK.Libretro
         short PointerY(int port);
         short PointerPressed(int port);
         short PointerCount(int port);
+
+        bool SetRumbleState(uint port, retro_rumble_effect effect, ushort strength);
     }
 }

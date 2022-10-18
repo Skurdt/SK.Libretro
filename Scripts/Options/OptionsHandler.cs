@@ -55,13 +55,13 @@ namespace SK.Libretro
             {
                 if (CoreOptions is null)
                 {
-                    Logger.Instance.LogWarning($"Core didn't set its options. Requested key: {key}", nameof(RETRO_ENVIRONMENT.GET_VARIABLE));
+                    _wrapper.LogHandler.LogWarning($"Core didn't set its options. Requested key: {key}", nameof(RETRO_ENVIRONMENT.GET_VARIABLE));
                     return false;
                 }
 
                 if (!CoreOptions.TryGetValue(key, out coreOption))
                 {
-                    Logger.Instance.LogWarning($"Core option '{key}' not found.", nameof(RETRO_ENVIRONMENT.GET_VARIABLE));
+                    _wrapper.LogHandler.LogWarning($"Core option '{key}' not found.", nameof(RETRO_ENVIRONMENT.GET_VARIABLE));
                     return false;
                 }
             }
@@ -128,7 +128,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.Instance.LogException(e);
+                _wrapper.LogHandler.LogException(e);
                 return false;
             }
         }
@@ -167,10 +167,10 @@ namespace SK.Libretro
             {
                 string filePath;
                 if (global)
-                    filePath = $"{Wrapper.CoreOptionsDirectory}/{_wrapper.Core.Name}.json";
+                    filePath = $"{Wrapper.OptionsDirectory}/{_wrapper.Core.Name}.json";
                 else
                 {
-                    string directoryPath = FileSystem.GetOrCreateDirectory($"{Wrapper.CoreOptionsDirectory}/{_wrapper.Core.Name}");
+                    string directoryPath = FileSystem.GetOrCreateDirectory($"{Wrapper.OptionsDirectory}/{_wrapper.Core.Name}");
                     filePath = $"{directoryPath}/{_wrapper.Game.Name}.json";
                 }
 
@@ -184,8 +184,8 @@ namespace SK.Libretro
         {
             lock (_lock)
             {
-                CoreOptions = Deserialize($"{Wrapper.CoreOptionsDirectory}/{_wrapper.Core.Name}.json") ?? new Options();
-                GameOptions = Deserialize($"{Wrapper.CoreOptionsDirectory}/{_wrapper.Core.Name}/{_wrapper.Game.Name}.json") ?? ClassUtilities.DeepCopy(CoreOptions);
+                CoreOptions = Deserialize($"{Wrapper.OptionsDirectory}/{_wrapper.Core.Name}.json") ?? new Options();
+                GameOptions = Deserialize($"{Wrapper.OptionsDirectory}/{_wrapper.Core.Name}/{_wrapper.Game.Name}.json") ?? ClassUtilities.DeepCopy(CoreOptions);
             }
         }
 
@@ -195,7 +195,7 @@ namespace SK.Libretro
                 return;
 
             SerializableCoreOptions options = new(coreOptions);
-            _ = FileSystem.SerializeToJson(options, path);
+            FileSystem.SerializeToJson(options, path);
         }
 
         private static Options Deserialize(string path)

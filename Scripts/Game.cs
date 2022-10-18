@@ -77,7 +77,7 @@ namespace SK.Libretro
 
                 if (!GetGameInfo())
                 {
-                    Logger.Instance.LogError($"Game not set, core '{_wrapper.Core.Name}' needs a game to run.", "Libretro.LibretroGame.Start");
+                    _wrapper.LogHandler.LogError($"Game not set, core '{_wrapper.Core.Name}' needs a game to run.", "SK.Libretro.Game.Start");
                     return false;
                 }
 
@@ -89,7 +89,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.Instance.LogException(e);
+                _wrapper.LogHandler.LogException(e);
             }
 
             return false;
@@ -115,7 +115,7 @@ namespace SK.Libretro
             try
             {
                 if (!string.IsNullOrWhiteSpace(_extractedPath) && FileSystem.FileExists(_extractedPath))
-                    _ = FileSystem.DeleteFile(_extractedPath);
+                    FileSystem.DeleteFile(_extractedPath);
             }
             catch
             {
@@ -287,7 +287,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.Instance.LogException(e);
+                _wrapper.LogHandler.LogException(e);
             }
 
             return false;

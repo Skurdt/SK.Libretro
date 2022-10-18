@@ -20,22 +20,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using SK.Libretro.Header;
-
 namespace SK.Libretro
 {
-    internal sealed class WrapperSettings
+    public sealed class WrapperSettings
     {
-        public readonly RuntimePlatform RuntimePlatform;
+        public readonly Platform Platform;
 
-        public retro_log_level LogLevel { get; init; } = retro_log_level.RETRO_LOG_WARN;
-        public string RootDirectory     { get; init; } = "";
-        public string UserName          { get; init; } = "Default User";
-        public retro_language Language  { get; init; } = retro_language.ENGLISH;
-        public bool UseCoreRotation     { get; init; } = false;
-        public bool CropOverscan        { get; init; } = true;
+        public LogLevel LogLevel                    { get; init; } = LogLevel.Warning;
+        public string MainDirectory                 { get; init; } = "";
+        public Language Language                    { get; init; } = Language.English;
+        public string UserName                      { get; init; } = "Default User";
+        public bool UseCoreRotation                 { get; init; }
+        public bool CropOverscan                    { get; init; } = true;
+        public ILogProcessor LogProcessor           { get; init; }
+        public IGraphicsProcessor GraphicsProcessor { get; init; }
+        public IAudioProcessor AudioProcessor       { get; init; }
+        public IInputProcessor InputProcessor       { get; init; }
+        public ILedProcessor LedProcessor           { get; init; }
+        public IMessageProcessor MessageProcessor   { get; init; }
 
-        public WrapperSettings(RuntimePlatform runtimePlatform) =>
-            RuntimePlatform = runtimePlatform;
+        public WrapperSettings(Platform platform) => Platform = platform;
     }
 }

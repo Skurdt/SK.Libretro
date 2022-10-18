@@ -24,7 +24,7 @@ using System;
 
 namespace SK.Libretro
 {
-    internal interface IAudioProcessor : IDisposable
+    public interface IAudioProcessor : IDisposable
     {
         void Init(int sampleRate);
         void ProcessSamples(float[] samples);

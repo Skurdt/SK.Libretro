@@ -72,7 +72,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.Instance.LogException(e);
+                _wrapper.LogHandler.LogException(e);
                 return false;
             }
         }
@@ -110,7 +110,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.Instance.LogException(e);
+                _wrapper.LogHandler.LogException(e);
                 return false;
             }
         }
@@ -144,7 +144,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.Instance.LogException(e);
+                _wrapper.LogHandler.LogException(e);
                 return false;
             }
         }
@@ -171,7 +171,7 @@ namespace SK.Libretro
             //}
             //catch (Exception e)
             //{
-            //    Logger.Instance.LogException(e);
+            //    _wrapper.LogHandler.LogException(e);
             //}
         }
 
@@ -192,7 +192,7 @@ namespace SK.Libretro
             //}
             //catch (Exception e)
             //{
-            //    Logger.Instance.LogException(e);
+            //    _wrapper.LogHandler.LogException(e);
             //}
         }
 
@@ -222,7 +222,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.Instance.LogException(e);
+                _wrapper.LogHandler.LogException(e);
                 return false;
             }
         }
@@ -256,7 +256,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Logger.Instance.LogException(e);
+                _wrapper.LogHandler.LogException(e);
                 return false;
             }
         }

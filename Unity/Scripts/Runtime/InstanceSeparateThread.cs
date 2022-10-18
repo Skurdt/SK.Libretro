@@ -29,7 +29,7 @@ using UnityEngine;
 
 namespace SK.Libretro.Unity
 {
-    internal sealed class BridgeSeparateThread : BridgeMainThread
+    internal sealed class InstanceSeparateThread : Instance
     {
         public override bool Running
         {
@@ -118,13 +118,68 @@ namespace SK.Libretro.Unity
             }
         }
 
+        protected override string CoreName
+        {
+            get
+            {
+                lock (_lock)
+                    return _coreName;
+            }
+
+            set
+            {
+                lock (_lock)
+                    _coreName = value;
+            }
+        }
+
+        protected override string GamesDirectory
+        {
+            get
+            {
+                lock (_lock)
+                    return _gamesDirectory;
+            }
+
+            set
+            {
+                lock (_lock)
+                    _gamesDirectory = value;
+            }
+        }
+
+        protected override string[] GameNames
+        {
+            get
+            {
+                lock (_lock)
+                    return _gameNames;
+            }
+
+            set
+            {
+                lock (_lock)
+                    _gameNames = value;
+            }
+        }
+
         private readonly ManualResetEventSlim _manualResetEvent = new(false);
         private readonly ConcurrentQueue<IThreadCommand> _threadCommands = new();
         private readonly object _lock = new();
 
+        private string _coreName;
+        private string _gamesDirectory;
+        private string[] _gameNames;
+        private volatile bool _running;
+        private volatile bool _paused;
+        private volatile int _fastForwardFactor = 8;
+        private volatile bool _fastForward;
+        private volatile bool _rewind;
+        private volatile bool _inputEnabled;
+
         private Thread _thread;
 
-        public BridgeSeparateThread(LibretroInstance instance)
+        public InstanceSeparateThread(LibretroInstance instance)
         : base(instance)
         {
             if (!UnityEngine.Object.FindObjectOfType<MainThreadDispatcher>())
@@ -135,7 +190,8 @@ namespace SK.Libretro.Unity
         {
             lock (_lock)
             {
-                base.Dispose();
+                StopContent();
+                _screen.material = _originalMaterial;
                 _ = _thread?.Join(1000);
 
                 _thread = null;
@@ -145,26 +201,37 @@ namespace SK.Libretro.Unity
 
         public override void PauseContent()
         {
-            base.PauseContent();
+            if (!Running || Paused)
+                return;
+
+            Paused = true;
+
             _manualResetEvent.Reset();
         }
 
         public override void ResumeContent()
         {
-            base.ResumeContent();
+            if (!Running || !Paused)
+                return;
+
+            Paused = false;
+
             _manualResetEvent.Set();
         }
 
         public override void SetStateSlot(string slot)
         {
             lock (_lock)
-                base.SetStateSlot(slot);
+            {
+                if (int.TryParse(slot, out int slotInt))
+                    _currentStateSlot = slotInt;
+            }
         }
 
         public override void SetStateSlot(int slot)
         {
             lock (_lock)
-                base.SetStateSlot(slot);
+                _currentStateSlot = slot;
         }
 
         public override void SaveStateWithScreenshot() =>
@@ -281,7 +348,7 @@ namespace SK.Libretro.Unity
                 _enabled = enable;
 
             public void Execute(Wrapper wrapper) =>
-                wrapper.Input.Enabled = _enabled;
+                wrapper.InputHandler.Enabled = _enabled;
         }
 
         private struct SaveStateWithScreenshotThreadCommand : IThreadCommand
@@ -291,10 +358,10 @@ namespace SK.Libretro.Unity
 
             public SaveStateWithScreenshotThreadCommand(int currentStateSlot, Action<string> takeScreenshotFunc) =>
                 (_currentStateSlot, _takeScreenshotFunc) = (currentStateSlot, takeScreenshotFunc);
-            
+
             public void Execute(Wrapper wrapper)
             {
-                if (wrapper.Serialization.SaveState(_currentStateSlot, out string screenshotPath))
+                if (wrapper.SerializationHandler.SaveState(_currentStateSlot, out string screenshotPath))
                     _takeScreenshotFunc(screenshotPath);
             }
         }
@@ -305,9 +372,9 @@ namespace SK.Libretro.Unity
 
             public SaveStateWithoutScreenshotThreadCommand(int currentStateSlot) =>
                 _currentStateSlot = currentStateSlot;
-            
+
             public void Execute(Wrapper wrapper) =>
-                wrapper.Serialization.SaveState(_currentStateSlot);
+                wrapper.SerializationHandler.SaveState(_currentStateSlot);
         }
 
         private struct LoadStateThreadCommand : IThreadCommand
@@ -318,19 +385,19 @@ namespace SK.Libretro.Unity
                 _currentStateSlot = currentStateSlot;
 
             public void Execute(Wrapper wrapper) =>
-                wrapper.Serialization.LoadState(_currentStateSlot);
+                wrapper.SerializationHandler.LoadState(_currentStateSlot);
         }
 
         private struct SaveSRAMThreadCommand : IThreadCommand
         {
             public void Execute(Wrapper wrapper) =>
-                wrapper.Serialization.SaveSRAM();
+                wrapper.SerializationHandler.SaveSRAM();
         }
 
         private struct LoadSRAMThreadCommand : IThreadCommand
         {
             public void Execute(Wrapper wrapper) =>
-                wrapper.Serialization.LoadSRAM();
+                wrapper.SerializationHandler.LoadSRAM();
         }
 
         private struct SetDiskIndexThreadCommand : IThreadCommand
@@ -345,7 +412,7 @@ namespace SK.Libretro.Unity
             public void Execute(Wrapper wrapper)
             {
                 if (_index >= 0 && _index < _gameNames.Length)
-                    _ = wrapper.Disk?.SetImageIndexAuto((uint)_index, $"{_gamesDirectory}/{_gameNames[_index]}");
+                    _ = wrapper.DiskHandler?.SetImageIndexAuto((uint)_index, $"{_gamesDirectory}/{_gameNames[_index]}");
             }
         }
 
@@ -353,10 +420,10 @@ namespace SK.Libretro.Unity
         {
             private readonly uint _port;
             private readonly RETRO_DEVICE _device;
-            
+
             public SetControllerPortDeviceThreadCommand(uint port, RETRO_DEVICE device) =>
                 (_port, _device) = (port, device);
-            
+
             public void Execute(Wrapper wrapper) =>
                 wrapper.Core.SetControllerPortDevice(_port, _device);
         }

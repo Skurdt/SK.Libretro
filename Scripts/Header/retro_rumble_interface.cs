@@ -20,6 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using System;
 using System.Runtime.InteropServices;
 
 namespace SK.Libretro.Header
@@ -29,8 +30,9 @@ namespace SK.Libretro.Header
     [return: MarshalAs(UnmanagedType.U1)]
     internal delegate bool retro_set_rumble_state_t(uint port, retro_rumble_effect effect, ushort strength);
 
-    internal struct retro_rumble_interface
+    [StructLayout(LayoutKind.Sequential)]
+    internal sealed class retro_rumble_interface
     {
-        public retro_set_rumble_state_t set_rumble_state;
+        public IntPtr set_rumble_state; // retro_set_rumble_state_t
     }
 }

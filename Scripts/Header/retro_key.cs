@@ -22,7 +22,7 @@
 
 namespace SK.Libretro.Header
 {
-    internal enum retro_key
+    public enum retro_key
     {
         RETROK_UNKNOWN      = 0,
         RETROK_FIRST        = 0,

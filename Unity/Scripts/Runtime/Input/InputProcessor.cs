@@ -40,7 +40,7 @@ namespace SK.Libretro.Unity
         {
             player.actions.Enable();
 
-            Logger.Instance.LogInfo($"Player #{player.playerIndex} joined ({player.currentControlScheme}).");
+            Debug.Log($"Player #{player.playerIndex} joined ({player.currentControlScheme}).");
             if (!_controls.ContainsKey(player.playerIndex))
             {
                 if (player.TryGetComponent(out PlayerInputProcessor processor))
@@ -54,7 +54,7 @@ namespace SK.Libretro.Unity
         [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Input Callback")]
         private void OnPlayerLeft(PlayerInput player)
         {
-            Logger.Instance.LogInfo($"Player #{player.playerIndex} left ({player.currentControlScheme}).");
+            Debug.Log($"Player #{player.playerIndex} left ({player.currentControlScheme}).");
             if (_controls.ContainsKey(player.playerIndex))
                 _ = _controls.Remove(player.playerIndex);
         }
@@ -103,16 +103,14 @@ namespace SK.Libretro.Unity
         public short AnalogRightY(int port) =>
             _controls.TryGetValue(port, out PlayerInputProcessor processor) ? (short)-processor.AnalogRightY : (short)0;
         
-        public short PointerX(int port) =>
-            0;
+        public short PointerX(int port) => 0;
 
-        public short PointerY(int port) =>
-            0;
+        public short PointerY(int port) => 0;
 
-        public short PointerPressed(int port) =>
-            0;
+        public short PointerPressed(int port) => 0;
 
-        public short PointerCount(int port) =>
-            0;
+        public short PointerCount(int port) => 0;
+
+        public bool SetRumbleState(uint port, retro_rumble_effect effect, ushort strength) => true;
     }
 }

@@ -49,10 +49,10 @@ namespace SK.Libretro.Unity.Editor
         
         private static string CurrentPlatform => Application.platform switch
         {
-            RuntimePlatform.LinuxEditor   => "linux",
-            RuntimePlatform.OSXEditor     => "apple/osx",
-            RuntimePlatform.WindowsEditor => "windows",
-            _                             => InvalidPlatformDetected()
+            UnityEngine.RuntimePlatform.LinuxEditor   => "linux",
+            UnityEngine.RuntimePlatform.OSXEditor     => "apple/osx",
+            UnityEngine.RuntimePlatform.WindowsEditor => "windows",
+            _                                         => InvalidPlatformDetected()
         };
 
         private CoreList _coreList;
@@ -232,7 +232,7 @@ namespace SK.Libretro.Unity.Editor
             }
 
             _coreList.Cores = _coreList.Cores.OrderBy(x => x.DisplayName).ToList();
-            _ = FileSystem.SerializeToJson(_coreList, _coresStatusFile);
+            FileSystem.SerializeToJson(_coreList, _coresStatusFile);
 
             _coreListDisplay = _coreList.Cores;
         }
@@ -270,7 +270,7 @@ namespace SK.Libretro.Unity.Editor
                 core.Available = true;
 
                 _coreList.Cores = _coreList.Cores.OrderBy(x => x.DisplayName).ToList();
-                _ = FileSystem.SerializeToJson(_coreList, _coresStatusFile);
+                FileSystem.SerializeToJson(_coreList, _coresStatusFile);
             }
             catch
             {
@@ -304,7 +304,7 @@ namespace SK.Libretro.Unity.Editor
             using WebClient webClient = new();
             string fileName = Path.GetFileName(url);
             string filePath = $"{_coresDirectory}/{fileName}";
-            _ = FileSystem.DeleteFile(filePath);
+            FileSystem.DeleteFile(filePath);
             webClient.DownloadFile(url, filePath);
             return filePath;
         }
@@ -314,27 +314,15 @@ namespace SK.Libretro.Unity.Editor
             if (!FileSystem.FileExists(zipPath))
                 return;
 
-            try
+            using ZipArchive archive = ZipFile.OpenRead(zipPath);
+            foreach (ZipArchiveEntry entry in archive.Entries)
             {
-                using ZipArchive archive = ZipFile.OpenRead(zipPath);
-                foreach (ZipArchiveEntry entry in archive.Entries)
-                {
-                    string destinationPath = $"{_coresDirectory}/{entry.FullName}";
-                    _ = FileSystem.DeleteFile(destinationPath);
-                    entry.ExtractToFile(destinationPath);
-                }
-            }
-            catch
-            {
+                string destinationPath = $"{_coresDirectory}/{entry.FullName}";
+                FileSystem.DeleteFile(destinationPath);
+                entry.ExtractToFile(destinationPath);
             }
 
-            try
-            {
-                _ = FileSystem.DeleteFile(zipPath);
-            }
-            catch
-            {
-            }
+            FileSystem.DeleteFile(zipPath);
         }
 
         private static string InvalidPlatformDetected()

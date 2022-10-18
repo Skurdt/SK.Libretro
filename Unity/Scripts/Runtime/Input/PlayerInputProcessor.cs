@@ -65,9 +65,9 @@ namespace SK.Libretro.Unity
             _inputActions.Enable();
 
             PlayerInput playerInputComponent = GetComponent<PlayerInput>();
-            playerInputComponent.onDeviceLost      += playerInput => Logger.Instance.LogInfo($"Player #{playerInput.playerIndex} device lost ({playerInput.devices.Count}).");
-            playerInputComponent.onDeviceRegained  += playerInput => Logger.Instance.LogInfo($"Player #{playerInput.playerIndex} device regained ({playerInput.devices.Count}).");
-            playerInputComponent.onControlsChanged += playerInput => Logger.Instance.LogInfo($"Player #{playerInput.playerIndex} controls changed ({playerInput.devices.Count}).");
+            playerInputComponent.onDeviceLost      += playerInput => Debug.Log($"Player #{playerInput.playerIndex} device lost ({playerInput.devices.Count}).");
+            playerInputComponent.onDeviceRegained  += playerInput => Debug.Log($"Player #{playerInput.playerIndex} device regained ({playerInput.devices.Count}).");
+            playerInputComponent.onControlsChanged += playerInput => Debug.Log($"Player #{playerInput.playerIndex} controls changed ({playerInput.devices.Count}).");
 
             RegisterJoypadCallbacks();
             RegisterMouseCallbacks();

@@ -22,7 +22,7 @@
 
 namespace SK.Libretro.Header
 {
-    internal enum retro_rumble_effect
+    public enum retro_rumble_effect
     {
         RETRO_RUMBLE_STRONG = 0,
         RETRO_RUMBLE_WEAK = 1
