@@ -29,14 +29,12 @@ namespace SK.Libretro.Unity
     [DisallowMultipleComponent, DefaultExecutionOrder(-2)]
     public sealed class LibretroInstance : MonoBehaviour
     {
-        [field: SerializeField] public bool UseSeparateThread { get; private set; }
         [field: SerializeField] public Camera Camera { get; private set; }
         [field: SerializeField, Layer] public int LightgunRaycastLayer { get; private set; }
         [field: SerializeField] public Renderer Renderer { get; private set; }
         [field: SerializeField] public Collider Collider { get; private set; }
         [field: SerializeField] public Transform Viewer { get; private set; }
-        [field: SerializeField] public BridgeSettings Settings { get; private set; }
-        [field: SerializeField] public bool AllowGLCoreInEditor { get; private set; }
+        [field: SerializeField] public InstanceSettings Settings { get; private set; }
         [field: SerializeField] public string CoreName { get; private set; }
         [field: SerializeField] public string GamesDirectory { get; private set; }
         [field: SerializeField] public string[] GameNames { get; private set; }
@@ -56,7 +54,7 @@ namespace SK.Libretro.Unity
 
         private void Update()
         {
-            if (_libretro is null || UseSeparateThread)
+            if (_libretro is null || Settings.UseSeparateThread)
                 return;
 
             _libretro.TickMainThread();
@@ -78,7 +76,7 @@ namespace SK.Libretro.Unity
 
         public void StartContent()
         {
-            _libretro = UseSeparateThread
+            _libretro = Settings.UseSeparateThread
                       ? new InstanceSeparateThread(this)
                       : new InstanceMainThread(this);
             _libretro.SetContent(CoreName, GamesDirectory, GameNames);

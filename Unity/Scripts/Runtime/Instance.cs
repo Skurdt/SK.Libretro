@@ -47,7 +47,7 @@ namespace SK.Libretro.Unity
         protected event Action OnInstanceStarted;
         protected event Action OnInstanceStopped;
 
-        protected readonly BridgeSettings _settings;
+        protected readonly InstanceSettings _settings;
         protected readonly System.Diagnostics.Stopwatch _stopwatch = System.Diagnostics.Stopwatch.StartNew();
         protected readonly Renderer _screen;
         protected readonly Material _originalMaterial;
@@ -134,8 +134,6 @@ namespace SK.Libretro.Unity
                 _audioProcessor = audioProcessorGameObject.AddComponent<AudioProcessor>();
             }
 #endif
-            if (!Directory.Exists(_settings.MainDirectory))
-                _settings.MainDirectory = BridgeSettings.DefaultMainDirectory;
 
             OnInstanceStarted += instanceStartedCallback;
             OnInstanceStopped += instanceStoppedCallback;
@@ -252,7 +250,7 @@ namespace SK.Libretro.Unity
 
             WrapperSettings wrapperSettings = new(platform)
             {
-                MainDirectory  = _settings.MainDirectory,
+                MainDirectory  = $"{Application.streamingAssetsPath}/Libretro~",
                 LogProcessor   = _logProcessor,
                 AudioProcessor = _audioProcessor,
                 InputProcessor = _inputProcessor

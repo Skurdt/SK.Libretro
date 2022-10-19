@@ -21,13 +21,24 @@
  * SOFTWARE. */
 
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace SK.Libretro.Unity.Editor
 {
     [CustomPropertyDrawer(typeof(LayerAttribute))]
     internal sealed class LayerAttributeDrawer : PropertyDrawer
     {
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
+            VisualElement root = new();
+            LayerField layerField = new(property.displayName);
+            layerField.BindProperty(property);
+            root.Add(layerField);
+            return root;
+        }
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             _ = EditorGUI.BeginProperty(position, label, property);

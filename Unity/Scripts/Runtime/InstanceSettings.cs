@@ -20,18 +20,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using UnityEngine;
-
 namespace SK.Libretro.Unity
 {
     [System.Serializable]
-    public sealed class BridgeSettings
+    public sealed class InstanceSettings
     {
-        public static string DefaultMainDirectory => Application.streamingAssetsPath + "/libretro~";
-
+        public bool UseSeparateThread    = false;
         public bool AllowGLCoresInEditor = true;
-        [MainDirectory]
-        public string MainDirectory      = DefaultMainDirectory;
         public string ShaderTextureName  = "_MainTex";
         public bool AudioDistanceControl = true;
         public float AudioMaxVolume      = 1f;

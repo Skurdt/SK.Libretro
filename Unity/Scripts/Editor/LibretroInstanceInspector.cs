@@ -22,47 +22,54 @@
 
 using System.IO;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace SK.Libretro.Unity.Editor
 {
     [CustomEditor(typeof(LibretroInstance)), CanEditMultipleObjects]
     internal sealed class LibretroInstanceInspector : UnityEditor.Editor
     {
-        private SerializedProperty _useSeparateThreadProperty;
         private SerializedProperty _cameraProperty;
         private SerializedProperty _raycastLayerProperty;
         private SerializedProperty _rendererProperty;
         private SerializedProperty _colliderProperty;
         private SerializedProperty _viewerProperty;
         private SerializedProperty _settingsProperty;
-        private SerializedProperty _mainDirectoryProperty;
-        private SerializedProperty _editorGLProperty;
         private SerializedProperty _coreNameProperty;
         private SerializedProperty _gameDirectoryProperty;
         private SerializedProperty _gamesProperty;
 
         private void OnEnable()
         {
-            _useSeparateThreadProperty = serializedObject.FindProperty($"<{nameof(LibretroInstance.UseSeparateThread)}>k__BackingField");
             _cameraProperty            = serializedObject.FindProperty($"<{nameof(LibretroInstance.Camera)}>k__BackingField");
             _raycastLayerProperty      = serializedObject.FindProperty($"<{nameof(LibretroInstance.LightgunRaycastLayer)}>k__BackingField");
             _rendererProperty          = serializedObject.FindProperty($"<{nameof(LibretroInstance.Renderer)}>k__BackingField");
             _colliderProperty          = serializedObject.FindProperty($"<{nameof(LibretroInstance.Collider)}>k__BackingField");
             _viewerProperty            = serializedObject.FindProperty($"<{nameof(LibretroInstance.Viewer)}>k__BackingField");
             _settingsProperty          = serializedObject.FindProperty($"<{nameof(LibretroInstance.Settings)}>k__BackingField");
-            _mainDirectoryProperty     = _settingsProperty.FindPropertyRelative(nameof(LibretroInstance.Settings.MainDirectory));
-            _editorGLProperty          = serializedObject.FindProperty($"<{nameof(LibretroInstance.AllowGLCoreInEditor)}>k__BackingField");
             _coreNameProperty          = serializedObject.FindProperty($"<{nameof(LibretroInstance.CoreName)}>k__BackingField");
             _gameDirectoryProperty     = serializedObject.FindProperty($"<{nameof(LibretroInstance.GamesDirectory)}>k__BackingField");
             _gamesProperty             = serializedObject.FindProperty($"<{nameof(LibretroInstance.GameNames)}>k__BackingField");
+        }
+
+        public override VisualElement CreateInspectorGUI()
+        {
+            VisualElement root = new();
+            root.Add(new PropertyField(_cameraProperty));
+            root.Add(new PropertyField(_raycastLayerProperty));
+            root.Add(new PropertyField(_rendererProperty));
+            root.Add(new PropertyField(_colliderProperty));
+            root.Add(new PropertyField(_viewerProperty));
+            root.Add(new PropertyField(_settingsProperty));
+            return root;
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
 
-            _ = EditorGUILayout.PropertyField(_useSeparateThreadProperty);
             _ = EditorGUILayout.PropertyField(_cameraProperty);
             _ = EditorGUILayout.PropertyField(_raycastLayerProperty);
             _ = EditorGUILayout.PropertyField(_rendererProperty);
@@ -71,9 +78,6 @@ namespace SK.Libretro.Unity.Editor
 
             GUILayout.Space(8f);
             _ = EditorGUILayout.PropertyField(_settingsProperty);
-
-            GUILayout.Space(8f);
-            _ = EditorGUILayout.PropertyField(_editorGLProperty);
 
             GUILayout.Space(8f);
             using (new EditorGUILayout.HorizontalScope())
@@ -143,10 +147,7 @@ namespace SK.Libretro.Unity.Editor
 
         private void ShowSelectCoreWindow()
         {
-            string coresDirectory = !string.IsNullOrWhiteSpace(_mainDirectoryProperty.stringValue)
-                                  ? $"{_mainDirectoryProperty.stringValue}/cores"
-                                  : $"{Application.streamingAssetsPath}/libretro~/cores";
-
+            string coresDirectory = $"{Application.streamingAssetsPath}/libretro~/cores";
             if (!Directory.Exists(coresDirectory))
             {
                 Debug.LogError($"[LibretroInstanceInspector] Cores directory not found: {coresDirectory}");
