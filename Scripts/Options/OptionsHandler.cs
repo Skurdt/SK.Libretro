@@ -191,7 +191,7 @@ namespace SK.Libretro
 
         private static void Serialize(Options coreOptions, string path)
         {
-            if (coreOptions == null || coreOptions.Count <= 0)
+            if (coreOptions is null || coreOptions.Count <= 0)
                 return;
 
             SerializableCoreOptions options = new(coreOptions);
@@ -246,7 +246,7 @@ namespace SK.Libretro
                     else if (possibleValues.Count > 0)
                         value = possibleValues[0];
 
-                    if (CoreOptions[key] == null)
+                    if (CoreOptions[key] is null)
                         CoreOptions[key] = new Option(key, description, info, value, possibleValues.ToArray());
                     else
                         CoreOptions[key].Update(key, description, info, possibleValues.ToArray());

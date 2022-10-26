@@ -26,9 +26,10 @@ namespace SK.Libretro
 {
     public interface IGraphicsProcessor : IDisposable
     {
-        unsafe void ProcessFrame0RGB1555(ushort* data, int width, int height, int pitch);
-        unsafe void ProcessFrameXRGB8888(uint* data, int width, int height, int pitch);
-        unsafe void ProcessFrameXRGB8888VFlip(uint* data, int width, int height, int pitch);
-        unsafe void ProcessFrameRGB565(ushort* data, int width, int height, int pitch);
+        void ProcessFrame0RGB1555(IntPtr data, int width, int height, int pitch);
+        void ProcessFrameXRGB8888(IntPtr data, int width, int height, int pitch);
+        void ProcessFrameXRGB8888VFlip(IntPtr data, int width, int height, int pitch);
+        void ProcessFrameRGB565(IntPtr data, int width, int height, int pitch);
+        void FinalizeFrame();
     }
 }

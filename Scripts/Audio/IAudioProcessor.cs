@@ -27,6 +27,8 @@ namespace SK.Libretro
     public interface IAudioProcessor : IDisposable
     {
         void Init(int sampleRate);
-        void ProcessSamples(float[] samples);
+        void ProcessSample(short left, short right);
+        void ProcessSampleBatch(IntPtr data, nuint frames);
+        void FinalizeFrame();
     }
 }

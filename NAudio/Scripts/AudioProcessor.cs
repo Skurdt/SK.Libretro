@@ -39,7 +39,8 @@ namespace SK.Libretro.NAudio
         private BufferedWaveProvider _bufferedWaveProvider;
         private VolumeSampleProvider _volumeProvider;
 
-        private byte[] _byteBuffer = new byte[0];
+        private byte[] _byteBuffer   = Array.Empty<byte>();
+        private float[] _floatBuffer = Array.Empty<float>();
 
         public void Init(int sampleRate)
         {
@@ -88,17 +89,40 @@ namespace SK.Libretro.NAudio
             _bufferedWaveProvider = null;
         }
 
-        public void ProcessSamples(float[] samples)
+        public void ProcessSample(short left, short right)
         {
             if (_bufferedWaveProvider is null)
                 return;
 
-            int bufferLength = samples.Length * sizeof(float);
+            if (_floatBuffer.Length != 2)
+                _floatBuffer = new float[2];
 
+            _floatBuffer[0] = left * AudioHandler.NORMALIZED_GAIN;
+            _floatBuffer[1] = right * AudioHandler.NORMALIZED_GAIN;
+        }
+
+        public unsafe void ProcessSampleBatch(IntPtr data, nuint frames)
+        {
+            if (_bufferedWaveProvider is null)
+                return;
+
+            short* dataPtr = (short*)data;
+            int numSamples = (int)frames * 2;
+
+            if (_floatBuffer.Length != numSamples)
+                _floatBuffer = new float[numSamples];
+
+            for (int i = 0; i < numSamples; ++i)
+                _floatBuffer[i] = dataPtr[i] * AudioHandler.NORMALIZED_GAIN;
+        }
+
+        public void FinalizeFrame()
+        {
+            int bufferLength = _floatBuffer.Length * sizeof(float);
             if (_byteBuffer.Length != bufferLength)
                 _byteBuffer = new byte[bufferLength];
 
-            Buffer.BlockCopy(samples, 0, _byteBuffer, 0, _byteBuffer.Length);
+            Buffer.BlockCopy(_floatBuffer, 0, _byteBuffer, 0, _byteBuffer.Length);
             _bufferedWaveProvider.AddSamples(_byteBuffer, 0, _byteBuffer.Length);
         }
 

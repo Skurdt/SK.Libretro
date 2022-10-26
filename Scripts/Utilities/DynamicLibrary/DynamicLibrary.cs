@@ -21,7 +21,6 @@
  * SOFTWARE. */
 
 using System;
-using System.IO;
 
 namespace SK.Libretro
 {
@@ -52,7 +51,7 @@ namespace SK.Libretro
         public void Load(string path)
         {
             if (string.IsNullOrWhiteSpace(path))
-                throw new Exception("Library path == null or empty.");
+                throw new Exception("Library path is null or empty.");
 
             Path = path;
             Name = System.IO.Path.GetFileNameWithoutExtension(path);
@@ -105,8 +104,8 @@ namespace SK.Libretro
 
                 try
                 {
-                    if (_deleteFileOnDispose && File.Exists(Path))
-                        File.Delete(Path);
+                    if (_deleteFileOnDispose)
+                        FileSystem.DeleteFile(Path);
                 }
                 catch (Exception e)
                 {

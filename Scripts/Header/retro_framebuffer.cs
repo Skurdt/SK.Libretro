@@ -21,10 +21,12 @@
  * SOFTWARE. */
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace SK.Libretro.Header
 {
-    internal struct retro_framebuffer
+    [StructLayout(LayoutKind.Sequential)]
+    internal sealed class retro_framebuffer
     {
         public IntPtr data; // void*
         public uint width;

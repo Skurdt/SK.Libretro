@@ -20,17 +20,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using System;
+using Cysharp.Threading.Tasks;
+using System.Threading;
 
-namespace SK.Libretro
+namespace SK.Libretro.Unity
 {
-    internal sealed class NullGraphicsProcessor : IGraphicsProcessor
+    internal readonly struct SetStateSlotBridgeCommand : IBridgeCommand
     {
-        public void ProcessFrame0RGB1555(IntPtr data, int width, int height, int pitch) { }
-        public void ProcessFrameXRGB8888(IntPtr data, int width, int height, int pitch) { }
-        public void ProcessFrameXRGB8888VFlip(IntPtr data, int width, int height, int pitch) { }
-        public void ProcessFrameRGB565(IntPtr data, int width, int height, int pitch) { }
-        public void FinalizeFrame() { }
-        public void Dispose() { }
+        private readonly int _slot;
+
+        public SetStateSlotBridgeCommand(int slot) => _slot = slot;
+
+        public UniTask Execute(Wrapper wrapper, CancellationToken cancellationToken)
+        {
+            wrapper.SerializationHandler.SetStateSlot(_slot);
+            return UniTask.CompletedTask;
+        }
     }
 }

@@ -31,7 +31,10 @@ namespace SK.Libretro
         {
         }
 
-        public unsafe override void ProcessFrame(IntPtr data, uint width, uint height, nuint pitch) =>
-            _processor.ProcessFrameRGB565((ushort*)data, (int)width, (int)height, (int)pitch);
+        public override void ProcessFrame(IntPtr data, uint width, uint height, nuint pitch)
+        {
+            if (data.IsNotNull())
+                _processor.ProcessFrameRGB565(data, (int)width, (int)height, (int)pitch);
+        }
     }
 }

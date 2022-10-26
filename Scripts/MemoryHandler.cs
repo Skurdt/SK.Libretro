@@ -22,7 +22,6 @@
 
 using SK.Libretro.Header;
 using System;
-using System.Runtime.InteropServices;
 
 namespace SK.Libretro
 {

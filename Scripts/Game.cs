@@ -48,28 +48,26 @@ namespace SK.Libretro
 
         public Game(Wrapper wrapper) => _wrapper = wrapper;
 
-        public bool Start(string gameDirectory, string gameName)
+        public bool Start(string gameDirectory, string[] gameNames)
         {
-            Name = gameName;
+            Name = gameNames is not null ? gameNames[0] : null;
 
             try
             {
-                if (!string.IsNullOrWhiteSpace(gameDirectory) && !string.IsNullOrWhiteSpace(gameName))
+                if (!string.IsNullOrWhiteSpace(gameDirectory) && !string.IsNullOrWhiteSpace(Name))
                 {
-                    _path = GetGamePath(gameDirectory, gameName);
-                    if (_path == null)
+                    _path = GetGamePath(gameDirectory, Name);
+                    if (_path is null)
                     {
                         // Try Zip archive
                         // TODO(Tom): Check for any file after extraction instead of exact game name (only the archive needs to match)
-                        string archivePath = $"{gameDirectory}/{gameName}.zip";
-                        if (File.Exists(archivePath))
+                        string archivePath = $"{gameDirectory}/{Name}.zip";
+                        if (FileSystem.FileExists(archivePath))
                         {
-                            string extractDirectory = $"{Wrapper.TempDirectory}/extracted/{gameName}_{Guid.NewGuid()}";
-                            if (!Directory.Exists(extractDirectory))
-                                _ = Directory.CreateDirectory(extractDirectory);
+                            string extractDirectory = FileSystem.GetOrCreateDirectory($"{Wrapper.TempDirectory}/extracted/{Name}_{Guid.NewGuid()}");
                             System.IO.Compression.ZipFile.ExtractToDirectory(archivePath, extractDirectory);
 
-                            _path = GetGamePath(extractDirectory, gameName);
+                            _path = GetGamePath(extractDirectory, Name);
                             _extractedPath = _path;
                         }
                     }

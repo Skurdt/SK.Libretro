@@ -27,10 +27,9 @@ namespace SK.Libretro
 {
     internal sealed class AudioHandler : IDisposable
     {
-        public bool Enabled { get; set; }
+        public const float NORMALIZED_GAIN = 1f / 0x8000;
 
-        private const float GAIN            = 1f;
-        private const float NORMALIZED_GAIN = GAIN / 0x8000;
+        public bool Enabled { get; set; }
 
         private readonly Wrapper _wrapper;
         private readonly IAudioProcessor _processor;
@@ -57,6 +56,8 @@ namespace SK.Libretro
         }
 
         public void Dispose() => _processor.Dispose();
+
+        public void FinalizeFrame() => _processor.FinalizeFrame();
 
         public void SetCoreCallbacks(retro_set_audio_sample_t setAudioSample, retro_set_audio_sample_batch_t setAudioSampleBatch)
         {
@@ -96,30 +97,14 @@ namespace SK.Libretro
 
         private void SampleCallback(short left, short right)
         {
-            if (!Enabled)
-                return;
-
-            float[] floatBuffer = new float[]
-            {
-                left  * NORMALIZED_GAIN,
-                right * NORMALIZED_GAIN
-            };
-
-            _processor.ProcessSamples(floatBuffer);
+            if (Enabled)
+                _processor.ProcessSample(left, right);
         }
 
-        private unsafe nuint SampleBatchCallback(IntPtr data, nuint frames)
+        private nuint SampleBatchCallback(IntPtr data, nuint frames)
         {
             if (Enabled)
-            {
-                short* dataPtr = (short*)data;
-                ulong numSamples = frames * 2;
-                float[] floatBuffer = new float[numSamples];
-                for (ulong i = 0; i < numSamples; ++i)
-                    floatBuffer[i] = dataPtr[i] * NORMALIZED_GAIN;
-
-                _processor.ProcessSamples(floatBuffer);
-            }
+                _processor.ProcessSampleBatch(data, frames);
             return frames;
         }
     }

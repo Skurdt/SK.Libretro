@@ -31,10 +31,7 @@ namespace SK.Libretro
     {
         public static readonly retro_log_level LogLevel = retro_log_level.RETRO_LOG_WARN;
 
-        public static string MainDirectory       { get; private set; } = null;
         public static string CoresDirectory      { get; private set; } = null;
-        public static string SystemDirectory     { get; private set; } = null;
-        public static string CoreAssetsDirectory { get; private set; } = null;
         public static string OptionsDirectory    { get; private set; } = null;
         public static string SavesDirectory      { get; private set; } = null;
         public static string StatesDirectory     { get; private set; } = null;
@@ -67,32 +64,36 @@ namespace SK.Libretro
 
         //private const int REWIND_FRAMES_INTERVAL = 10;
 
+        private static string _mainDirectory       = null;
+        private static string _systemDirectory     = null;
+        private static string _coreAssetsDirectory = null;
+
         private readonly List<IntPtr> _unsafeStrings = new();
 
         private long _frameTimeLast      = 0;
         //private uint _totalFrameCount    = 0;
 
-        public unsafe Wrapper(WrapperSettings settings)
+        public Wrapper(WrapperSettings settings)
         {
             Settings = settings;
 
-            if (MainDirectory is null)
+            if (_mainDirectory is null)
             {
-                MainDirectory       = FileSystem.GetOrCreateDirectory(!string.IsNullOrWhiteSpace(settings.MainDirectory) ? settings.MainDirectory : "libretro");
-                CoresDirectory      = FileSystem.GetOrCreateDirectory($"{MainDirectory}/cores");
-                SystemDirectory     = FileSystem.GetOrCreateDirectory($"{MainDirectory}/system");
-                CoreAssetsDirectory = FileSystem.GetOrCreateDirectory($"{MainDirectory}/core_assets");
-                OptionsDirectory    = FileSystem.GetOrCreateDirectory($"{MainDirectory}/core_options");
-                SavesDirectory      = FileSystem.GetOrCreateDirectory($"{MainDirectory}/saves");
-                StatesDirectory     = FileSystem.GetOrCreateDirectory($"{MainDirectory}/states");
-                TempDirectory       = FileSystem.GetOrCreateDirectory($"{MainDirectory}/temp");
+                _mainDirectory       = FileSystem.GetOrCreateDirectory(!string.IsNullOrWhiteSpace(settings.MainDirectory) ? settings.MainDirectory : "libretro");
+                CoresDirectory       = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/cores");
+                _systemDirectory     = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/system");
+                _coreAssetsDirectory = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/core_assets");
+                OptionsDirectory     = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/core_options");
+                SavesDirectory       = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/saves");
+                StatesDirectory      = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/states");
+                TempDirectory        = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/temp");
             }
 
             Core = new(this);
             Game = new(this);
 
             EnvironmentHandler       = new(this);
-            GraphicsHandler          = new(this);
+            GraphicsHandler          = new(this, settings.GraphicsProcessor);
             AudioHandler             = new(this, settings.AudioProcessor);
             InputHandler             = new(settings.InputProcessor);
             LogHandler               = settings.Platform switch
@@ -112,7 +113,7 @@ namespace SK.Libretro
             CoreInstances.Instance.Add(this);
         }
 
-        public bool StartContent(string coreName, string gameDirectory, string gameName)
+        public bool StartContent(string coreName, string gameDirectory, string[] gameNames)
         {
             if (string.IsNullOrWhiteSpace(coreName))
                 return false;
@@ -126,17 +127,19 @@ namespace SK.Libretro
             if (FrameTimeInterface.callback.IsNotNull())
                 FrameTimeInterfaceCallback = FrameTimeInterface.callback.GetDelegate<retro_frame_time_callback_t>();
 
-            if (!Game.Start(gameDirectory, gameName))
+            if (!Game.Start(gameDirectory, gameNames))
             {
                 StopContent();
                 return false;
             }
 
-            FrameTimeRestart();
+            if (DiskHandler.Enabled && gameNames is not null)
+                for (int i = 0; i < gameNames.Length; ++i)
+                    _ = DiskHandler.AddImageIndex();
 
-            ulong size = Core.SerializeSize();
-            if (size > 0)
-                SerializationHandler.SetStateSize(size);
+            SerializationHandler.Init();
+
+            FrameTimeRestart();
 
             return true;
         }
@@ -185,22 +188,20 @@ namespace SK.Libretro
             //}
 
             Core.Run();
+            GraphicsHandler.FinalizeFrame();
+            AudioHandler.FinalizeFrame();
         }
 
-        public void InitGraphics(GraphicsFrameHandlerBase graphicsFrameHandler, bool enabled) =>
-            GraphicsHandler.Init(graphicsFrameHandler, enabled);
+        public void InitGraphics(bool enabled = true) => GraphicsHandler.Init(enabled);
 
-        public void InitAudio(bool enabled) =>
-            AudioHandler.Init(enabled);
+        public void InitAudio(bool enabled = true) => AudioHandler.Init(enabled);
 
         public bool GetSystemDirectory(IntPtr data)
         {
             if (data.IsNull())
                 return false;
 
-            string path = FileSystem.GetOrCreateDirectory($"{MainDirectory}/system");
-
-            IntPtr stringPtr = GetUnsafeString(path);
+            IntPtr stringPtr = GetUnsafeString(_systemDirectory);
             Marshal.StructureToPtr(stringPtr, data, true);
             return true;
         }
@@ -221,18 +222,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            string path = FileSystem.GetOrCreateDirectory($"{CoreAssetsDirectory}/{Core.Name}");
-            IntPtr stringPtr = GetUnsafeString(path);
-            Marshal.StructureToPtr(stringPtr, data, true);
-            return true;
-        }
-
-        public bool GetSaveDirectory(IntPtr data)
-        {
-            if (data.IsNull())
-                return false;
-
-            string path = FileSystem.GetOrCreateDirectory($"{SavesDirectory}/{Core.Name}");
+            string path = FileSystem.GetOrCreateDirectory($"{_coreAssetsDirectory}/{Core.Name}");
             IntPtr stringPtr = GetUnsafeString(path);
             Marshal.StructureToPtr(stringPtr, data, true);
             return true;
@@ -271,7 +261,7 @@ namespace SK.Libretro
 
         private void FrameTimeUpdate()
         {
-            if (FrameTimeInterfaceCallback == null)
+            if (FrameTimeInterfaceCallback is null)
                 return;
 
             long current = System.Diagnostics.Stopwatch.GetTimestamp();

@@ -20,14 +20,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Jobs;
+
 namespace SK.Libretro.Unity
 {
-    internal sealed class AudioProcessorSeparateThread : AudioProcessor
+    [BurstCompile]
+    internal unsafe struct SampleBatchJob : IJobParallelFor
     {
-        public override void Init(int sampleRate) =>
-            MainThreadDispatcher.Enqueue(() => base.Init(sampleRate));
+        [ReadOnly, NativeDisableUnsafePtrRestriction] public short* SourceSamples;
+        [WriteOnly] public NativeArray<float> DestinationSamples;
 
-        public override void Dispose() =>
-            MainThreadDispatcher.Enqueue(() => base.Dispose());
+        public void Execute(int index) => DestinationSamples[index] = SourceSamples[index] * AudioHandler.NORMALIZED_GAIN;
     }
 }

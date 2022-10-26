@@ -20,17 +20,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using System;
+using Cysharp.Threading.Tasks;
+using System.Threading;
 
-namespace SK.Libretro
+namespace SK.Libretro.Unity
 {
-    internal sealed class NullGraphicsProcessor : IGraphicsProcessor
+    internal readonly struct SaveStateWithScreenshotBridgeCommand : IBridgeCommand
     {
-        public void ProcessFrame0RGB1555(IntPtr data, int width, int height, int pitch) { }
-        public void ProcessFrameXRGB8888(IntPtr data, int width, int height, int pitch) { }
-        public void ProcessFrameXRGB8888VFlip(IntPtr data, int width, int height, int pitch) { }
-        public void ProcessFrameRGB565(IntPtr data, int width, int height, int pitch) { }
-        public void FinalizeFrame() { }
-        public void Dispose() { }
+        public delegate UniTask TakeScreenshotDelegate(string path, CancellationToken cancellationToken);
+
+        private readonly TakeScreenshotDelegate _takeScreenshotFunc;
+
+        public SaveStateWithScreenshotBridgeCommand(TakeScreenshotDelegate takeScreenshotFunc) => _takeScreenshotFunc = takeScreenshotFunc;
+
+        public async UniTask Execute(Wrapper wrapper, CancellationToken cancellationToken)
+        {
+            if (wrapper.SerializationHandler.SaveStateToDisk(out string screenshotPath))
+                await _takeScreenshotFunc(screenshotPath, cancellationToken);
+        }
     }
 }

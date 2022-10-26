@@ -20,11 +20,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using UnityEngine;
+using Cysharp.Threading.Tasks;
+using System.Threading;
 
 namespace SK.Libretro.Unity
 {
-    internal sealed class MainDirectoryAttribute : PropertyAttribute
+    internal readonly struct SetDiskIndexBridgeCommand : IBridgeCommand
     {
+        private readonly string _gamesDirectory;
+        private readonly string[] _gameNames;
+        private readonly int _index;
+
+        public SetDiskIndexBridgeCommand(string gamesDirectory, string[] gameNames, int index)
+        {
+            _gamesDirectory = gamesDirectory;
+            _gameNames      = gameNames;
+            _index          = index;
+        }
+
+        public UniTask Execute(Wrapper wrapper, CancellationToken cancellationToken)
+        {
+            if (wrapper.DiskHandler.Enabled && !string.IsNullOrWhiteSpace(_gamesDirectory) && _gameNames is not null && _index >= 0 && _index < _gameNames.Length)
+                _ = wrapper.DiskHandler.SetImageIndexAuto((uint)_index, $"{_gamesDirectory}/{_gameNames[_index]}");
+            return UniTask.CompletedTask;
+        }
     }
 }

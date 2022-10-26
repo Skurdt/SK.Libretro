@@ -205,7 +205,7 @@ namespace SK.Libretro.Unity
 
         private void HandleLightgunPosition()
         {
-            if (Mouse.current == null || _libretroInstanceVariable.Current == null)
+            if (Mouse.current is null || _libretroInstanceVariable.Current == null)
             {
                 LightgunX = LightgunY = -0x8000;
                 return;

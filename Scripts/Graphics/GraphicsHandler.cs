@@ -29,33 +29,44 @@ namespace SK.Libretro
     internal sealed class GraphicsHandler : IDisposable
     {
         public bool Enabled { get; set; }
-        public retro_pixel_format PixelFormat { get; private set; }
-        public OpenGLHelperWindow OpenGLHelperWindow { get; private set; }
 
         private readonly Wrapper _wrapper;
+        private readonly IGraphicsProcessor _processor;
         private readonly retro_video_refresh_t _refreshCallback;
 
+        private retro_pixel_format _pixelFormat;
         private GraphicsFrameHandlerBase _frameHandler;
         private retro_hw_render_callback _hwRenderInterface;
 
-        public GraphicsHandler(Wrapper wrapper) =>
-            (_wrapper, _refreshCallback) = (wrapper, RefreshCallback);
-
-        public void Init(GraphicsFrameHandlerBase frameHandler, bool enabled)
+        public GraphicsHandler(Wrapper wrapper, IGraphicsProcessor processor)
         {
-            _frameHandler = frameHandler;
-            Enabled       = enabled;
+            _wrapper         = wrapper;
+            _processor       = processor;
+            _refreshCallback = RefreshCallback;
         }
 
-        public void Dispose()
+        public void Init(bool enabled)
         {
-            _frameHandler?.Dispose();
-            OpenGLHelperWindow?.Dispose();
+            Enabled = enabled;
+
+            if (_wrapper.Core.HwAccelerated)
+                _hwRenderInterface.context_reset.GetDelegate<retro_hw_context_reset_t>().Invoke();
+            else
+                _frameHandler = _pixelFormat switch
+                {
+                    retro_pixel_format.RETRO_PIXEL_FORMAT_0RGB1555 => new GraphicsFrameHandlerSoftware0RGB1555(_processor),
+                    retro_pixel_format.RETRO_PIXEL_FORMAT_XRGB8888 => new GraphicsFrameHandlerSoftwareXRGB8888(_processor),
+                    retro_pixel_format.RETRO_PIXEL_FORMAT_RGB565 => new GraphicsFrameHandlerSoftwareRGB565(_processor),
+                    retro_pixel_format.RETRO_PIXEL_FORMAT_UNKNOWN
+                    or _ => new NullGraphicsFrameHandler(_processor)
+                };
         }
+
+        public void Dispose() => _processor.Dispose();
+
+        public void FinalizeFrame() => _processor.FinalizeFrame();
 
         public void SetCoreCallback(retro_set_video_refresh_t setVideoRefresh) => setVideoRefresh(_refreshCallback);
-
-        public void InitHardwareContext() =>_hwRenderInterface.context_reset.GetDelegate<retro_hw_context_reset_t>().Invoke();
 
         public bool GetOverscan(IntPtr data)
         {
@@ -70,6 +81,8 @@ namespace SK.Libretro
                 data.Write(true);
             return true;
         }
+
+        public bool GetCurrentSoftwareFramebuffer() => false;
 
         public bool GetPreferredHwRender(IntPtr data)
         {
@@ -86,13 +99,13 @@ namespace SK.Libretro
                 return false;
 
             int pixelFormat = data.ReadInt32();
-            PixelFormat = pixelFormat switch
+            _pixelFormat = pixelFormat switch
             {
                 0 or 1 or 2 => (retro_pixel_format)pixelFormat,
                 _ => retro_pixel_format.RETRO_PIXEL_FORMAT_UNKNOWN
             };
 
-            return PixelFormat != retro_pixel_format.RETRO_PIXEL_FORMAT_UNKNOWN;
+            return _pixelFormat is not retro_pixel_format.RETRO_PIXEL_FORMAT_UNKNOWN;
         }
 
         public bool SetHwRender(IntPtr data)
@@ -104,12 +117,12 @@ namespace SK.Libretro
             if (callback.context_type is not retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL and not retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE)
                 return false;
 
-            OpenGLHelperWindow = new();
-            if (!OpenGLHelperWindow.Init())
+            GraphicsFrameHandlerOpenGLXRGB8888VFlip frameHandler = new(_processor);
+            if (!frameHandler.Init())
                 return false;
 
-            callback.get_current_framebuffer = OpenGLHelperWindow.GetCurrentFrameBuffer.GetFunctionPointer();
-            callback.get_proc_address = OpenGLHelperWindow.GetProcAddress.GetFunctionPointer();
+            callback.get_current_framebuffer = frameHandler.GetCurrentFrameBuffer;
+            callback.get_proc_address        = frameHandler.GetProcAddressPtr;
 
             _hwRenderInterface = callback;
             Marshal.StructureToPtr(_hwRenderInterface, data, true);
@@ -130,7 +143,7 @@ namespace SK.Libretro
             return true;
         }
 
-        private unsafe void RefreshCallback(IntPtr data, uint width, uint height, nuint pitch)
+        private void RefreshCallback(IntPtr data, uint width, uint height, nuint pitch)
         {
             if (Enabled)
                 _frameHandler.ProcessFrame(data, width, height, pitch);

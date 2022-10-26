@@ -64,7 +64,7 @@ namespace SK.Libretro
 
         internal void Update(int index)
         {
-            if (PossibleValues == null || PossibleValues.Length == 0)
+            if (PossibleValues is null || PossibleValues.Length == 0)
                 return;
 
             int clampedIndex = index.Clamp(0, PossibleValues.Length - 1);

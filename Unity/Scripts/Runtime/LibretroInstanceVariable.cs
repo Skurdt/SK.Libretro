@@ -43,5 +43,35 @@ namespace SK.Libretro.Unity
         }
 
         [System.NonSerialized] private LibretroInstance _current;
+
+        public void StartContent()
+        {
+            if (Current != null)
+                Current.StartContent();
+        }
+
+        public void PauseContent()
+        {
+            if (Current != null)
+                Current.PauseContent();
+        }
+
+        public void ResumeContent()
+        {
+            if (Current != null)
+                Current.ResumeContent();
+        }
+
+        public void ResetContent()
+        {
+            if (Current != null)
+                Current.ResetContent();
+        }
+
+        public void StopContent()
+        {
+            if (Current != null)
+                Current.StopContent();
+        }
     }
 }

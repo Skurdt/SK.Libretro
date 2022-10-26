@@ -20,12 +20,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using System;
+
 namespace SK.Libretro
 {
     internal sealed class NullAudioProcessor : IAudioProcessor
     {
         public void Init(int sampleRate) { }
-        public void ProcessSamples(float[] samples) { }
         public void Dispose() { }
+        public void ProcessSample(short left, short right) { }
+        public void ProcessSampleBatch(IntPtr data, nuint frames) { }
+        public void FinalizeFrame() { }
     }
 }

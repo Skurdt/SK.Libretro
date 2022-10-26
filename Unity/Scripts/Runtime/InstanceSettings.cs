@@ -25,7 +25,6 @@ namespace SK.Libretro.Unity
     [System.Serializable]
     public sealed class InstanceSettings
     {
-        public bool UseSeparateThread    = false;
         public bool AllowGLCoresInEditor = true;
         public string ShaderTextureName  = "_MainTex";
         public bool AudioDistanceControl = true;

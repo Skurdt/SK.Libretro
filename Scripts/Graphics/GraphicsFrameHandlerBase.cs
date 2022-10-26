@@ -30,8 +30,8 @@ namespace SK.Libretro
 
         public GraphicsFrameHandlerBase(IGraphicsProcessor processor) => _processor = processor ?? new NullGraphicsProcessor();
 
-        public void Dispose() => _processor.Dispose();
+        public abstract void ProcessFrame(IntPtr data, uint width, uint height, nuint pitch);
 
-        public unsafe abstract void ProcessFrame(IntPtr data, uint width, uint height, nuint pitch);
+        public virtual void Dispose() { }
     }
 }

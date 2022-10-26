@@ -26,20 +26,28 @@ namespace SK.Libretro
 {
     internal sealed class GraphicsFrameHandlerOpenGLXRGB8888VFlip : GraphicsFrameHandlerBase
     {
-        private readonly OpenGLHelperWindow _window;
+        public IntPtr GetCurrentFrameBuffer => _window.GetCurrentFrameBuffer.GetFunctionPointer();
+        public IntPtr GetProcAddressPtr => _window.GetProcAddress.GetFunctionPointer();
 
-        public GraphicsFrameHandlerOpenGLXRGB8888VFlip(IGraphicsProcessor processor, OpenGLHelperWindow window)
-        : base(processor) =>
-            _window = window;
+        private readonly OpenGLHelperWindow _window = new();
 
-        public unsafe override void ProcessFrame(IntPtr data, uint width, uint height, nuint pitch)
+        public GraphicsFrameHandlerOpenGLXRGB8888VFlip(IGraphicsProcessor processor)
+        : base(processor)
+        {
+        }
+
+        public bool Init() => _window.Init();
+
+        public override void Dispose() => _window?.Dispose();
+
+        public unsafe override void ProcessFrame(IntPtr _, uint width, uint height, nuint pitch)
         {
             int bufferSize = (int)(width * height * 4);
             byte[] bufferSrc = new byte[bufferSize];
             fixed (byte* bufferSrcPtr = bufferSrc)
             {
                 GL.ReadPixels(0, 0, (int)width, (int)height, GL.BGRA, GL.UNSIGNED_BYTE, bufferSrcPtr);
-                _processor.ProcessFrameXRGB8888VFlip((uint*)bufferSrcPtr, (int)width, (int)height, (int)width * 4);
+                _processor.ProcessFrameXRGB8888VFlip((IntPtr)bufferSrcPtr, (int)width, (int)height, (int)width * 4);
             }
             _window.SwapBuffers();
         }

@@ -20,13 +20,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using Cysharp.Threading.Tasks;
 using SK.Libretro.Header;
 using System;
+using System.Threading;
 using UnityEngine;
 
 namespace SK.Libretro.Unity
 {
-    [DisallowMultipleComponent, DefaultExecutionOrder(-2)]
+    [DisallowMultipleComponent]
     public sealed class LibretroInstance : MonoBehaviour
     {
         [field: SerializeField] public Camera Camera { get; private set; }
@@ -39,26 +41,21 @@ namespace SK.Libretro.Unity
         [field: SerializeField] public string GamesDirectory { get; private set; }
         [field: SerializeField] public string[] GameNames { get; private set; }
 
-        public Action OnInstanceStarted;
-        public Action OnInstanceStopped;
+        public event Action OnInstanceStarted;
+        public event Action OnInstanceStopped;
 
-        public bool Running => _libretro.Running;
-        public ControllersMap ControllersMap => _libretro.ControllersMap;
-        public bool InputEnabled { get => _libretro.InputEnabled; set => _libretro.InputEnabled = value; }
-        public bool FastForward { get => _libretro.FastForward; set => _libretro.FastForward = value; }
-        public bool Rewind { get => _libretro.Rewind; set => _libretro.Rewind = value; }
+        public bool Running => _bridge is not null && _bridge.Running;
+        public ControllersMap ControllersMap => _bridge.ControllersMap;
+        public bool InputEnabled { get => _bridge.InputEnabled; set => _bridge.InputEnabled = value; }
+        public bool FastForward { get => _bridge.FastForward; set => _bridge.FastForward = value; }
+        public bool Rewind { get => _bridge.Rewind; set => _bridge.Rewind = value; }
 
-        private Instance _libretro;
+        private Bridge _bridge;
+        private CancellationToken _cancellationToken;
+
+        private void Awake() => _cancellationToken = this.GetCancellationTokenOnDestroy();
 
         private void OnDisable() => StopContent();
-
-        private void Update()
-        {
-            if (_libretro is null || Settings.UseSeparateThread)
-                return;
-
-            _libretro.TickMainThread();
-        }
 
         public void Initialize(string coreName, string gamesDirectory, params string[] gameNames)
         {
@@ -76,36 +73,40 @@ namespace SK.Libretro.Unity
 
         public void StartContent()
         {
-            _libretro = Settings.UseSeparateThread
-                      ? new InstanceSeparateThread(this)
-                      : new InstanceMainThread(this);
-            _libretro.SetContent(CoreName, GamesDirectory, GameNames);
-            _libretro.StartContent(OnInstanceStarted, OnInstanceStopped);
+            if (Running)
+                return;
+
+            _bridge = new Bridge(this);
+            _ = UniTask.RunOnThreadPool(Runloop, cancellationToken: _cancellationToken);
         }
 
-        public void PauseContent() => _libretro.PauseContent();
+        public void PauseContent() => _bridge?.PauseContent();
 
-        public void ResumeContent() => _libretro.ResumeContent();
+        public void ResumeContent() => _bridge?.ResumeContent();
 
-        public void ResetContent() => _libretro.ResetContent();
+        public void ResetContent() => _bridge?.ResetContent();
 
         public void StopContent()
         {
-            _libretro?.StopContent();
-            _libretro?.Dispose();
-            _libretro = null;
+            _bridge?.StopContent();
+            _bridge?.Dispose();
+            _bridge = null;
         }
 
-        public void SetControllerPortDevice(uint port, RETRO_DEVICE id) => _libretro.SetControllerPortDevice(port, id);
+        public void SetControllerPortDevice(uint port, RETRO_DEVICE id) => _bridge?.SetControllerPortDevice(port, id);
 
-        public void SaveStateWithScreenshot() => _libretro.SaveStateWithScreenshot();
+        public void SetStateSlot(int slot) => _bridge?.SetStateSlot(slot);
 
-        public void LoadState() => _libretro.LoadState();
+        public void SaveStateWithScreenshot() => _bridge?.SaveStateWithScreenshot();
 
-        public void SaveSRAM() => _libretro.SaveSRAM();
+        public void LoadState() => _bridge?.LoadState();
 
-        public void LoadSRAM() => _libretro.LoadSRAM();
+        public void SaveSRAM() => _bridge?.SaveSRAM();
 
-        public void SetDiskIndex(int index) => _libretro.SetDiskIndex(index);
+        public void LoadSRAM() => _bridge?.LoadSRAM();
+
+        public void SetDiskIndex(int index) => _bridge?.SetDiskIndex(index);
+
+        private UniTask Runloop() => _bridge.StartContent(CoreName, GamesDirectory, GameNames, OnInstanceStarted, OnInstanceStopped, _cancellationToken);
     }
 }

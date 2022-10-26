@@ -229,11 +229,7 @@ namespace SK.Libretro
                     return false;
                 }
 
-                string tempDirectory = Wrapper.TempDirectory;
-                if (!Directory.Exists(tempDirectory))
-                    _ = Directory.CreateDirectory(tempDirectory);
-
-                string instancePath = System.IO.Path.Combine(tempDirectory, $"{Name}_{Guid.NewGuid()}.{_dll.Extension}");
+                string instancePath = System.IO.Path.Combine(Wrapper.TempDirectory, $"{Name}_{Guid.NewGuid()}.{_dll.Extension}");
                 File.Copy(corePath, instancePath);
 
                 _dll.Load(instancePath);
