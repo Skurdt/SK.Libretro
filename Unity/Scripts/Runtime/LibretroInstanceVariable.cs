@@ -20,6 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using System;
 using UnityEngine;
 
 namespace SK.Libretro.Unity
@@ -27,7 +28,7 @@ namespace SK.Libretro.Unity
     [CreateAssetMenu(fileName = "LibretroInstanceVariable", menuName = "SK.Libretro/LibretroInstanceVariable")]
     public sealed class LibretroInstanceVariable : ScriptableObject
     {
-        [field: System.NonSerialized] public event System.Action<LibretroInstance> OnInstanceChanged;
+        [field: NonSerialized] public event Action<LibretroInstance> OnInstanceChanged;
 
         public LibretroInstance Current
         {
@@ -42,7 +43,7 @@ namespace SK.Libretro.Unity
             }
         }
 
-        [System.NonSerialized] private LibretroInstance _current;
+        [NonSerialized] private LibretroInstance _current;
 
         public void StartContent()
         {
@@ -72,6 +73,42 @@ namespace SK.Libretro.Unity
         {
             if (Current != null)
                 Current.StopContent();
+        }
+
+        public void SaveState(int stateSlot)
+        {
+            if (Current == null)
+                return;
+            
+            Current.SetStateSlot(stateSlot);
+            Current.SaveStateWithScreenshot();
+        }
+
+        public void LoadState(int stateSlot)
+        {
+            if (Current == null)
+                return;
+
+            Current.SetStateSlot(stateSlot);
+            Current.LoadState();
+        }
+
+        public void SetDiskIndex(int index)
+        {
+            if (Current != null)
+                Current.SetDiskIndex(index);
+        }
+
+        public void SaveSRAM()
+        {
+            if (Current != null)
+                Current.SaveSRAM();
+        }
+
+        public void LoadSRAM()
+        {
+            if (Current != null)
+                Current.LoadSRAM();
         }
     }
 }

@@ -20,13 +20,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using SK.Libretro.Header;
 using System;
 
 namespace SK.Libretro
 {
     internal sealed class OpenGLHelperWindow : HardwareRenderHelperWindow
     {
-        public void SwapBuffers() => GLFW.SwapBuffers(WindowHandle);
+        public OpenGLHelperWindow(retro_hw_render_callback hwRenderCallback)
+        : base(hwRenderCallback)
+        {
+        }
 
         protected override void SetCreationHints()
         {
@@ -50,5 +54,7 @@ namespace SK.Libretro
         protected override void OnPostInit() => GLFW.MakeContextCurrent(WindowHandle);
 
         protected override UIntPtr GetCurrentFrameBufferCall() => (UIntPtr)0;
+
+        public override void SwapBuffers() => GLFW.SwapBuffers(WindowHandle);
     }
 }

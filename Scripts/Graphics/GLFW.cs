@@ -27,25 +27,25 @@ namespace SK.Libretro
 {
     internal static class GLFW
     {
-        public const int FOCUSED = 0x00020001;
-        public const int VISIBLE = 0x00020004;
-        public const int FOCUS_ON_SHOW = 0x0002000C;
-        public const int RED_BITS = 0x00021001;
-        public const int GREEN_BITS = 0x00021002;
-        public const int BLUE_BITS = 0x00021003;
-        public const int ALPHA_BITS = 0x00021004;
-        public const int DEPTH_BITS = 0x00021005;
-        public const int STENCIL_BITS = 0x00021006;
-        public const int CLIENT_API = 0x00022001;
+        public const int FOCUSED               = 0x00020001;
+        public const int VISIBLE               = 0x00020004;
+        public const int FOCUS_ON_SHOW         = 0x0002000C;
+        public const int RED_BITS              = 0x00021001;
+        public const int GREEN_BITS            = 0x00021002;
+        public const int BLUE_BITS             = 0x00021003;
+        public const int ALPHA_BITS            = 0x00021004;
+        public const int DEPTH_BITS            = 0x00021005;
+        public const int STENCIL_BITS          = 0x00021006;
+        public const int CLIENT_API            = 0x00022001;
         public const int CONTEXT_VERSION_MAJOR = 0x00022002;
         public const int CONTEXT_VERSION_MINOR = 0x00022003;
         public const int OPENGL_FORWARD_COMPAT = 0x00022006;
-        public const int OPENGL_PROFILE = 0x00022008;
-        public const int CONTEXT_CREATION_API = 0x0002200B;
-        public const int FALSE = 0;
-        public const int OPENGL_API = 0x00030001;
-        public const int OPENGL_ANY_PROFILE = 0;
-        public const int NATIVE_CONTEXT_API = 0x00036001;
+        public const int OPENGL_PROFILE        = 0x00022008;
+        public const int CONTEXT_CREATION_API  = 0x0002200B;
+        public const int FALSE                 = 0;
+        public const int OPENGL_API            = 0x00030001;
+        public const int OPENGL_ANY_PROFILE    = 0;
+        public const int NATIVE_CONTEXT_API    = 0x00036001;
 
         [DllImport("glfw3", EntryPoint = "glfwInit")]
         public static extern bool Init();

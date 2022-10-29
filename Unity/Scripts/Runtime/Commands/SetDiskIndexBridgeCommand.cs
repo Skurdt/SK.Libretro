@@ -20,9 +20,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using Cysharp.Threading.Tasks;
-using System.Threading;
-
 namespace SK.Libretro.Unity
 {
     internal readonly struct SetDiskIndexBridgeCommand : IBridgeCommand
@@ -38,11 +35,10 @@ namespace SK.Libretro.Unity
             _index          = index;
         }
 
-        public UniTask Execute(Wrapper wrapper, CancellationToken cancellationToken)
+        public void Execute(Wrapper wrapper)
         {
             if (wrapper.DiskHandler.Enabled && !string.IsNullOrWhiteSpace(_gamesDirectory) && _gameNames is not null && _index >= 0 && _index < _gameNames.Length)
                 _ = wrapper.DiskHandler.SetImageIndexAuto((uint)_index, $"{_gamesDirectory}/{_gameNames[_index]}");
-            return UniTask.CompletedTask;
         }
     }
 }

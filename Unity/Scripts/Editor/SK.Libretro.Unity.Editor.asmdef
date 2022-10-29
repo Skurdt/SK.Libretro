@@ -2,6 +2,7 @@
     "name": "SK.Libretro.Unity.Editor",
     "rootNamespace": "SK.Libretro.Unity.Editor",
     "references": [
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
         "GUID:39dd5a9af0abb57419a105585282ccbb",
         "GUID:400dc1aee615d994fac34ce04fbb49af"
     ],

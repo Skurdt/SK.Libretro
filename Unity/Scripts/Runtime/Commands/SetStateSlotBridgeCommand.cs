@@ -20,9 +20,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using Cysharp.Threading.Tasks;
-using System.Threading;
-
 namespace SK.Libretro.Unity
 {
     internal readonly struct SetStateSlotBridgeCommand : IBridgeCommand
@@ -31,10 +28,6 @@ namespace SK.Libretro.Unity
 
         public SetStateSlotBridgeCommand(int slot) => _slot = slot;
 
-        public UniTask Execute(Wrapper wrapper, CancellationToken cancellationToken)
-        {
-            wrapper.SerializationHandler.SetStateSlot(_slot);
-            return UniTask.CompletedTask;
-        }
+        public void Execute(Wrapper wrapper) => wrapper.SerializationHandler.SetStateSlot(_slot);
     }
 }

@@ -20,10 +20,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using Cysharp.Threading.Tasks;
 using SK.Libretro.Header;
 using System;
-using System.Threading;
 using UnityEngine;
 
 namespace SK.Libretro.Unity
@@ -51,9 +49,6 @@ namespace SK.Libretro.Unity
         public bool Rewind { get => _bridge.Rewind; set => _bridge.Rewind = value; }
 
         private Bridge _bridge;
-        private CancellationToken _cancellationToken;
-
-        private void Awake() => _cancellationToken = this.GetCancellationTokenOnDestroy();
 
         private void OnDisable() => StopContent();
 
@@ -77,7 +72,7 @@ namespace SK.Libretro.Unity
                 return;
 
             _bridge = new Bridge(this);
-            _ = UniTask.RunOnThreadPool(Runloop, cancellationToken: _cancellationToken);
+            _bridge.StartContent(CoreName, GamesDirectory, GameNames, OnInstanceStarted, OnInstanceStopped);
         }
 
         public void PauseContent() => _bridge?.PauseContent();
@@ -106,7 +101,5 @@ namespace SK.Libretro.Unity
         public void LoadSRAM() => _bridge?.LoadSRAM();
 
         public void SetDiskIndex(int index) => _bridge?.SetDiskIndex(index);
-
-        private UniTask Runloop() => _bridge.StartContent(CoreName, GamesDirectory, GameNames, OnInstanceStarted, OnInstanceStopped, _cancellationToken);
     }
 }

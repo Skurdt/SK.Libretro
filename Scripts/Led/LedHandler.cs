@@ -32,8 +32,11 @@ namespace SK.Libretro
 
         private readonly retro_set_led_state_t _setLedState;
 
-        public LedHandler(ILedProcessor processor) =>
-            (_processor, _setLedState) = (processor ?? new NullLedProcessor(), SetState);
+        public LedHandler(ILedProcessor processor)
+        {
+            _processor   = processor ?? new NullLedProcessor();
+            _setLedState = SetState;
+        }
 
         public void Dispose() => _processor.Dispose();
 
@@ -45,9 +48,7 @@ namespace SK.Libretro
                 return false;
 
             retro_led_interface ledInterface = data.ToStructure<retro_led_interface>();
-
             ledInterface.set_led_state = _setLedState.GetFunctionPointer();
-
             Marshal.StructureToPtr(ledInterface, data, true);
             return true;
         }

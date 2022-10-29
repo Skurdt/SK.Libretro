@@ -127,12 +127,10 @@ namespace SK.Libretro
                 if (!Directory.Exists(coreDirectory))
                     return false;
 
-                string gameDirectory = _wrapper.Game.Name is not null ? $"{coreDirectory}/{Path.GetFileNameWithoutExtension(_wrapper.Game.Name)}" : null;
-                if (gameDirectory is not null && !Directory.Exists(gameDirectory))
+                if (_gameDirectory is not null && !Directory.Exists(_gameDirectory))
                     return false;
 
-                string savePath = $"{gameDirectory ?? coreDirectory}/save_{_currentStateSlot}.state";
-
+                string savePath = $"{_gameDirectory ?? coreDirectory}/save_{_currentStateSlot}.state";
                 if (!FileSystem.FileExists(savePath))
                     return false;
 
@@ -155,7 +153,8 @@ namespace SK.Libretro
             }
             finally
             {
-                handle.Free();
+                if (handle.IsAllocated)
+                    handle.Free();
             }
         }
 
@@ -304,7 +303,8 @@ namespace SK.Libretro
             }
             finally
             {
-                handle.Free();
+                if (handle.IsAllocated)
+                    handle.Free();
             }
         }
     }

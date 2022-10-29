@@ -107,9 +107,9 @@ namespace SK.Libretro
                     if (_deleteFileOnDispose)
                         FileSystem.DeleteFile(Path);
                 }
-                catch (Exception e)
+                catch/* (Exception e)*/
                 {
-                    throw new Exception($"Failed to delete file '{Name}' at path '{Path}' ({e.Message})");
+                    //throw new Exception($"Failed to delete file '{Name}' at path '{Path}' ({e.Message})");
                 }
 
                 _disposedValue = true;

@@ -99,6 +99,8 @@ namespace SK.Libretro.NAudio
 
             _floatBuffer[0] = left * AudioHandler.NORMALIZED_GAIN;
             _floatBuffer[1] = right * AudioHandler.NORMALIZED_GAIN;
+
+            FinalizeFrame();
         }
 
         public unsafe void ProcessSampleBatch(IntPtr data, nuint frames)
@@ -114,9 +116,17 @@ namespace SK.Libretro.NAudio
 
             for (int i = 0; i < numSamples; ++i)
                 _floatBuffer[i] = dataPtr[i] * AudioHandler.NORMALIZED_GAIN;
+
+            FinalizeFrame();
         }
 
-        public void FinalizeFrame()
+        public void SetVolume(float volume)
+        {
+            if (_volumeProvider is not null)
+                _volumeProvider.Volume = volume.Clamp(0f, 1f);
+        }
+
+        private void FinalizeFrame()
         {
             int bufferLength = _floatBuffer.Length * sizeof(float);
             if (_byteBuffer.Length != bufferLength)
@@ -124,12 +134,6 @@ namespace SK.Libretro.NAudio
 
             Buffer.BlockCopy(_floatBuffer, 0, _byteBuffer, 0, _byteBuffer.Length);
             _bufferedWaveProvider.AddSamples(_byteBuffer, 0, _byteBuffer.Length);
-        }
-
-        public void SetVolume(float volume)
-        {
-            if (_volumeProvider is not null)
-                _volumeProvider.Volume = volume.Clamp(0f, 1f);
         }
     }
 }

@@ -32,16 +32,21 @@ namespace SK.Libretro
 
         protected IntPtr WindowHandle => _windowHandle;
 
+        private readonly retro_hw_context_reset_t _contextReset;
+        private readonly retro_hw_context_reset_t _contextDestroy;
+
         private IntPtr _windowHandle;
         private bool _disposedValue;
 
-        public HardwareRenderHelperWindow()
+        public HardwareRenderHelperWindow(retro_hw_render_callback hwRenderCallback)
         {
+            _contextReset         = hwRenderCallback.context_reset.GetDelegate<retro_hw_context_reset_t>();
+            _contextDestroy       = hwRenderCallback.context_destroy.GetDelegate<retro_hw_context_reset_t>();
             GetCurrentFrameBuffer = GetCurrentFrameBufferCall;
             GetProcAddress        = GetProcAddressCall;
         }
 
-        ~HardwareRenderHelperWindow() => DisposeImpl();
+        ~HardwareRenderHelperWindow() => Dispose(disposing: false);
 
         public bool Init()
         {
@@ -50,12 +55,9 @@ namespace SK.Libretro
 
             SetCreationHints();
 
-            _windowHandle = GLFW.CreateWindow(1920, 1080, "LibretroHardwareRenderHelperWindow", IntPtr.Zero, IntPtr.Zero);
+            _windowHandle = GLFW.CreateWindow(640, 512, "LibretroHardwareRenderHelperWindow", IntPtr.Zero, IntPtr.Zero);
             if (_windowHandle.IsNull())
-            {
-                GLFW.Terminate();
                 return false;
-            }
 
             OnPostInit();
             return true;
@@ -63,9 +65,13 @@ namespace SK.Libretro
 
         public void Dispose()
         {
-            DisposeImpl();
+            Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+
+        public void InitContext() => _contextReset.Invoke();
+
+        public abstract void SwapBuffers();
 
         protected abstract void SetCreationHints();
 
@@ -75,10 +81,13 @@ namespace SK.Libretro
 
         private IntPtr GetProcAddressCall(string functionName) => GLFW.GetProcAddress(functionName);
 
-        private void DisposeImpl()
+        private void Dispose(bool disposing)
         {
             if (_disposedValue)
                 return;
+
+            if (disposing)
+                _contextDestroy?.Invoke();
 
             if (_windowHandle.IsNotNull())
             {

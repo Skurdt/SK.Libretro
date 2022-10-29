@@ -136,9 +136,9 @@ namespace SK.Libretro
 
         private retro_keyboard_event_t _keyboardEvent;
 
-        public InputHandler(IInputProcessor inputProcessor)
+        public InputHandler(IInputProcessor processor)
         {
-            _processor      = inputProcessor ?? new NullInputProcessor();
+            _processor      = processor ?? new NullInputProcessor();
             _pollCallback   = PollCallback;
             _stateCallback  = StateCallback;
             _setRumbleState = SetRumbleState;

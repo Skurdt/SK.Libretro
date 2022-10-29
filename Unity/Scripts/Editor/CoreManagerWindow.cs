@@ -1,4 +1,4 @@
-/* MIT License
+﻿/* MIT License
 
  * Copyright (c) 2021-2022 Skurdt
  *
@@ -20,6 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using Cysharp.Threading.Tasks;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using System;
@@ -29,149 +30,51 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Threading;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
 namespace SK.Libretro.Unity.Editor
 {
-    internal sealed class CoreManagerWindow : EditorWindow
+    internal abstract class CoreManagerWindow : EditorWindow
     {
         [Serializable]
-        private sealed class Core
+        protected sealed class Core
         {
             public string FullName    = "";
             public string DisplayName = "";
             public DateTime CurrentDate;
             public DateTime LatestDate;
 
-            [JsonIgnore] public bool Available = false;
+            [JsonIgnore] public bool Processing = false;
+            [JsonIgnore] public bool Available  = false;
             [JsonIgnore] public bool Latest => CurrentDate == LatestDate;
-            [JsonIgnore] public bool Processing { get; set; } = false;
-            [JsonIgnore] public bool TaskRunning { get; set; } = false;
-            [JsonIgnore] public CancellationTokenSource CancellationTokenSource { get; set; } = null;
         }
 
         [Serializable]
-        private sealed class CoreList
+        protected sealed class CoreList
         {
             public List<Core> Cores = new();
         }
 
-        private static readonly string _buildbotUrl       = $"https://buildbot.libretro.com/nightly/{CurrentPlatform}/x86_64/latest/";
-        private static readonly string _libretroDirectory = $"{Application.streamingAssetsPath}/libretro~";
-        private static readonly string _coresDirectory    = $"{_libretroDirectory}/cores";
-        private static readonly string _coresStatusFile   = $"{_libretroDirectory}/cores.json";
-        private static readonly Color _greenColor         = Color.green;
-        private static readonly Color _orangeColor        = new(1.0f, 0.5f, 0f, 1f);
-        private static readonly Color _redColor           = Color.red;
-        private static readonly Color _grayColor          = Color.gray;
+        protected static readonly string _buildbotUrl       = $"https://buildbot.libretro.com/nightly/{CurrentPlatform}/x86_64/latest/";
+        protected static readonly string _libretroDirectory = $"{Application.streamingAssetsPath}/libretro~";
+        protected static readonly string _coresDirectory    = $"{_libretroDirectory}/cores";
+        protected static readonly string _coresStatusFile   = $"{_libretroDirectory}/cores.json";
 
-        private static string CurrentPlatform => Application.platform switch
+        protected static string CurrentPlatform => Application.platform switch
         {
             UnityEngine.RuntimePlatform.LinuxEditor   => "linux",
             UnityEngine.RuntimePlatform.OSXEditor     => "apple/osx",
             UnityEngine.RuntimePlatform.WindowsEditor => "windows",
-            _                                         => InvalidPlatformDetected()
+            _ => InvalidPlatformDetected()
         };
 
-        private CoreList _coreList;
+        protected CoreList _coreList;
+        protected List<Core> _coreListDisplay;
 
-        private Vector2 _scrollPos;
-        private string _statusText = "";
-
-        [MenuItem("Libretro/Manage Cores")]
-        public static void ShowWindow()
-        {
-            if (CurrentPlatform is null)
-                return;
-
-            _ = FileSystem.GetOrCreateDirectory(_libretroDirectory);
-            _ = FileSystem.GetOrCreateDirectory(_coresDirectory);
-
-            GetCustomWindow(true).minSize = new Vector2(311f, 200f);
-        }
-
-        private void OnEnable()
+        protected void UpdateCoreListData()
         {
             _coreList = FileSystem.FileExists(_coresStatusFile) ? FileSystem.DeserializeFromJson<CoreList>(_coresStatusFile) : new();
-            UpdateCoreListData();
-        }
-
-        private void OnGUI()
-        {
-            GUILayout.Space(8f);
-            using (new EditorGUILayout.HorizontalScope())
-            {
-                using EditorGUILayout.ScrollViewScope scrollView = new(_scrollPos, EditorStyles.helpBox);
-                _scrollPos = scrollView.scrollPosition;
-
-                foreach (Core core in _coreList.Cores)
-                {
-                    using (new EditorGUILayout.HorizontalScope())
-                    {
-                        GUILayout.Label(core.DisplayName, GUILayout.Width(180f));
-
-                        string buttonText;
-                        if (core.Processing)
-                        {
-                            GUI.backgroundColor = _grayColor;
-                            buttonText          = "Busy...";
-                        }
-                        else if (!core.Available)
-                        {
-                            GUI.backgroundColor = _redColor;
-                            buttonText          = "Download";
-                        }
-                        else if (core.Latest)
-                        {
-                            GUI.backgroundColor = _greenColor;
-                            buttonText          = "Re-Download";
-                        }
-                        else
-                        {
-                            GUI.backgroundColor = _orangeColor;
-                            buttonText          = "Update";
-                        }
-
-                        if (GUILayout.Button(new GUIContent(buttonText, null, core.DisplayName), GUILayout.Width(100f), GUILayout.Height(EditorGUIUtility.singleLineHeight)))
-                        {
-                            core.TaskRunning = true;
-
-                            core.CancellationTokenSource = new CancellationTokenSource();
-                            CancellationToken token = core.CancellationTokenSource.Token;
-                            SynchronizationContext context = SynchronizationContext.Current;
-                            _ = Task.Run(() => DownloadAndExtractTask(core, context, token), token)
-                                    .ContinueWith(t =>
-                                    {
-                                        HandleTaskException(t);
-                                        OnTaskFinishedOrCanceled(core);
-                                    },
-                                    token,
-                                    TaskContinuationOptions.OnlyOnFaulted,
-                                    TaskScheduler.FromCurrentSynchronizationContext());
-                        }
-
-                        GUI.backgroundColor = Color.white;
-                    }
-                }
-            }
-
-            GUILayout.Space(8f);
-            if (string.IsNullOrWhiteSpace(_statusText))
-                EditorGUILayout.HelpBox("Ready", MessageType.None);
-            else
-                EditorGUILayout.HelpBox(_statusText, MessageType.None);
-            GUILayout.Space(8f);
-        }
-
-        private static CoreManagerWindow GetCustomWindow(bool focus) => GetWindow<CoreManagerWindow>("Libretro Core Manager", focus);
-
-        private void UpdateCoreListData()
-        {
-            _coreList ??= new CoreList();
-
-            _statusText = "";
 
             HtmlWeb hw = new();
             HtmlDocument doc = hw.Load(new Uri(_buildbotUrl));
@@ -195,10 +98,10 @@ namespace SK.Libretro.Unity.Editor
                 {
                     _coreList.Cores.Add(new Core
                     {
-                        FullName = fileName,
+                        FullName    = fileName,
                         DisplayName = fileName[..fileName.IndexOf("_libretro")],
-                        LatestDate = lastModifiedDate,
-                        Available = available
+                        LatestDate  = lastModifiedDate,
+                        Available   = available
                     });
                 }
                 else
@@ -210,18 +113,27 @@ namespace SK.Libretro.Unity.Editor
 
             _coreList.Cores = _coreList.Cores.OrderBy(x => x.DisplayName).ToList();
             FileSystem.SerializeToJson(_coreList, _coresStatusFile);
+
+            _coreListDisplay = _coreList.Cores;
         }
 
-        private void DownloadAndExtractTask(Core core, SynchronizationContext context, CancellationToken token)
+        protected async UniTask ListItemButtonClickedCallback(Core core, CancellationToken cancellationToken)
         {
-            token.ThrowIfCancellationRequested();
+            core.Processing = true;
+            await DownloadAndExtractTask(core, cancellationToken);
+            core.Processing = false;
+        }
+
+        protected async UniTask DownloadAndExtractTask(Core core, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                core.Processing = true;
-
-                string zipPath = DownloadFile($"{_buildbotUrl}{core.FullName}");
-                ExtractFile(zipPath);
+                string zipPath = await DownloadFile($"{_buildbotUrl}{core.FullName}", cancellationToken);
+                await ExtractFile(zipPath, cancellationToken);
+                await UniTask.Delay(500, DelayType.Realtime, cancellationToken: cancellationToken);
+                FileSystem.DeleteFile(zipPath);
 
                 core.CurrentDate = core.LatestDate;
                 core.Available   = true;
@@ -229,44 +141,25 @@ namespace SK.Libretro.Unity.Editor
                 _coreList.Cores = _coreList.Cores.OrderBy(x => x.DisplayName).ToList();
                 FileSystem.SerializeToJson(_coreList, _coresStatusFile);
             }
-            catch (Exception e)
+            catch (Exception e) when (e is not OperationCanceledException)
             {
                 Debug.LogException(e);
             }
-
-            context.Post(_ => GetCustomWindow(true).OnTaskFinishedOrCanceled(core), null);
         }
 
-        private static void HandleTaskException(Task task)
+        protected static async UniTask<string> DownloadFile(string url, CancellationToken cancellationToken)
         {
-            if (!task.IsFaulted)
-                return;
-
-            Exception taskException = task.Exception;
-            while (taskException is AggregateException && taskException.InnerException is not null)
-                taskException = taskException.InnerException;
-            _ = EditorUtility.DisplayDialog("Task chain terminated", $"Exception: {taskException.Message}", "Ok");
-        }
-
-        private void OnTaskFinishedOrCanceled(Core core)
-        {
-            core.TaskRunning = false;
-            core.CancellationTokenSource?.Dispose();
-            core.CancellationTokenSource = null;
-            core.Processing = false;
-        }
-
-        private static string DownloadFile(string url)
-        {
-            using WebClient webClient = new();
             string fileName = Path.GetFileName(url);
             string filePath = $"{_coresDirectory}/{fileName}";
             FileSystem.DeleteFile(filePath);
-            webClient.DownloadFile(url, filePath);
+            await UniTask.Delay(200, DelayType.Realtime, cancellationToken: cancellationToken);
+
+            using WebClient webClient = new();
+            await webClient.DownloadFileTaskAsync(url, filePath);
             return filePath;
         }
 
-        private void ExtractFile(string zipPath)
+        protected static async UniTask ExtractFile(string zipPath, CancellationToken cancellationToken)
         {
             if (!FileSystem.FileExists(zipPath))
                 return;
@@ -276,12 +169,9 @@ namespace SK.Libretro.Unity.Editor
             {
                 string destinationPath = $"{_coresDirectory}/{entry.FullName}";
                 FileSystem.DeleteFile(destinationPath);
+                await UniTask.Delay(200, DelayType.Realtime, cancellationToken: cancellationToken);
                 entry.ExtractToFile(destinationPath);
             }
-
-            FileSystem.DeleteFile(zipPath);
-
-            _statusText = $"Processed {Path.GetFileNameWithoutExtension(zipPath)}";
         }
 
         private static string InvalidPlatformDetected()

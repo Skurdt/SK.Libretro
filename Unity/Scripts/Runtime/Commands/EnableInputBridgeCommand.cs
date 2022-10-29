@@ -20,9 +20,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using Cysharp.Threading.Tasks;
-using System.Threading;
-
 namespace SK.Libretro.Unity
 {
     internal readonly struct EnableInputBridgeCommand : IBridgeCommand
@@ -31,10 +28,6 @@ namespace SK.Libretro.Unity
 
         public EnableInputBridgeCommand(bool enable) => _enabled = enable;
 
-        public UniTask Execute(Wrapper wrapper, CancellationToken cancellationToken)
-        {
-            wrapper.InputHandler.Enabled = _enabled;
-            return UniTask.CompletedTask;
-        }
+        public void Execute(Wrapper wrapper) => wrapper.InputHandler.Enabled = _enabled;
     }
 }

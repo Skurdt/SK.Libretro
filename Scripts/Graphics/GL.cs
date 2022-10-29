@@ -21,6 +21,7 @@
  * SOFTWARE. */
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace SK.Libretro
 {
@@ -29,14 +30,7 @@ namespace SK.Libretro
         public const uint BGRA          = 0x80E1;
         public const uint UNSIGNED_BYTE = 0x1401;
 
-        private const string GL_READ_PIXELS_FUNCTION_NAME = "glReadPixels";
-        public unsafe delegate void glReadPixels_f(int x, int y, int width, int height, uint format, uint type, void* data);
-        public static readonly glReadPixels_f ReadPixels;
-
-        static GL()
-        {
-            IntPtr getProcAddressPtr = GLFW.GetProcAddress(GL_READ_PIXELS_FUNCTION_NAME);
-            ReadPixels = getProcAddressPtr.GetDelegate<glReadPixels_f>();
-        }
+        [DllImport("Opengl32", EntryPoint = "glReadPixels")]
+        public static extern void ReadPixels(int x, int y, int width, int height, uint format, uint type, IntPtr data);
     }
 }

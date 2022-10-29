@@ -20,23 +20,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using Cysharp.Threading.Tasks;
-using System.Threading;
+using System;
 
 namespace SK.Libretro.Unity
 {
     internal readonly struct SaveStateWithScreenshotBridgeCommand : IBridgeCommand
     {
-        public delegate UniTask TakeScreenshotDelegate(string path, CancellationToken cancellationToken);
+        private readonly Action<string> _takeScreenshotFunc;
 
-        private readonly TakeScreenshotDelegate _takeScreenshotFunc;
+        public SaveStateWithScreenshotBridgeCommand(Action<string> takeScreenshotFunc) => _takeScreenshotFunc = takeScreenshotFunc;
 
-        public SaveStateWithScreenshotBridgeCommand(TakeScreenshotDelegate takeScreenshotFunc) => _takeScreenshotFunc = takeScreenshotFunc;
-
-        public async UniTask Execute(Wrapper wrapper, CancellationToken cancellationToken)
+        public void Execute(Wrapper wrapper)
         {
             if (wrapper.SerializationHandler.SaveStateToDisk(out string screenshotPath))
-                await _takeScreenshotFunc(screenshotPath, cancellationToken);
+                _takeScreenshotFunc(screenshotPath);
         }
     }
 }

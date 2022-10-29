@@ -23,6 +23,4 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("SK.Libretro.NAudio")]
-#if UNITY_EDITOR || UNITY_STANDALONE
 [assembly: InternalsVisibleTo("SK.Libretro.Unity")]
-#endif

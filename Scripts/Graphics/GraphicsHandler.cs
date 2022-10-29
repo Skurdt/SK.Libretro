@@ -36,7 +36,8 @@ namespace SK.Libretro
 
         private retro_pixel_format _pixelFormat;
         private GraphicsFrameHandlerBase _frameHandler;
-        private retro_hw_render_callback _hwRenderInterface;
+
+        private HardwareRenderHelperWindow _hardwareRenderHelperWindow;
 
         public GraphicsHandler(Wrapper wrapper, IGraphicsProcessor processor)
         {
@@ -50,21 +51,29 @@ namespace SK.Libretro
             Enabled = enabled;
 
             if (_wrapper.Core.HwAccelerated)
-                _hwRenderInterface.context_reset.GetDelegate<retro_hw_context_reset_t>().Invoke();
-            else
+            {
                 _frameHandler = _pixelFormat switch
                 {
-                    retro_pixel_format.RETRO_PIXEL_FORMAT_0RGB1555 => new GraphicsFrameHandlerSoftware0RGB1555(_processor),
-                    retro_pixel_format.RETRO_PIXEL_FORMAT_XRGB8888 => new GraphicsFrameHandlerSoftwareXRGB8888(_processor),
-                    retro_pixel_format.RETRO_PIXEL_FORMAT_RGB565 => new GraphicsFrameHandlerSoftwareRGB565(_processor),
+                    retro_pixel_format.RETRO_PIXEL_FORMAT_0RGB1555 => new NullGraphicsFrameHandler(_processor),
+                    retro_pixel_format.RETRO_PIXEL_FORMAT_XRGB8888 => new GraphicsFrameHandlerOpenGLXRGB8888VFlip(_processor, _hardwareRenderHelperWindow),
+                    retro_pixel_format.RETRO_PIXEL_FORMAT_RGB565   => new NullGraphicsFrameHandler(_processor),
                     retro_pixel_format.RETRO_PIXEL_FORMAT_UNKNOWN
                     or _ => new NullGraphicsFrameHandler(_processor)
                 };
+                return;
+            }
+
+            _frameHandler = _pixelFormat switch
+            {
+                retro_pixel_format.RETRO_PIXEL_FORMAT_0RGB1555 => new GraphicsFrameHandlerSoftware0RGB1555(_processor),
+                retro_pixel_format.RETRO_PIXEL_FORMAT_XRGB8888 => new GraphicsFrameHandlerSoftwareXRGB8888(_processor),
+                retro_pixel_format.RETRO_PIXEL_FORMAT_RGB565   => new GraphicsFrameHandlerSoftwareRGB565(_processor),
+                retro_pixel_format.RETRO_PIXEL_FORMAT_UNKNOWN
+                or _ => new NullGraphicsFrameHandler(_processor)
+            };
         }
 
         public void Dispose() => _processor.Dispose();
-
-        public void FinalizeFrame() => _processor.FinalizeFrame();
 
         public void SetCoreCallback(retro_set_video_refresh_t setVideoRefresh) => setVideoRefresh(_refreshCallback);
 
@@ -113,20 +122,22 @@ namespace SK.Libretro
             if (data.IsNull() || _wrapper.Core.HwAccelerated)
                 return false;
 
-            retro_hw_render_callback callback = data.ToStructure<retro_hw_render_callback>();
-            if (callback.context_type is not retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL and not retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE)
+            retro_hw_render_callback hwRenderCallback = data.ToStructure<retro_hw_render_callback>();
+            _hardwareRenderHelperWindow = hwRenderCallback.context_type switch
+            {
+                retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL
+                or retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE => new OpenGLHelperWindow(hwRenderCallback),
+
+                retro_hw_context_type.RETRO_HW_CONTEXT_NONE
+                or _ => default
+            };
+
+            if (_hardwareRenderHelperWindow is null || !_hardwareRenderHelperWindow.Init())
                 return false;
 
-            GraphicsFrameHandlerOpenGLXRGB8888VFlip frameHandler = new(_processor);
-            if (!frameHandler.Init())
-                return false;
-
-            callback.get_current_framebuffer = frameHandler.GetCurrentFrameBuffer;
-            callback.get_proc_address        = frameHandler.GetProcAddressPtr;
-
-            _hwRenderInterface = callback;
-            Marshal.StructureToPtr(_hwRenderInterface, data, true);
-
+            hwRenderCallback.get_current_framebuffer = _hardwareRenderHelperWindow.GetCurrentFrameBuffer.GetFunctionPointer();
+            hwRenderCallback.get_proc_address        = _hardwareRenderHelperWindow.GetProcAddress.GetFunctionPointer();
+            Marshal.StructureToPtr(hwRenderCallback, data, true);
             _wrapper.Core.HwAccelerated = true;
             return true;
         }

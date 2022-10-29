@@ -180,13 +180,8 @@ namespace SK.Libretro.Unity
         private string _coreName;
         private string _gamesDirectory;
         private string[] _gameNames;
-
-        private Wrapper _wrapper;
-
-        private ILogProcessor _logProcessor;
-        private IGraphicsProcessor _graphicsProcessor;
-        private IAudioProcessor _audioProcessor;
-        private IInputProcessor _inputProcessor;
+        private Action _instanceStartedCallback;
+        private Action _instanceStoppedCallback;
 
         private bool _running;
         private bool _paused;
@@ -195,6 +190,7 @@ namespace SK.Libretro.Unity
         private bool _rewind;
         private bool _inputEnabled;
 
+        private Thread _thread;
         private Texture2D _texture;
 
         public Bridge(LibretroInstance instance)
@@ -206,16 +202,24 @@ namespace SK.Libretro.Unity
             _bridgeCommands    = new();
             _lock              = new();
             _fastForwardFactor = DEFAULT_FASTFORWARD_FACTOR;
+
+            MainThreadDispatcher.Construct();
         }
 
-        public void Dispose() => _manualResetEvent.Dispose();
+        public void Dispose()
+        {
+            Running = false;
+            _ = _thread?.Join(5000);
+            _thread = null;
+            _manualResetEvent.Dispose();
+            RestoreMaterial();
+        }
 
-        public async UniTask StartContent(string coreName,
-                                          string gamesDirectory,
-                                          string[] gameNames,
-                                          Action instanceStartedCallback,
-                                          Action instanceStoppedCallback,
-                                          CancellationToken cancellationToken)
+        public void StartContent(string coreName,
+                                 string gamesDirectory,
+                                 string[] gameNames,
+                                 Action instanceStartedCallback,
+                                 Action instanceStoppedCallback)
         {
             if (Running)
                 return;
@@ -226,111 +230,138 @@ namespace SK.Libretro.Unity
                 return;
             }
 
-            CoreName       = coreName;
-            GamesDirectory = gamesDirectory;
-            GameNames      = gameNames;
+            CoreName                 = coreName;
+            GamesDirectory           = gamesDirectory;
+            GameNames                = gameNames;
+            _instanceStartedCallback = instanceStartedCallback;
+            _instanceStoppedCallback = instanceStoppedCallback;
 
-            _logProcessor      = GetLogProcessor();
-            _graphicsProcessor = GetGraphicsProcessor(cancellationToken);
-
-            await UniTask.SwitchToMainThread(cancellationToken);
-            _inputProcessor = GetInputProcessor(_instanceComponent.Settings.AnalogToDigital);
-            _audioProcessor = GetAudioProcessor(_instanceComponent.transform, cancellationToken);
-            await UniTask.SwitchToThreadPool();
-
-            Platform platform = Application.platform switch
+            _thread = new Thread(LibretroThread)
             {
-                UnityEngine.RuntimePlatform.OSXEditor
-                or UnityEngine.RuntimePlatform.OSXPlayer => Platform.OSX,
-                UnityEngine.RuntimePlatform.WindowsPlayer
-                or UnityEngine.RuntimePlatform.WindowsEditor => Platform.Win,
-                UnityEngine.RuntimePlatform.IPhonePlayer => Platform.IOS,
-                UnityEngine.RuntimePlatform.Android => Platform.Android,
-                UnityEngine.RuntimePlatform.LinuxPlayer
-                or UnityEngine.RuntimePlatform.LinuxEditor => Platform.Linux,
-                _ => Platform.None
+                Name         = $"LibretroThread_{CoreName}_{(GameNames.Length > 0 ? GameNames[0] : "nogame")}",
+                IsBackground = true,
+                Priority     = System.Threading.ThreadPriority.Lowest
             };
+            _thread.SetApartmentState(ApartmentState.STA);
+            _thread.Start();
+        }
 
-            WrapperSettings wrapperSettings = new(platform)
+        private void LibretroThread()
+        {
+            try
             {
-                MainDirectory     = $"{Application.streamingAssetsPath}/libretro~",
-                LogProcessor      = _logProcessor,
-                GraphicsProcessor = _graphicsProcessor,
-                AudioProcessor    = _audioProcessor,
-                InputProcessor    = _inputProcessor
-            };
+                Platform platform = Application.platform switch
+                {
+                    UnityEngine.RuntimePlatform.OSXEditor
+                    or UnityEngine.RuntimePlatform.OSXPlayer => Platform.OSX,
+                    UnityEngine.RuntimePlatform.WindowsPlayer
+                    or UnityEngine.RuntimePlatform.WindowsEditor => Platform.Win,
+                    UnityEngine.RuntimePlatform.IPhonePlayer => Platform.IOS,
+                    UnityEngine.RuntimePlatform.Android => Platform.Android,
+                    UnityEngine.RuntimePlatform.LinuxPlayer
+                    or UnityEngine.RuntimePlatform.LinuxEditor => Platform.Linux,
+                    _ => Platform.None
+                };
 
-            _wrapper = new(wrapperSettings);
-            if (!_wrapper.StartContent(CoreName, GamesDirectory, GameNames))
-            {
-                Debug.LogError("Failed to start core/game combination");
-                return;
-            }
+                ILogProcessor _logProcessor           = GetLogProcessor();
+                IGraphicsProcessor _graphicsProcessor = GetGraphicsProcessor();
 
-            _wrapper.InitGraphics();
-            _wrapper.InitAudio();
-            _wrapper.InputHandler.Enabled = true;
-            ControllersMap = _wrapper.InputHandler.DeviceMap;
+                IAudioProcessor _audioProcessor = default;
+                IInputProcessor _inputProcessor = default;
 
-            //_wrapper.RewindEnabled = _settings.RewindEnabled;
+                _manualResetEvent.Reset();
+                MainThreadDispatcher.Enqueue(() => {
+                    _audioProcessor = GetAudioProcessor(_instanceComponent.transform);
+                    _inputProcessor = GetInputProcessor(_instanceComponent.Settings.AnalogToDigital);
+                    _manualResetEvent.Set();
+                });
+                _manualResetEvent.Wait();
 
-            if (instanceStartedCallback is not null)
-            {
-                await UniTask.SwitchToMainThread(cancellationToken);
-                instanceStartedCallback();
-                await UniTask.SwitchToThreadPool();
-            }
+                WrapperSettings wrapperSettings = new(platform)
+                {
+                    LogLevel          = LogLevel.Info,
+                    MainDirectory     = $"{Application.streamingAssetsPath}/libretro~",
+                    LogProcessor      = _logProcessor,
+                    GraphicsProcessor = _graphicsProcessor,
+                    AudioProcessor    = _audioProcessor,
+                    InputProcessor    = _inputProcessor
+                };
 
-            System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            double gameFrameTime = 1.0 / _wrapper.Game.SystemAVInfo.Fps;
-            double startTime     = 0.0;
-            double accumulator   = 0.0;
+                Wrapper _wrapper = new(wrapperSettings);
+                if (!_wrapper.StartContent(CoreName, GamesDirectory, GameNames))
+                {
+                    Debug.LogError("Failed to start core/game combination");
+                    return;
+                }
 
-            Running = true;
-            while (Running && !cancellationToken.IsCancellationRequested)
-            {
-                while (_bridgeCommands.Count > 0)
-                    if (_bridgeCommands.TryDequeue(out IBridgeCommand command))
-                        await command.Execute(_wrapper, cancellationToken);
-
-                if (Paused)
-                    _manualResetEvent.Wait(cancellationToken);
-
-                if (!Running || cancellationToken.IsCancellationRequested)
-                    break;
+                _wrapper.InitGraphics();
+                _wrapper.InitAudio();
+                _wrapper.InputHandler.Enabled = true;
+                ControllersMap = _wrapper.InputHandler.DeviceMap;
 
                 //_wrapper.RewindEnabled = _settings.RewindEnabled;
 
-                //if (_settings.RewindEnabled)
-                //    _wrapper.PerformRewind = Rewind;
-
-                double currentTime = stopwatch.Elapsed.TotalSeconds;
-                double dt          = currentTime - startTime;
-                startTime          = currentTime;
-
-                double targetFrameTime = /*FastForward && FastForwardFactor > 0 ? gameFrameTime / FastForwardFactor : */gameFrameTime;
-                if ((accumulator += dt) >= targetFrameTime)
+                if (_instanceStartedCallback is not null)
                 {
-                    _wrapper.RunFrame();
-                    accumulator = 0.0;
+                    _manualResetEvent.Reset();
+                    MainThreadDispatcher.Enqueue(() =>
+                    {
+                        _instanceStartedCallback();
+                        _manualResetEvent.Set();
+                    });
+                    _manualResetEvent.Wait();
                 }
-                else
-                    Thread.Sleep(1);
-            }
 
-            if (instanceStoppedCallback is not null)
+                System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                double gameFrameTime = 1.0 / _wrapper.Game.SystemAVInfo.Fps;
+                double startTime     = 0.0;
+                double accumulator   = 0.0;
+
+                Running = true;
+                while (Running)
+                {
+                    lock (_lock)
+                        while (_bridgeCommands.Count > 0)
+                            if (_bridgeCommands.TryDequeue(out IBridgeCommand command))
+                                command.Execute(_wrapper);
+
+                    if (Paused)
+                        _manualResetEvent.Wait();
+
+                    if (!Running)
+                        break;
+
+                    //_wrapper.RewindEnabled = _settings.RewindEnabled;
+
+                    //if (_settings.RewindEnabled)
+                    //    _wrapper.PerformRewind = Rewind;
+
+                    double currentTime = stopwatch.Elapsed.TotalSeconds;
+                    double dt          = currentTime - startTime;
+                    startTime          = currentTime;
+
+                    double targetFrameTime = /*FastForward && FastForwardFactor > 0 ? gameFrameTime / FastForwardFactor : */gameFrameTime;
+                    if ((accumulator += dt) >= targetFrameTime)
+                    {
+                        _wrapper.RunFrame();
+                        accumulator = 0.0;
+                    }
+                    else
+                        Thread.Sleep(1);
+                }
+
+                if (_instanceStoppedCallback is not null)
+                {
+                    MainThreadDispatcher.Enqueue(() => _instanceStoppedCallback());
+                }
+
+                lock (_lock)
+                    _wrapper.StopContent();
+            }
+            catch (Exception e)
             {
-                await UniTask.SwitchToMainThread(cancellationToken);
-                instanceStoppedCallback();
-                await UniTask.SwitchToThreadPool();
+                Debug.LogException(e);
             }
-
-            lock (_lock)
-                _wrapper.StopContent();
-
-            await UniTask.SwitchToMainThread(cancellationToken);
-            RestoreMaterial();
-            await UniTask.SwitchToThreadPool();
         }
 
         public void PauseContent()
@@ -355,16 +386,16 @@ namespace SK.Libretro.Unity
 
         public void ResetContent()
         {
-            if (!Running)
-                return;
+            //if (!Running)
+            //    return;
 
-            if (Paused)
-                ResumeContent();
+            //if (Paused)
+            //    ResumeContent();
 
-            Running = false;
+            //Running = false;
 
-            lock (_lock)
-                _wrapper?.ResetContent();
+            //lock (_lock)
+            //    _wrapper?.ResetContent();
         }
 
         public void StopContent()
@@ -417,16 +448,14 @@ namespace SK.Libretro.Unity
                 _instanceComponent.Renderer.material = _originalMaterial;
         }
 
-        private async UniTask TakeScreenshot(string screenshotPath, CancellationToken cancellationToken)
+        private void TakeScreenshot(string screenshotPath) => MainThreadDispatcher.Enqueue(async () =>
         {
-            await UniTask.SwitchToMainThread(cancellationToken);
-
             if (!_texture || !Running)
                 return;
 
-            await UniTask.WaitForEndOfFrame(_instanceComponent, cancellationToken);
+            await UniTask.WaitForEndOfFrame(_instanceComponent);
 
-            Texture2D tex = new(_texture.width, _texture.height, TextureFormat.RGB24, false);
+            Texture2D tex = new(_texture.width, _texture.height, TextureFormat.RGB24, false, false, true);
             tex.SetPixels32(_texture.GetPixels32());
             tex.Apply();
             byte[] bytes = tex.EncodeToPNG();
@@ -434,36 +463,30 @@ namespace SK.Libretro.Unity
 
             screenshotPath = screenshotPath.Replace(".state", ".png");
             File.WriteAllBytes(screenshotPath, bytes);
-
-            await UniTask.SwitchToThreadPool();
-        }
+        });
 
         private static ILogProcessor GetLogProcessor() => new LogProcessor();
 
-        private IGraphicsProcessor GetGraphicsProcessor(CancellationToken cancellationToken) => new GraphicsProcessor(SetTexture, FilterMode.Point, cancellationToken);
+        private IGraphicsProcessor GetGraphicsProcessor() => new GraphicsProcessor(SetTexture, FilterMode.Point);
 
-        private static IAudioProcessor GetAudioProcessor(Transform instanceTransform, CancellationToken cancellationToken)
+        private static IAudioProcessor GetAudioProcessor(Transform instanceTransform)
         {
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
             AudioProcessor unityAudio = instanceTransform.GetComponentInChildren<AudioProcessor>();
-            if (unityAudio && unityAudio.enabled)
-            {
-                unityAudio.Construct(cancellationToken);
-                return unityAudio;
-            }
-            return new NAudio.AudioProcessor();
+            return unityAudio && unityAudio.enabled ? unityAudio : new NAudio.AudioProcessor();
 #else
             AudioProcessor unityAudio = instanceTransform.GetComponentInChildren<AudioProcessor>(true);
             if (unityAudio)
+            {
                 unityAudio.gameObject.SetActive(true);
+                unityAudio.enabled = true;
+            }
             else
             {
                 GameObject audioProcessorGameObject = new("LibretroAudioProcessor");
                 audioProcessorGameObject.transform.SetParent(instanceTransform);
                 unityAudio = audioProcessorGameObject.AddComponent<AudioProcessor>();
             }
-
-            unityAudio.Construct(cancellationToken);
             return unityAudio;
 #endif
         }

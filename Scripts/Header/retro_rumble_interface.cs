@@ -30,8 +30,7 @@ namespace SK.Libretro.Header
     [return: MarshalAs(UnmanagedType.U1)]
     internal delegate bool retro_set_rumble_state_t(uint port, retro_rumble_effect effect, ushort strength);
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal sealed class retro_rumble_interface
+    internal struct retro_rumble_interface
     {
         public IntPtr set_rumble_state; // retro_set_rumble_state_t
     }

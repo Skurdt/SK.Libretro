@@ -29,8 +29,6 @@ namespace SK.Libretro
 {
     internal sealed class Wrapper
     {
-        public static readonly retro_log_level LogLevel = retro_log_level.RETRO_LOG_WARN;
-
         public static string CoresDirectory      { get; private set; } = null;
         public static string OptionsDirectory    { get; private set; } = null;
         public static string SavesDirectory      { get; private set; } = null;
@@ -98,8 +96,8 @@ namespace SK.Libretro
             InputHandler             = new(settings.InputProcessor);
             LogHandler               = settings.Platform switch
             {
-                Platform.Win => new LogHandlerWin(settings.LogProcessor),
-                _            => new LogHandler(settings.LogProcessor),
+                Platform.Win => new LogHandlerWin(settings.LogProcessor, settings.LogLevel),
+                _            => new LogHandler(settings.LogProcessor, settings.LogLevel),
             };
             OptionsHandler           = new(this);
             VFSHandler               = new();
@@ -188,8 +186,6 @@ namespace SK.Libretro
             //}
 
             Core.Run();
-            GraphicsHandler.FinalizeFrame();
-            AudioHandler.FinalizeFrame();
         }
 
         public void InitGraphics(bool enabled = true) => GraphicsHandler.Init(enabled);
@@ -243,8 +239,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            IntPtr stringPtr = GetUnsafeString(Settings.Language.ToString());
-            Marshal.StructureToPtr(stringPtr, data, true);
+            data.Write((uint)Settings.Language);
             return true;
         }
 

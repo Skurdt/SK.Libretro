@@ -20,9 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using Cysharp.Threading.Tasks;
 using SK.Libretro.Header;
-using System.Threading;
 
 namespace SK.Libretro.Unity
 {
@@ -37,10 +35,6 @@ namespace SK.Libretro.Unity
             _device = device;
         }
 
-        public UniTask Execute(Wrapper wrapper, CancellationToken cancellationToken)
-        {
-            wrapper.Core.SetControllerPortDevice(_port, _device);
-            return UniTask.CompletedTask;
-        }
+        public void Execute(Wrapper wrapper) => wrapper.Core.SetControllerPortDevice(_port, _device);
     }
 }

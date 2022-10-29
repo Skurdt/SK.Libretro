@@ -20,17 +20,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using Cysharp.Threading.Tasks;
-using System.Threading;
-
 namespace SK.Libretro.Unity
 {
     internal readonly struct LoadStateBridgeCommand : IBridgeCommand
     {
-        public UniTask Execute(Wrapper wrapper, CancellationToken cancellationToken)
-        {
-            _ = wrapper.SerializationHandler.LoadStateFromDisk();
-            return UniTask.CompletedTask;
-        }
+        public void Execute(Wrapper wrapper) => wrapper.SerializationHandler.LoadStateFromDisk();
     }
 }

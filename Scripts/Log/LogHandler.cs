@@ -30,13 +30,14 @@ namespace SK.Libretro
     {
         protected LogLevel _level = LogLevel.Warning;
 
-        private readonly ILogProcessor _logProcessor;
+        private readonly ILogProcessor _processor;
         private readonly retro_log_printf_t _logPrintf;
 
-        public LogHandler(ILogProcessor processor)
+        public LogHandler(ILogProcessor processor, LogLevel logLevel)
         {
-            _logProcessor = processor ?? new NullLogProcessor();
-            _logPrintf    = LogPrintf;
+            _processor = processor ?? new NullLogProcessor();
+            _level     = logLevel;
+            _logPrintf = LogPrintf;
         }
 
         public void SetLogLevel(LogLevel level) => _level = level;
@@ -44,28 +45,28 @@ namespace SK.Libretro
         public void LogDebug(string message, string caller = null)
         {
             (string prefix, string callerFormatted) = GetFormattedPrefixAndCaller(LogLevel.Debug, caller);
-            _logProcessor.LogDebug($"{prefix} {callerFormatted}{message}");
+            _processor.LogDebug($"{prefix} {callerFormatted}{message}");
         }
 
         public void LogInfo(string message, string caller = null)
         {
             (string prefix, string callerFormatted) = GetFormattedPrefixAndCaller(LogLevel.Info, caller);
-            _logProcessor.LogInfo($"{prefix} {callerFormatted}{message}");
+            _processor.LogInfo($"{prefix} {callerFormatted}{message}");
         }
 
         public void LogWarning(string message, string caller = null)
         {
             (string prefix, string callerFormatted) = GetFormattedPrefixAndCaller(LogLevel.Warning, caller);
-            _logProcessor.LogWarning($"{prefix} {callerFormatted}{message}");
+            _processor.LogWarning($"{prefix} {callerFormatted}{message}");
         }
 
         public void LogError(string message, string caller = null)
         {
             (string prefix, string callerFormatted) = GetFormattedPrefixAndCaller(LogLevel.Error, caller);
-            _logProcessor.LogError($"{prefix} {callerFormatted}{message}");
+            _processor.LogError($"{prefix} {callerFormatted}{message}");
         }
 
-        public void LogException(Exception exception, string caller = null) => _logProcessor.LogException(exception);
+        public void LogException(Exception exception, string caller = null) => _processor.LogException(exception);
 
         public bool GetLogInterface(IntPtr data)
         {
@@ -128,8 +129,8 @@ namespace SK.Libretro
                 LogLevel.Debug
                 or _                  => "white"
             };
-            string prefix = _logProcessor.SupportsColorTags ? $"[<color={color}>{LogLevel.Debug.ToStringUpperFast()}</color>]" : $"[{LogLevel.Debug.ToStringUpperFast()}]";
-            caller = !string.IsNullOrWhiteSpace(caller) ? (_logProcessor.SupportsColorTags ? $"<color=lightblue>[{caller}]</color> " : $"[{caller}] ") : "";
+            string prefix = _processor.SupportsColorTags ? $"[<color={color}>{LogLevel.Debug.ToStringUpperFast()}</color>]" : $"[{LogLevel.Debug.ToStringUpperFast()}]";
+            caller = !string.IsNullOrWhiteSpace(caller) ? (_processor.SupportsColorTags ? $"<color=lightblue>[{caller}]</color> " : $"[{caller}] ") : "";
             return (prefix, caller);
         }
     }

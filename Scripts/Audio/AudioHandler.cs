@@ -57,8 +57,6 @@ namespace SK.Libretro
 
         public void Dispose() => _processor.Dispose();
 
-        public void FinalizeFrame() => _processor.FinalizeFrame();
-
         public void SetCoreCallbacks(retro_set_audio_sample_t setAudioSample, retro_set_audio_sample_batch_t setAudioSampleBatch)
         {
             setAudioSample(_sampleCallback);

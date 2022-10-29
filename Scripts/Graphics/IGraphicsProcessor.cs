@@ -30,6 +30,5 @@ namespace SK.Libretro
         void ProcessFrameXRGB8888(IntPtr data, int width, int height, int pitch);
         void ProcessFrameXRGB8888VFlip(IntPtr data, int width, int height, int pitch);
         void ProcessFrameRGB565(IntPtr data, int width, int height, int pitch);
-        void FinalizeFrame();
     }
 }
