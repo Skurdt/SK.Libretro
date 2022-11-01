@@ -27,7 +27,18 @@ namespace SK.Libretro
 {
     internal sealed class MemoryHandler
     {
+        private readonly Wrapper _wrapper;
         private retro_memory_map _memoryMap;
+
+        public MemoryHandler(Wrapper wrapper) => _wrapper = wrapper;
+
+        public ReadOnlySpan<byte> GetSaveMemory() => GetRam(RETRO_MEMORY.SAVE_RAM);
+
+        public ReadOnlySpan<byte> GetRtcMemory() => GetRam(RETRO_MEMORY.RTC);
+
+        public ReadOnlySpan<byte> GetSystemMemory() => GetRam(RETRO_MEMORY.SYSTEM_RAM);
+
+        public ReadOnlySpan<byte> GetVideoMemory() => GetRam(RETRO_MEMORY.VIDEO_RAM);
 
         public bool SetMemoryMaps(IntPtr data)
         {
@@ -36,6 +47,14 @@ namespace SK.Libretro
 
             _memoryMap = data.ToStructure<retro_memory_map>();
             return true;
+        }
+
+        private unsafe ReadOnlySpan<byte> GetRam(RETRO_MEMORY type)
+        {
+            int len = (int)_wrapper.Core.GetMemorySize(type);
+            return len > 0
+                 ? new(_wrapper.Core.GetMemoryData(type).ToPointer(), len)
+                 : ReadOnlySpan<byte>.Empty;
         }
     }
 }

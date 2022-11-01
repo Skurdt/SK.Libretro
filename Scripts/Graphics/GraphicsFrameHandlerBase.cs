@@ -24,14 +24,12 @@ using System;
 
 namespace SK.Libretro
 {
-    internal abstract class GraphicsFrameHandlerBase : IDisposable
+    internal abstract class GraphicsFrameHandlerBase
     {
         protected readonly IGraphicsProcessor _processor;
 
         public GraphicsFrameHandlerBase(IGraphicsProcessor processor) => _processor = processor ?? new NullGraphicsProcessor();
 
         public abstract void ProcessFrame(IntPtr data, uint width, uint height, nuint pitch);
-
-        public virtual void Dispose() { }
     }
 }

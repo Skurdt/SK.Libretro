@@ -106,7 +106,7 @@ namespace SK.Libretro
             PerfHandler              = new();
             LedHandler               = new(settings.LedProcessor);
             MessageHandler           = new(this, settings.MessageProcessor);
-            MemoryHandler            = new();
+            MemoryHandler            = new(this);
 
             CoreInstances.Instance.Add(this);
         }

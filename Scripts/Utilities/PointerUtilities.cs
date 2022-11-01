@@ -36,7 +36,7 @@ namespace SK.Libretro
 
         public static bool IsFalse(this IntPtr ptr) => !ptr.IsTrue();
 
-        public static int ReadByte(this IntPtr ptr) => ptr.IsNotNull() ? Marshal.ReadByte(ptr) : 0;
+        public static byte ReadByte(this IntPtr ptr) => ptr.IsNotNull() ? Marshal.ReadByte(ptr) : (byte)0;
 
         public static ushort ReadUInt16(this IntPtr ptr) => Convert.ToUInt16(ptr.IsNotNull() ? Marshal.ReadInt16(ptr) : 0);
 

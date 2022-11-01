@@ -166,6 +166,126 @@ namespace SK.Libretro.Unity
             }
         }
 
+        public bool ReadSaveMemory
+        {
+            get
+            {
+                lock (_lock)
+                    return _readSaveMemory;
+            }
+
+            set
+            {
+                lock (_lock)
+                    _readSaveMemory = value;
+            }
+        }
+
+        public bool ReadRtcMemory
+        {
+            get
+            {
+                lock (_lock)
+                    return _readRtcMemory;
+            }
+
+            set
+            {
+                lock (_lock)
+                    _readRtcMemory = value;
+            }
+        }
+
+        public bool ReadSystemMemory
+        {
+            get
+            {
+                lock (_lock)
+                    return _readSystemMemory;
+            }
+
+            set
+            {
+                lock (_lock)
+                    _readSystemMemory = value;
+            }
+        }
+
+        public bool ReadVideoMemory
+        {
+            get
+            {
+                lock (_lock)
+                    return _readVideoMemory;
+            }
+
+            set
+            {
+                lock (_lock)
+                    _readVideoMemory = value;
+            }
+        }
+
+        public byte[] SaveMemory
+        {
+            get
+            {
+                lock (_lock)
+                    return _saveMemory;
+            }
+
+            private set
+            {
+                lock (_lock)
+                    _saveMemory = value;
+            }
+        }
+
+        public byte[] RtcMemory
+        {
+            get
+            {
+                lock (_lock)
+                    return _rtcMemory;
+            }
+
+            private set
+            {
+                lock (_lock)
+                    _rtcMemory = value;
+            }
+        }
+
+        public byte[] SystemMemory
+        {
+            get
+            {
+                lock (_lock)
+                    return _systemMemory;
+            }
+
+            private set
+            {
+                lock (_lock)
+                    _systemMemory = value;
+            }
+        }
+
+        public byte[] VideoMemory
+        {
+            get
+            {
+                lock (_lock)
+                    return _videoMemory;
+            }
+
+            private set
+            {
+                lock (_lock)
+                    _videoMemory = value;
+            }
+        }
+
         public ControllersMap ControllersMap { get; private set; }
 
         private const int DEFAULT_FASTFORWARD_FACTOR = 8;
@@ -189,6 +309,14 @@ namespace SK.Libretro.Unity
         private bool _fastForward;
         private bool _rewind;
         private bool _inputEnabled;
+        private bool _readSaveMemory;
+        private bool _readRtcMemory;
+        private bool _readSystemMemory;
+        private bool _readVideoMemory;
+        private byte[] _saveMemory;
+        private byte[] _rtcMemory;
+        private byte[] _systemMemory;
+        private byte[] _videoMemory;
 
         private Thread _thread;
         private Texture2D _texture;
@@ -203,16 +331,12 @@ namespace SK.Libretro.Unity
             _lock              = new();
             _fastForwardFactor = DEFAULT_FASTFORWARD_FACTOR;
 
-            MainThreadDispatcher.Construct();
-        }
+            ReadSaveMemory   = instance.Settings.ReadSaveMemory;
+            ReadRtcMemory    = instance.Settings.ReadRtcMemory;
+            ReadSystemMemory = instance.Settings.ReadSystemMemory;
+            ReadVideoMemory  = instance.Settings.ReadVideoMemory;
 
-        public void Dispose()
-        {
-            Running = false;
-            _ = _thread?.Join(5000);
-            _thread = null;
-            _manualResetEvent.Dispose();
-            RestoreMaterial();
+            MainThreadDispatcher.Construct();
         }
 
         public void StartContent(string coreName,
@@ -238,9 +362,9 @@ namespace SK.Libretro.Unity
 
             _thread = new Thread(LibretroThread)
             {
-                Name         = $"LibretroThread_{CoreName}_{(GameNames.Length > 0 ? GameNames[0] : "nogame")}",
+                Name = $"LibretroThread_{CoreName}_{(GameNames.Length > 0 ? GameNames[0] : "nogame")}",
                 IsBackground = true,
-                Priority     = System.Threading.ThreadPriority.Lowest
+                Priority = System.Threading.ThreadPriority.Lowest
             };
             _thread.SetApartmentState(ApartmentState.STA);
             _thread.Start();
@@ -263,59 +387,38 @@ namespace SK.Libretro.Unity
                     _ => Platform.None
                 };
 
-                ILogProcessor _logProcessor           = GetLogProcessor();
-                IGraphicsProcessor _graphicsProcessor = GetGraphicsProcessor();
-
-                IAudioProcessor _audioProcessor = default;
-                IInputProcessor _inputProcessor = default;
-
-                _manualResetEvent.Reset();
-                MainThreadDispatcher.Enqueue(() => {
-                    _audioProcessor = GetAudioProcessor(_instanceComponent.transform);
-                    _inputProcessor = GetInputProcessor(_instanceComponent.Settings.AnalogToDigital);
-                    _manualResetEvent.Set();
-                });
-                _manualResetEvent.Wait();
+                (ILogProcessor logProcessor, IGraphicsProcessor graphicsProcessor, IAudioProcessor audioProcessor, IInputProcessor inputProcessor) = GetProcessors();
 
                 WrapperSettings wrapperSettings = new(platform)
                 {
                     LogLevel          = LogLevel.Info,
                     MainDirectory     = $"{Application.streamingAssetsPath}/libretro~",
-                    LogProcessor      = _logProcessor,
-                    GraphicsProcessor = _graphicsProcessor,
-                    AudioProcessor    = _audioProcessor,
-                    InputProcessor    = _inputProcessor
+                    LogProcessor      = logProcessor,
+                    GraphicsProcessor = graphicsProcessor,
+                    AudioProcessor    = audioProcessor,
+                    InputProcessor    = inputProcessor
                 };
 
-                Wrapper _wrapper = new(wrapperSettings);
-                if (!_wrapper.StartContent(CoreName, GamesDirectory, GameNames))
+                Wrapper wrapper = new(wrapperSettings);
+                if (!wrapper.StartContent(CoreName, GamesDirectory, GameNames))
                 {
                     Debug.LogError("Failed to start core/game combination");
                     return;
                 }
 
-                _wrapper.InitGraphics();
-                _wrapper.InitAudio();
-                _wrapper.InputHandler.Enabled = true;
-                ControllersMap = _wrapper.InputHandler.DeviceMap;
+                wrapper.InitGraphics();
+                wrapper.InitAudio();
+                wrapper.InputHandler.Enabled = true;
+                ControllersMap = wrapper.InputHandler.DeviceMap;
 
                 //_wrapper.RewindEnabled = _settings.RewindEnabled;
 
-                if (_instanceStartedCallback is not null)
-                {
-                    _manualResetEvent.Reset();
-                    MainThreadDispatcher.Enqueue(() =>
-                    {
-                        _instanceStartedCallback();
-                        _manualResetEvent.Set();
-                    });
-                    _manualResetEvent.Wait();
-                }
+                InvokeOnInstanceStartedEvent();
 
                 System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                double gameFrameTime = 1.0 / _wrapper.Game.SystemAVInfo.Fps;
-                double startTime     = 0.0;
-                double accumulator   = 0.0;
+                double gameFrameTime = 1.0 / wrapper.Game.SystemAVInfo.Fps;
+                double startTime = 0.0;
+                double accumulator = 0.0;
 
                 Running = true;
                 while (Running)
@@ -323,7 +426,7 @@ namespace SK.Libretro.Unity
                     lock (_lock)
                         while (_bridgeCommands.Count > 0)
                             if (_bridgeCommands.TryDequeue(out IBridgeCommand command))
-                                command.Execute(_wrapper);
+                                command.Execute(wrapper);
 
                     if (Paused)
                         _manualResetEvent.Wait();
@@ -337,28 +440,35 @@ namespace SK.Libretro.Unity
                     //    _wrapper.PerformRewind = Rewind;
 
                     double currentTime = stopwatch.Elapsed.TotalSeconds;
-                    double dt          = currentTime - startTime;
-                    startTime          = currentTime;
+                    double dt = currentTime - startTime;
+                    startTime = currentTime;
 
                     double targetFrameTime = /*FastForward && FastForwardFactor > 0 ? gameFrameTime / FastForwardFactor : */gameFrameTime;
                     if ((accumulator += dt) >= targetFrameTime)
                     {
-                        _wrapper.RunFrame();
+                        wrapper.RunFrame();
+                        if (ReadSaveMemory)
+                            SaveMemory = wrapper.MemoryHandler.GetSaveMemory().ToArray();
+                        if (ReadRtcMemory)
+                            RtcMemory = wrapper.MemoryHandler.GetRtcMemory().ToArray();
+                        if (ReadSystemMemory)
+                            SystemMemory = wrapper.MemoryHandler.GetSystemMemory().ToArray();
+                        if (ReadVideoMemory)
+                            VideoMemory = wrapper.MemoryHandler.GetVideoMemory().ToArray();
                         accumulator = 0.0;
                     }
                     else
                         Thread.Sleep(1);
                 }
 
-                if (_instanceStoppedCallback is not null)
-                {
-                    MainThreadDispatcher.Enqueue(() => _instanceStoppedCallback());
-                }
+                InvokeOnInstanceStoppedEvent();
 
                 lock (_lock)
-                    _wrapper.StopContent();
+                    wrapper.StopContent();
+
+                StopThread();
             }
-            catch (Exception e)
+            catch (Exception e) when (e is not ThreadAbortException)
             {
                 Debug.LogException(e);
             }
@@ -409,12 +519,6 @@ namespace SK.Libretro.Unity
             Running = false;
         }
 
-        public void SetControllerPortDevice(uint port, RETRO_DEVICE device) =>
-            _bridgeCommands.Enqueue(new SetControllerPortDeviceBridgeCommand(port, device));
-
-        public void SetDiskIndex(int index) =>
-            _bridgeCommands.Enqueue(new SetDiskIndexBridgeCommand(GamesDirectory, GameNames, index));
-
         public void SetStateSlot(int slot) =>
             _bridgeCommands.Enqueue(new SetStateSlotBridgeCommand(slot));
 
@@ -427,11 +531,17 @@ namespace SK.Libretro.Unity
         public void LoadState() =>
             _bridgeCommands.Enqueue(new LoadStateBridgeCommand());
 
+        public void SetDiskIndex(int index) =>
+            _bridgeCommands.Enqueue(new SetDiskIndexBridgeCommand(GamesDirectory, GameNames, index));
+
         public void SaveSRAM() =>
             _bridgeCommands.Enqueue(new SaveSRAMBridgeCommand());
 
         public void LoadSRAM() =>
             _bridgeCommands.Enqueue(new LoadSRAMBridgeCommand());
+
+        public void SetControllerPortDevice(uint port, RETRO_DEVICE device) =>
+            _bridgeCommands.Enqueue(new SetControllerPortDeviceBridgeCommand(port, device));
 
         private void SetTexture(Texture texture)
         {
@@ -448,22 +558,57 @@ namespace SK.Libretro.Unity
                 _instanceComponent.Renderer.material = _originalMaterial;
         }
 
-        private void TakeScreenshot(string screenshotPath) => MainThreadDispatcher.Enqueue(async () =>
+        private void InvokeOnInstanceStartedEvent()
         {
-            if (!_texture || !Running)
+            if (_instanceStartedCallback is null)
                 return;
 
-            await UniTask.WaitForEndOfFrame(_instanceComponent);
+            _manualResetEvent.Reset();
+            using CancellationTokenSource instanceStartedTokenSource = new();
+            MainThreadDispatcher.Enqueue(() =>
+            {
+                _instanceStartedCallback();
+                _manualResetEvent.Set();
+                instanceStartedTokenSource.Cancel();
+            });
+            _manualResetEvent.Wait(instanceStartedTokenSource.Token);
+        }
 
-            Texture2D tex = new(_texture.width, _texture.height, TextureFormat.RGB24, false, false, true);
-            tex.SetPixels32(_texture.GetPixels32());
-            tex.Apply();
-            byte[] bytes = tex.EncodeToPNG();
-            UnityEngine.Object.Destroy(tex);
+        private void InvokeOnInstanceStoppedEvent()
+        {
+            if (_instanceStoppedCallback is null)
+                return;
 
-            screenshotPath = screenshotPath.Replace(".state", ".png");
-            File.WriteAllBytes(screenshotPath, bytes);
-        });
+            _manualResetEvent.Reset();
+            using CancellationTokenSource instanceStoppedTokenSource = new();
+            MainThreadDispatcher.Enqueue(() =>
+            {
+                _instanceStoppedCallback();
+                _manualResetEvent.Set();
+                instanceStoppedTokenSource.Cancel();
+            });
+            _manualResetEvent.Wait(instanceStoppedTokenSource.Token);
+        }
+
+        private (ILogProcessor, IGraphicsProcessor, IAudioProcessor, IInputProcessor) GetProcessors()
+        {
+            ILogProcessor log = GetLogProcessor();
+            IGraphicsProcessor graphics = GetGraphicsProcessor();
+            IAudioProcessor audio = default;
+            IInputProcessor input = default;
+
+            using CancellationTokenSource getComponentsTokenSource = new();
+            _manualResetEvent.Reset();
+            MainThreadDispatcher.Enqueue(() =>
+            {
+                audio = GetAudioProcessor(_instanceComponent.transform);
+                input = GetInputProcessor(_instanceComponent.Settings.AnalogToDigital);
+                _manualResetEvent.Set();
+                getComponentsTokenSource.Cancel();
+            });
+            _manualResetEvent.Wait(getComponentsTokenSource.Token);
+            return (log, graphics, audio, input);
+        }
 
         private static ILogProcessor GetLogProcessor() => new LogProcessor();
 
@@ -509,5 +654,34 @@ namespace SK.Libretro.Unity
             inputProcessor.AnalogToDigital = analogToDigital;
             return inputProcessor;
         }
+
+        private void TakeScreenshot(string screenshotPath) => MainThreadDispatcher.Enqueue(async () =>
+        {
+            if (!_texture || !Running)
+                return;
+
+            await UniTask.WaitForEndOfFrame(_instanceComponent);
+
+            Texture2D tex = new(_texture.width, _texture.height, TextureFormat.RGB24, false, false, true);
+            tex.SetPixels32(_texture.GetPixels32());
+            tex.Apply();
+            byte[] bytes = tex.EncodeToPNG();
+            UnityEngine.Object.Destroy(tex);
+
+            screenshotPath = screenshotPath.Replace(".state", ".png");
+            File.WriteAllBytes(screenshotPath, bytes);
+        });
+
+        private void StopThread() => MainThreadDispatcher.Enqueue(() =>
+        {
+            if (_thread is not null)
+                if (!_thread.Join(2000))
+                {
+                    //System.Diagnostics.Process.GetCurrentProcess().Kill();
+                }
+            _thread = null;
+            _manualResetEvent.Dispose();
+            RestoreMaterial();
+        });
     }
 }

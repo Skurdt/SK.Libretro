@@ -33,5 +33,9 @@ namespace SK.Libretro.Unity
         public float AudioMaxDistance    = 10f;
         public bool AnalogToDigital      = false;
         public bool RewindEnabled        = false;
+        public bool ReadSaveMemory       = false;
+        public bool ReadRtcMemory        = false;
+        public bool ReadSystemMemory     = false;
+        public bool ReadVideoMemory      = false;
     }
 }

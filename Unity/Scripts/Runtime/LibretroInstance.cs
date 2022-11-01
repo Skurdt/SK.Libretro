@@ -47,6 +47,10 @@ namespace SK.Libretro.Unity
         public bool InputEnabled { get => _bridge.InputEnabled; set => _bridge.InputEnabled = value; }
         public bool FastForward { get => _bridge.FastForward; set => _bridge.FastForward = value; }
         public bool Rewind { get => _bridge.Rewind; set => _bridge.Rewind = value; }
+        public byte[] SaveMemory => _bridge is not null ? _bridge.SaveMemory : Array.Empty<byte>();
+        public byte[] RtcMemory => _bridge is not null ? _bridge.RtcMemory : Array.Empty<byte>();
+        public byte[] SystemMemory => _bridge is not null ? _bridge.SystemMemory : Array.Empty<byte>();
+        public byte[] VideoMemory => _bridge is not null ? _bridge.VideoMemory : Array.Empty<byte>();
 
         private Bridge _bridge;
 
@@ -84,7 +88,6 @@ namespace SK.Libretro.Unity
         public void StopContent()
         {
             _bridge?.StopContent();
-            _bridge?.Dispose();
             _bridge = null;
         }
 
@@ -96,10 +99,10 @@ namespace SK.Libretro.Unity
 
         public void LoadState() => _bridge?.LoadState();
 
+        public void SetDiskIndex(int index) => _bridge?.SetDiskIndex(index);
+
         public void SaveSRAM() => _bridge?.SaveSRAM();
 
         public void LoadSRAM() => _bridge?.LoadSRAM();
-
-        public void SetDiskIndex(int index) => _bridge?.SetDiskIndex(index);
     }
 }

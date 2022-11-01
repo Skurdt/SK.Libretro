@@ -108,12 +108,11 @@ namespace SK.Libretro.NAudio
             if (_bufferedWaveProvider is null)
                 return;
 
-            short* dataPtr = (short*)data;
             int numSamples = (int)frames * 2;
-
             if (_floatBuffer.Length != numSamples)
                 _floatBuffer = new float[numSamples];
 
+            short* dataPtr = (short*)data;
             for (int i = 0; i < numSamples; ++i)
                 _floatBuffer[i] = dataPtr[i] * AudioHandler.NORMALIZED_GAIN;
 

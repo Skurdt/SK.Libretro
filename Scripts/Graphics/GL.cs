@@ -20,7 +20,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using System;
 using System.Runtime.InteropServices;
 
 namespace SK.Libretro
@@ -31,6 +30,6 @@ namespace SK.Libretro
         public const uint UNSIGNED_BYTE = 0x1401;
 
         [DllImport("Opengl32", EntryPoint = "glReadPixels")]
-        public static extern void ReadPixels(int x, int y, int width, int height, uint format, uint type, IntPtr data);
+        public static extern unsafe void ReadPixels(int x, int y, int width, int height, uint format, uint type, void* data);
     }
 }

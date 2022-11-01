@@ -55,7 +55,7 @@ namespace SK.Libretro
                 _frameHandler = _pixelFormat switch
                 {
                     retro_pixel_format.RETRO_PIXEL_FORMAT_0RGB1555 => new NullGraphicsFrameHandler(_processor),
-                    retro_pixel_format.RETRO_PIXEL_FORMAT_XRGB8888 => new GraphicsFrameHandlerOpenGLXRGB8888VFlip(_processor, _hardwareRenderHelperWindow),
+                    retro_pixel_format.RETRO_PIXEL_FORMAT_XRGB8888 => new GraphicsFrameHandlerOpenGLXRGB8888VFlip(_wrapper, _processor, _hardwareRenderHelperWindow),
                     retro_pixel_format.RETRO_PIXEL_FORMAT_RGB565   => new NullGraphicsFrameHandler(_processor),
                     retro_pixel_format.RETRO_PIXEL_FORMAT_UNKNOWN
                     or _ => new NullGraphicsFrameHandler(_processor)
@@ -73,7 +73,11 @@ namespace SK.Libretro
             };
         }
 
-        public void Dispose() => _processor.Dispose();
+        public void Dispose()
+        {
+            _processor.Dispose();
+            _hardwareRenderHelperWindow?.Dispose();
+        }
 
         public void SetCoreCallback(retro_set_video_refresh_t setVideoRefresh) => setVideoRefresh(_refreshCallback);
 

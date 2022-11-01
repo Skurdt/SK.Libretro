@@ -38,7 +38,9 @@ namespace SK.Libretro
 
         private retro_audio_callback_t _audioCallback;
         private retro_audio_set_state_callback_t _audioCallbackSetState;
+
         private retro_audio_buffer_status_callback_t _audioBufferStatusCallback;
+
         private uint _minimumLatency;
 
         public AudioHandler(Wrapper wrapper, IAudioProcessor audioProcessor)
@@ -69,8 +71,8 @@ namespace SK.Libretro
                 return false;
 
             retro_audio_callback callback = data.ToStructure<retro_audio_callback>();
-            _audioCallback         = callback.callback.GetDelegate<retro_audio_callback_t>();
-            _audioCallbackSetState = callback.set_state.GetDelegate<retro_audio_set_state_callback_t>();
+            _audioCallback                = callback.callback.GetDelegate<retro_audio_callback_t>();
+            _audioCallbackSetState        = callback.set_state.GetDelegate<retro_audio_set_state_callback_t>();
             return true;
         }
 
