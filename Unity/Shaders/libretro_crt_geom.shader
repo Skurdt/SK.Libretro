@@ -4,12 +4,10 @@ Shader "Unlit/libretro_crt_geom"
     {
         [MainTexture] _MainTex ("MainTex", 2D) = "black" {}
 
-        Width("Width", Float) = 384.0
-        Height("Height", Float) = 384.0
         CRTgamma ("Target Gamma", Float) = 2.4
         monitorgamma ("Monitor Gamma", Float) = 2.2
         d ("Distance", Float) = 1.5
-        CURVATURE ("Curvature Toggle", Float) = 1.0
+        [Toggle(ENABLE_CURVATURE)] _Curvature("Curvature", Float) = 1.0
         R ("Curvature Radius", Float) = 2.0
         cornersize ("Corner Size", Float) = 0.03
         cornersmooth ("Corner Smoothness", Float) = 1000.0
@@ -21,7 +19,7 @@ Shader "Unlit/libretro_crt_geom"
         SHARPER ("Sharpness", Float) = 1.0
         scanline_weight ("Scanline Weight", Float) = 0.3
         lum ("Luminance Boost", Float) = 0.0
-        interlace_toggle ("Interlacing", Float) = 1.0
+        [Toggle(ENABLE_INTERLACING)] _Interlacing ("Interlacing", Float) = 1.0
     }
     SubShader
     {
@@ -34,10 +32,12 @@ Shader "Unlit/libretro_crt_geom"
             #pragma vertex vert
             #pragma fragment frag
 
+            #pragma multi_compile __ ENABLE_CURVATURE
+            #pragma multi_compile __ ENABLE_INTERLACING
+
             #include "UnityCG.cginc"
 
-            // Comment the next line to disable interpolation in linear gamma (and
-            // gain speed).
+            // Comment the next line to disable interpolation in linear gamma (and gain speed).
             #define LINEAR_PROCESSING
 
             // Enable 3x oversampling of the beam profile; improves moire effect caused by scanlines+curvature
@@ -45,9 +45,6 @@ Shader "Unlit/libretro_crt_geom"
 
             // Use the older, purely gaussian beam profile; uncomment for speed
             //#define USEGAUSSIAN
-
-            // Use interlacing detection; may interfere with other shaders if combined
-            #define INTERLACED
 
             #define PI 3.141592653589
             #define FIX(c) max(abs(c), 1e-5);
@@ -86,12 +83,11 @@ Shader "Unlit/libretro_crt_geom"
             sampler2D _MainTex;
             float4 _MainTex_ST;
 
-            float Width;
-            float Height;
+            float4 _MainTex_TexelSize;
             float CRTgamma;
             float monitorgamma;
             float d;
-            float CURVATURE;
+            float _Curvature;
             float R;
             float cornersize;
             float cornersmooth;
@@ -103,7 +99,7 @@ Shader "Unlit/libretro_crt_geom"
             float SHARPER;
             float scanline_weight;
             float lum;
-            float interlace_toggle;
+            float _Interlacing;
 
             static float2 aspect = float2(1.0, 0.75);
 
@@ -212,20 +208,15 @@ Shader "Unlit/libretro_crt_geom"
                 // edges of the texels of the underlying texture.
 
                 // Texture coordinates of the texel containing the active pixel.
-                float2 xy = 0.0;
-
-                if (CURVATURE > 0.5)
-                {
-                    float2 cd = texCoord;
-                    cd *= texture_size / video_size;
-                    cd = (cd-float2(0.5, 0.5))*aspect*stretch.z+stretch.xy;
-                    xy =  (bkwtrans(cd, sin_cos_angle)/float2(overscan_x / 100.0, overscan_y / 100.0)/aspect+float2(0.5, 0.5)) * video_size / texture_size;
-                }
-                else
-                {
-                    xy = texCoord;
-                }
-
+                float2 xy;
+#ifdef ENABLE_CURVATURE
+                float2 cd = texCoord;
+                cd *= texture_size / video_size;
+                cd = (cd-float2(0.5, 0.5))*aspect*stretch.z+stretch.xy;
+                xy =  (bkwtrans(cd, sin_cos_angle)/float2(overscan_x / 100.0, overscan_y / 100.0)/aspect+float2(0.5, 0.5)) * video_size / texture_size;
+#else
+                xy = texCoord;
+#endif
                 float2 cd2 = xy;
                 cd2 *= texture_size / video_size;
                 cd2 = (cd2 - float2(0.5, 0.5)) * float2(overscan_x / 100.0, overscan_y / 100.0) + float2(0.5, 0.5);
@@ -242,9 +233,6 @@ Shader "Unlit/libretro_crt_geom"
 
                 float2 ratio_scale = (xy * TextureSize - float2(0.5, 0.5) + ilfloat) / ilfac;
 
-      #ifdef OVERSAMPLE
-                float filter = video_size.y / output_size.y;
-      #endif
                 float2 uv_ratio = frac(ratio_scale);
 
                 // Snap to the center of the underlying texel.
@@ -280,6 +268,7 @@ Shader "Unlit/libretro_crt_geom"
                 float4 weights  = scanlineWeights(uv_ratio.y, col);
                 float4 weights2 = scanlineWeights(1.0 - uv_ratio.y, col2);
 #ifdef OVERSAMPLE
+                float filter = video_size.y / output_size.y;
                 uv_ratio.y = uv_ratio.y+1.0/3.0*filter;
                 weights    = (weights+scanlineWeights(uv_ratio.y, col))/3.0;
                 weights2   = (weights2+scanlineWeights(abs(1.0-uv_ratio.y), col2))/3.0;
@@ -315,15 +304,17 @@ Shader "Unlit/libretro_crt_geom"
                 float2 cosangle = cos(float2(x_tilt, y_tilt));
                 o.sin_cos_angle = float4(sinangle.x, sinangle.y, cosangle.x, cosangle.y);
                 o.stretch = maxscale(o.sin_cos_angle);
-                o.TextureSize = float2(SHARPER * 384.0, 384.0);
-
-                o.ilfac = float2(1.0,clamp(floor(384.0/(200.0 * interlace_toggle)),1.0,2.0));
-
+                o.TextureSize = float2(SHARPER * _MainTex_TexelSize.z, _MainTex_TexelSize.w);
+#ifdef ENABLE_INTERLACING
+                o.ilfac = float2(1.0, clamp(floor(_MainTex_TexelSize.w / 200.0), 1.0, 2.0));
+#else
+                o.ilfac = float2(1.0, clamp(floor(_MainTex_TexelSize.w), 1.0, 2.0));
+#endif
                 // The size of one texel, in texture-coordinates.
                 o.one = o.ilfac / o.TextureSize;
 
                 // Resulting X pixel-coordinate of the pixel we're drawing.
-                o.mod_factor = o.uv.x * 384.0;
+                o.mod_factor = o.uv.x * _MainTex_TexelSize.z;
 
 
                 return o;
@@ -331,8 +322,8 @@ Shader "Unlit/libretro_crt_geom"
 
             fixed4 frag(v2f i) : SV_Target
             {
-                float2 size = float2(Width, Height);
-                float2 sizeOut = float2(Width * 100, Height * 100);
+                float2 size = float2(_MainTex_TexelSize.z, _MainTex_TexelSize.w);
+                float2 sizeOut = float2(_MainTex_TexelSize.z * 100, _MainTex_TexelSize.w * 100);
                 return crt_geom(size,
                                 size,
                                 sizeOut,

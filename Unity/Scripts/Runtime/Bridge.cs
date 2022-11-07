@@ -29,6 +29,7 @@ using System.Threading;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Object = UnityEngine.Object;
 
 namespace SK.Libretro.Unity
 {
@@ -387,7 +388,7 @@ namespace SK.Libretro.Unity
                     _ => Platform.None
                 };
 
-                (ILogProcessor logProcessor, IGraphicsProcessor graphicsProcessor, IAudioProcessor audioProcessor, IInputProcessor inputProcessor) = GetProcessors();
+                (ILogProcessor logProcessor, IGraphicsProcessor graphicsProcessor, IAudioProcessor audioProcessor, IInputProcessor inputProcessor, ILedProcessor ledProcessor) = GetProcessors();
 
                 WrapperSettings wrapperSettings = new(platform)
                 {
@@ -396,7 +397,8 @@ namespace SK.Libretro.Unity
                     LogProcessor      = logProcessor,
                     GraphicsProcessor = graphicsProcessor,
                     AudioProcessor    = audioProcessor,
-                    InputProcessor    = inputProcessor
+                    InputProcessor    = inputProcessor,
+                    LedProcessor      = ledProcessor
                 };
 
                 Wrapper wrapper = new(wrapperSettings);
@@ -590,12 +592,13 @@ namespace SK.Libretro.Unity
             _manualResetEvent.Wait(instanceStoppedTokenSource.Token);
         }
 
-        private (ILogProcessor, IGraphicsProcessor, IAudioProcessor, IInputProcessor) GetProcessors()
+        private (ILogProcessor, IGraphicsProcessor, IAudioProcessor, IInputProcessor, ILedProcessor) GetProcessors()
         {
-            ILogProcessor log = GetLogProcessor();
+            ILogProcessor log           = GetLogProcessor();
             IGraphicsProcessor graphics = GetGraphicsProcessor();
-            IAudioProcessor audio = default;
-            IInputProcessor input = default;
+            IAudioProcessor audio       = default;
+            IInputProcessor input       = default;
+            ILedProcessor led           = default;
 
             using CancellationTokenSource getComponentsTokenSource = new();
             _manualResetEvent.Reset();
@@ -603,11 +606,12 @@ namespace SK.Libretro.Unity
             {
                 audio = GetAudioProcessor(_instanceComponent.transform);
                 input = GetInputProcessor(_instanceComponent.Settings.AnalogToDigital);
+                led   = GetLedProcessor();
                 _manualResetEvent.Set();
                 getComponentsTokenSource.Cancel();
             });
             _manualResetEvent.Wait(getComponentsTokenSource.Token);
-            return (log, graphics, audio, input);
+            return (log, graphics, audio, input, led);
         }
 
         private static ILogProcessor GetLogProcessor() => new LogProcessor();
@@ -654,6 +658,8 @@ namespace SK.Libretro.Unity
             inputProcessor.AnalogToDigital = analogToDigital;
             return inputProcessor;
         }
+
+        private static ILedProcessor GetLedProcessor() => Object.FindObjectOfType<LedProcessor>(true);
 
         private void TakeScreenshot(string screenshotPath) => MainThreadDispatcher.Enqueue(async () =>
         {

@@ -20,11 +20,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using System;
-
 namespace SK.Libretro
 {
-    public interface ILedProcessor : IDisposable
+    public interface ILedProcessor
     {
         void SetState(int led, int state);
     }

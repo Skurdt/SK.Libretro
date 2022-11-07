@@ -49,7 +49,7 @@ namespace SK.Libretro.Unity
 
         public void SetFilterMode(FilterMode filterMode) => MainThreadDispatcher.Enqueue(() =>
         {
-            _filterMode = filterMode;
+            _filterMode         = filterMode;
             _texture.filterMode = filterMode;
         });
 

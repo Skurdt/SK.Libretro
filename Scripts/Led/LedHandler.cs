@@ -26,7 +26,7 @@ using System.Runtime.InteropServices;
 
 namespace SK.Libretro
 {
-    internal sealed class LedHandler : IDisposable
+    internal sealed class LedHandler
     {
         private readonly ILedProcessor _processor;
 
@@ -37,8 +37,6 @@ namespace SK.Libretro
             _processor   = processor ?? new NullLedProcessor();
             _setLedState = SetState;
         }
-
-        public void Dispose() => _processor.Dispose();
 
         public void SetState(int led, int state) => _processor.SetState(led, state);
 

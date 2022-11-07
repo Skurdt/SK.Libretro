@@ -20,10 +20,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-namespace SK.Libretro
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace SK.Libretro.Unity
 {
-    internal sealed class NullLedProcessor : ILedProcessor
+    [DisallowMultipleComponent]
+    public sealed class LedObject : MonoBehaviour
     {
-        public void SetState(int led, int state) { }
+        [SerializeField] private MaskableGraphic _graphics;
+        [SerializeField] private Color _onColor  = Color.red;
+        [SerializeField] private Color _offColor = Color.black;
+
+        public void SetState(bool on) => _graphics.color = on ? _onColor : _offColor;
     }
 }

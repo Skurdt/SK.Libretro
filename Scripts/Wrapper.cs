@@ -159,7 +159,6 @@ namespace SK.Libretro
 
             GraphicsHandler.Dispose();
             AudioHandler.Dispose();
-            LedHandler.Dispose();
             VFSHandler.Dispose();
 
             PointerUtilities.Free(_unsafeStrings);

@@ -11,7 +11,9 @@ Material:
   m_Shader: {fileID: 4800000, guid: 360de20d11add1e4d802eadf882f2e48, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - ENABLE_CURVATURE
+  - ENABLE_INTERLACING
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -30,10 +32,12 @@ Material:
     m_Ints: []
     m_Floats:
     - CRTgamma: 2.4
-    - CURVATURE: 1
     - DOTMASK: 0.3
     - R: 2
     - SHARPER: 1
+    - _Curvature: 1
+    - _CurvatureEnabled: 1
+    - _Interlacing: 1
     - cornersize: 0.03
     - cornersmooth: 1000
     - d: 1.5

@@ -20,10 +20,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-namespace SK.Libretro
+using UnityEngine;
+
+namespace SK.Libretro.Unity
 {
-    internal sealed class NullLedProcessor : ILedProcessor
+    [DisallowMultipleComponent]
+    public sealed class LedProcessor : MonoBehaviour, ILedProcessor
     {
-        public void SetState(int led, int state) { }
+        [SerializeField] private LedObject[] _leds;
+
+        public void SetState(int led, int state)
+        {
+            if (led >= 0 && led < _leds.Length)
+                MainThreadDispatcher.Enqueue(() => _leds[led].SetState(state != 0));
+        }
     }
 }
