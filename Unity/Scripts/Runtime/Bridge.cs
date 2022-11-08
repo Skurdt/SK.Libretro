@@ -392,7 +392,7 @@ namespace SK.Libretro.Unity
 
                 WrapperSettings wrapperSettings = new(platform)
                 {
-                    LogLevel          = LogLevel.Info,
+                    LogLevel          = LogLevel.Warning,
                     MainDirectory     = $"{Application.streamingAssetsPath}/libretro~",
                     LogProcessor      = logProcessor,
                     GraphicsProcessor = graphicsProcessor,
@@ -459,8 +459,6 @@ namespace SK.Libretro.Unity
                             VideoMemory = wrapper.MemoryHandler.GetVideoMemory().ToArray();
                         accumulator = 0.0;
                     }
-                    else
-                        Thread.Sleep(1);
                 }
 
                 InvokeOnInstanceStoppedEvent();
@@ -547,7 +545,7 @@ namespace SK.Libretro.Unity
 
         private void SetTexture(Texture texture)
         {
-            if (!texture || !_instanceComponent.Renderer)
+            if (!Application.isPlaying || !texture || !_instanceComponent.Renderer)
                 return;
 
             _texture = texture as Texture2D;
@@ -642,7 +640,7 @@ namespace SK.Libretro.Unity
 
         private static IInputProcessor GetInputProcessor(bool analogToDigital)
         {
-            PlayerInputManager playerInputManager = UnityEngine.Object.FindObjectOfType<PlayerInputManager>();
+            PlayerInputManager playerInputManager = Object.FindObjectOfType<PlayerInputManager>();
             if (!playerInputManager)
             {
                 GameObject processorGameObject = new("LibretroInputProcessor");
@@ -672,7 +670,7 @@ namespace SK.Libretro.Unity
             tex.SetPixels32(_texture.GetPixels32());
             tex.Apply();
             byte[] bytes = tex.EncodeToPNG();
-            UnityEngine.Object.Destroy(tex);
+            Object.Destroy(tex);
 
             screenshotPath = screenshotPath.Replace(".state", ".png");
             File.WriteAllBytes(screenshotPath, bytes);

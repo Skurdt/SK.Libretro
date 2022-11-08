@@ -63,6 +63,10 @@ namespace SK.Libretro.Unity
                 _audioBufferList.Dispose();
             _audioBufferList = new(AUDIO_BUFFER_SIZE, Allocator.Persistent);
 
+            AudioConfiguration audioConfig = AudioSettings.GetConfiguration();
+            audioConfig.sampleRate = sampleRate;
+            _ = AudioSettings.Reset(audioConfig);
+
             _audioSource.Play();
         });
 

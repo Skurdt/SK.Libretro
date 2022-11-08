@@ -38,9 +38,7 @@ namespace SK.Libretro.NAudio
         private IWavePlayer _audioDevice;
         private BufferedWaveProvider _bufferedWaveProvider;
         private VolumeSampleProvider _volumeProvider;
-
-        private byte[] _byteBuffer   = Array.Empty<byte>();
-        private float[] _floatBuffer = Array.Empty<float>();
+        private WaveBuffer _waveBuffer;
 
         public void Init(int sampleRate)
         {
@@ -94,13 +92,14 @@ namespace SK.Libretro.NAudio
             if (_bufferedWaveProvider is null)
                 return;
 
-            if (_floatBuffer.Length != 2)
-                _floatBuffer = new float[2];
+            int bufferLength = 2 * sizeof(float);
+            if (_waveBuffer is null || _waveBuffer.FloatBuffer.Length != bufferLength)
+                _waveBuffer = new(bufferLength);
 
-            _floatBuffer[0] = left * AudioHandler.NORMALIZED_GAIN;
-            _floatBuffer[1] = right * AudioHandler.NORMALIZED_GAIN;
+            _waveBuffer.FloatBuffer[0] = left * AudioHandler.NORMALIZED_GAIN;
+            _waveBuffer.FloatBuffer[1] = right * AudioHandler.NORMALIZED_GAIN;
 
-            FinalizeFrame();
+            _bufferedWaveProvider.AddSamples(_waveBuffer.ByteBuffer, 0, _waveBuffer.ByteBuffer.Length);
         }
 
         public unsafe void ProcessSampleBatch(IntPtr data, nuint frames)
@@ -109,30 +108,21 @@ namespace SK.Libretro.NAudio
                 return;
 
             int numSamples = (int)frames * 2;
-            if (_floatBuffer.Length != numSamples)
-                _floatBuffer = new float[numSamples];
+            int bufferLength = numSamples * sizeof(float);
+            if (_waveBuffer is null || _waveBuffer.FloatBuffer.Length != bufferLength)
+                _waveBuffer = new(bufferLength);
 
             short* dataPtr = (short*)data;
             for (int i = 0; i < numSamples; ++i)
-                _floatBuffer[i] = dataPtr[i] * AudioHandler.NORMALIZED_GAIN;
+                _waveBuffer.FloatBuffer[i] = dataPtr[i] * AudioHandler.NORMALIZED_GAIN;
 
-            FinalizeFrame();
+            _bufferedWaveProvider.AddSamples(_waveBuffer.ByteBuffer, 0, _waveBuffer.ByteBuffer.Length);
         }
 
         public void SetVolume(float volume)
         {
             if (_volumeProvider is not null)
                 _volumeProvider.Volume = volume.Clamp(0f, 1f);
-        }
-
-        private void FinalizeFrame()
-        {
-            int bufferLength = _floatBuffer.Length * sizeof(float);
-            if (_byteBuffer.Length != bufferLength)
-                _byteBuffer = new byte[bufferLength];
-
-            Buffer.BlockCopy(_floatBuffer, 0, _byteBuffer, 0, _byteBuffer.Length);
-            _bufferedWaveProvider.AddSamples(_byteBuffer, 0, _byteBuffer.Length);
         }
     }
 }

@@ -44,18 +44,25 @@ namespace SK.Libretro.Unity
         {
             if (!_jobHandle.IsCompleted)
                 _jobHandle.Complete();
-            UnityEngine.Object.Destroy(_texture);
+
+            if (Application.isPlaying && _texture)
+                UnityEngine.Object.Destroy(_texture);
         });
 
         public void SetFilterMode(FilterMode filterMode) => MainThreadDispatcher.Enqueue(() =>
         {
-            _filterMode         = filterMode;
-            _texture.filterMode = filterMode;
+            _filterMode = filterMode;
+
+            if (_texture)
+                _texture.filterMode = filterMode;
         });
 
         public unsafe void ProcessFrame0RGB1555(IntPtr data, int width, int height, int pitch) => MainThreadDispatcher.Enqueue(() =>
         {
             CreateTexture(width, height);
+            if (!_texture)
+                return;
+
             _jobHandle = new Frame0RGB1555Job
             {
                 SourceData  = (ushort*)data,
@@ -71,6 +78,9 @@ namespace SK.Libretro.Unity
         public unsafe void ProcessFrameXRGB8888(IntPtr data, int width, int height, int pitch) => MainThreadDispatcher.Enqueue(() =>
         {
             CreateTexture(width, height);
+            if (!_texture)
+                return;
+
             _jobHandle = new FrameXRGB8888Job
             {
                 SourceData  = (uint*)data,
@@ -86,6 +96,9 @@ namespace SK.Libretro.Unity
         public unsafe void ProcessFrameXRGB8888VFlip(IntPtr data, int width, int height, int pitch) => MainThreadDispatcher.Enqueue(() =>
         {
             CreateTexture(width, height);
+            if (!_texture)
+                return;
+
             _jobHandle = new FrameXRGB8888VFlipJob
             {
                 SourceData  = (uint*)data,
@@ -101,6 +114,9 @@ namespace SK.Libretro.Unity
         public unsafe void ProcessFrameRGB565(IntPtr data, int width, int height, int pitch) => MainThreadDispatcher.Enqueue(() =>
         {
             CreateTexture(width, height);
+            if (!_texture)
+                return;
+
             _jobHandle = new FrameRGB565Job
             {
                 SourceData  = (ushort*)data,
@@ -115,6 +131,9 @@ namespace SK.Libretro.Unity
 
         private void CreateTexture(int width, int height)
         {
+            if (!Application.isPlaying)
+                return;
+
             if (!_texture || _texture.width != width || _texture.height != height)
             {
                 UnityEngine.Object.Destroy(_texture);
