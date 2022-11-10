@@ -43,6 +43,8 @@ namespace SK.Libretro.Unity
             }
         }
 
+        public bool DiskHandlerEnabled => Current && Current.DiskHandlerEnabled;
+
         [NonSerialized] private LibretroInstance _current;
 
         public void SetInputEnabled(bool enabled)

@@ -287,6 +287,21 @@ namespace SK.Libretro.Unity
             }
         }
 
+        public bool DiskHandlerEnabled
+        {
+            get
+            {
+                lock (_lock)
+                    return _diskHandlerEnabled;
+            }
+
+            private set
+            {
+                lock (_lock)
+                    _diskHandlerEnabled = value;
+            }
+        }
+
         public ControllersMap ControllersMap { get; private set; }
 
         private const int DEFAULT_FASTFORWARD_FACTOR = 8;
@@ -318,6 +333,7 @@ namespace SK.Libretro.Unity
         private byte[] _rtcMemory;
         private byte[] _systemMemory;
         private byte[] _videoMemory;
+        private bool _diskHandlerEnabled;
 
         private Thread _thread;
         private Texture2D _texture;
@@ -411,7 +427,8 @@ namespace SK.Libretro.Unity
                 wrapper.InitGraphics();
                 wrapper.InitAudio();
                 wrapper.InputHandler.Enabled = true;
-                ControllersMap = wrapper.InputHandler.DeviceMap;
+                _diskHandlerEnabled = wrapper.DiskHandler.Enabled;
+                ControllersMap      = wrapper.InputHandler.DeviceMap;
 
                 //_wrapper.RewindEnabled = _settings.RewindEnabled;
 
@@ -419,8 +436,8 @@ namespace SK.Libretro.Unity
 
                 System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
                 double gameFrameTime = 1.0 / wrapper.Game.SystemAVInfo.Fps;
-                double startTime = 0.0;
-                double accumulator = 0.0;
+                double startTime     = 0.0;
+                double accumulator   = 0.0;
 
                 Running = true;
                 while (Running)

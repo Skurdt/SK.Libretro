@@ -43,7 +43,9 @@ namespace SK.Libretro.Unity
         public event Action OnInstanceStopped;
 
         public bool Running => _bridge is not null && _bridge.Running;
+
         public ControllersMap ControllersMap => _bridge is not null ? _bridge.ControllersMap : ControllersMap.Empty;
+
         public bool InputEnabled
         {
             get => _bridge is not null && _bridge.InputEnabled;
@@ -53,6 +55,9 @@ namespace SK.Libretro.Unity
                     _bridge.InputEnabled = value;
             }
         }
+
+        public bool DiskHandlerEnabled => _bridge is not null && _bridge.DiskHandlerEnabled;
+
         public bool FastForward
         {
             get => _bridge is not null && _bridge.FastForward;
@@ -62,6 +67,7 @@ namespace SK.Libretro.Unity
                     _bridge.FastForward = value;
             }
         }
+
         public bool Rewind
         {
             get => _bridge is not null && _bridge.Rewind;
@@ -71,9 +77,13 @@ namespace SK.Libretro.Unity
                     _bridge.Rewind = value;
             }
         }
+
         public byte[] SaveMemory => _bridge is not null ? _bridge.SaveMemory : Array.Empty<byte>();
+
         public byte[] RtcMemory => _bridge is not null ? _bridge.RtcMemory : Array.Empty<byte>();
+
         public byte[] SystemMemory => _bridge is not null ? _bridge.SystemMemory : Array.Empty<byte>();
+
         public byte[] VideoMemory => _bridge is not null ? _bridge.VideoMemory : Array.Empty<byte>();
 
         private Bridge _bridge;
