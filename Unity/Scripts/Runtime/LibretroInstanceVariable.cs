@@ -45,39 +45,45 @@ namespace SK.Libretro.Unity
 
         [NonSerialized] private LibretroInstance _current;
 
+        public void SetInputEnabled(bool enabled)
+        {
+            if (Current)
+                Current.InputEnabled = enabled;
+        }
+
         public void StartContent()
         {
-            if (Current != null)
+            if (Current)
                 Current.StartContent();
         }
 
         public void PauseContent()
         {
-            if (Current != null)
+            if (Current)
                 Current.PauseContent();
         }
 
         public void ResumeContent()
         {
-            if (Current != null)
+            if (Current)
                 Current.ResumeContent();
         }
 
         public void ResetContent()
         {
-            if (Current != null)
+            if (Current)
                 Current.ResetContent();
         }
 
         public void StopContent()
         {
-            if (Current != null)
+            if (Current)
                 Current.StopContent();
         }
 
         public void SaveState(int stateSlot)
         {
-            if (Current == null)
+            if (!Current)
                 return;
             
             Current.SetStateSlot(stateSlot);
@@ -86,7 +92,7 @@ namespace SK.Libretro.Unity
 
         public void LoadState(int stateSlot)
         {
-            if (Current == null)
+            if (!Current)
                 return;
 
             Current.SetStateSlot(stateSlot);
@@ -95,19 +101,19 @@ namespace SK.Libretro.Unity
 
         public void SetDiskIndex(int index)
         {
-            if (Current != null)
+            if (Current)
                 Current.SetDiskIndex(index);
         }
 
         public void SaveSRAM()
         {
-            if (Current != null)
+            if (Current)
                 Current.SaveSRAM();
         }
 
         public void LoadSRAM()
         {
-            if (Current != null)
+            if (Current)
                 Current.LoadSRAM();
         }
     }

@@ -43,10 +43,34 @@ namespace SK.Libretro.Unity
         public event Action OnInstanceStopped;
 
         public bool Running => _bridge is not null && _bridge.Running;
-        public ControllersMap ControllersMap => _bridge.ControllersMap;
-        public bool InputEnabled { get => _bridge.InputEnabled; set => _bridge.InputEnabled = value; }
-        public bool FastForward { get => _bridge.FastForward; set => _bridge.FastForward = value; }
-        public bool Rewind { get => _bridge.Rewind; set => _bridge.Rewind = value; }
+        public ControllersMap ControllersMap => _bridge is not null ? _bridge.ControllersMap : ControllersMap.Empty;
+        public bool InputEnabled
+        {
+            get => _bridge is not null && _bridge.InputEnabled;
+            set
+            {
+                if (_bridge is not null)
+                    _bridge.InputEnabled = value;
+            }
+        }
+        public bool FastForward
+        {
+            get => _bridge is not null && _bridge.FastForward;
+            set
+            {
+                if (_bridge is not null)
+                    _bridge.FastForward = value;
+            }
+        }
+        public bool Rewind
+        {
+            get => _bridge is not null && _bridge.Rewind;
+            set
+            {
+                if (_bridge is not null)
+                    _bridge.Rewind = value;
+            }
+        }
         public byte[] SaveMemory => _bridge is not null ? _bridge.SaveMemory : Array.Empty<byte>();
         public byte[] RtcMemory => _bridge is not null ? _bridge.RtcMemory : Array.Empty<byte>();
         public byte[] SystemMemory => _bridge is not null ? _bridge.SystemMemory : Array.Empty<byte>();
@@ -75,7 +99,7 @@ namespace SK.Libretro.Unity
             if (Running)
                 return;
 
-            _bridge = new Bridge(this);
+            _bridge = new(this);
             _bridge.StartContent(CoreName, GamesDirectory, GameNames, OnInstanceStarted, OnInstanceStopped);
         }
 

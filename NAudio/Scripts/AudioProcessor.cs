@@ -92,9 +92,8 @@ namespace SK.Libretro.NAudio
             if (_bufferedWaveProvider is null)
                 return;
 
-            int bufferLength = 2 * sizeof(float);
-            if (_waveBuffer is null || _waveBuffer.FloatBuffer.Length != bufferLength)
-                _waveBuffer = new(bufferLength);
+            if (_waveBuffer is null || _waveBuffer.FloatBuffer.Length != 2)
+                _waveBuffer = new(2 * sizeof(float));
 
             _waveBuffer.FloatBuffer[0] = left * AudioHandler.NORMALIZED_GAIN;
             _waveBuffer.FloatBuffer[1] = right * AudioHandler.NORMALIZED_GAIN;
@@ -108,9 +107,8 @@ namespace SK.Libretro.NAudio
                 return;
 
             int numSamples = (int)frames * 2;
-            int bufferLength = numSamples * sizeof(float);
-            if (_waveBuffer is null || _waveBuffer.FloatBuffer.Length != bufferLength)
-                _waveBuffer = new(bufferLength);
+            if (_waveBuffer is null || _waveBuffer.FloatBuffer.Length != numSamples)
+                _waveBuffer = new(numSamples * sizeof(float));
 
             short* dataPtr = (short*)data;
             for (int i = 0; i < numSamples; ++i)

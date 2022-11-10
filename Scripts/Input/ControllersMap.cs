@@ -28,6 +28,8 @@ namespace SK.Libretro
 {
     public sealed class ControllersMap : IEnumerable<Controllers>
     {
+        public static readonly ControllersMap Empty = new();
+
         private readonly ConcurrentDictionary<int, Controllers> _deviceMap = new();
 
         public Controllers this[int port] => _deviceMap.TryGetValue(port, out Controllers devices) ? devices : null;
