@@ -674,7 +674,7 @@ namespace SK.Libretro.Unity
             return inputProcessor;
         }
 
-        private static ILedProcessor GetLedProcessor() => Object.FindObjectOfType<LedProcessor>(true);
+        private static ILedProcessor GetLedProcessor() => Object.FindObjectOfType<LedProcessorBase>(true);
 
         private void TakeScreenshot(string screenshotPath) => MainThreadDispatcher.Enqueue(async () =>
         {

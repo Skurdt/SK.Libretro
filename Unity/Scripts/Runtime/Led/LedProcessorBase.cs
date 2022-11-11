@@ -25,14 +25,10 @@ using UnityEngine;
 namespace SK.Libretro.Unity
 {
     [DisallowMultipleComponent]
-    public sealed class LedProcessor : MonoBehaviour, ILedProcessor
+    public abstract class LedProcessorBase : MonoBehaviour, ILedProcessor
     {
-        [SerializeField] private LedObject[] _leds;
+        public void SetState(int led, int state) => MainThreadDispatcher.Enqueue(() => OnSetState(led, state));
 
-        public void SetState(int led, int state)
-        {
-            if (led >= 0 && led < _leds.Length)
-                MainThreadDispatcher.Enqueue(() => _leds[led].SetState(state != 0));
-        }
+        protected abstract void OnSetState(int led, int state);
     }
 }
