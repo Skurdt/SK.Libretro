@@ -130,8 +130,8 @@ namespace SK.Libretro.Unity.Editor
 
             try
             {
-                string zipPath = await DownloadFile($"{_buildbotUrl}{core.FullName}", cancellationToken);
-                await ExtractFile(zipPath, cancellationToken);
+                string zipPath = await DownloadFile($"{_buildbotUrl}{core.FullName}", _coresDirectory, cancellationToken);
+                ExtractFile(zipPath, _coresDirectory);
                 await UniTask.Delay(500, DelayType.Realtime, cancellationToken: cancellationToken);
                 FileSystem.DeleteFile(zipPath);
 
@@ -147,30 +147,39 @@ namespace SK.Libretro.Unity.Editor
             }
         }
 
-        protected static async UniTask<string> DownloadFile(string url, CancellationToken cancellationToken)
+        protected static async UniTask<string> DownloadFile(string url, string directory, CancellationToken cancellationToken)
         {
-            string fileName = Path.GetFileName(url);
-            string filePath = $"{_coresDirectory}/{fileName}";
-            FileSystem.DeleteFile(filePath);
-            await UniTask.Delay(200, DelayType.Realtime, cancellationToken: cancellationToken);
+            try
+            {
+                string fileName = Path.GetFileName(url);
+                string filePath = $"{directory}/{fileName}";
+                FileSystem.DeleteFile(filePath);
+                await UniTask.Delay(200, DelayType.Realtime, cancellationToken: cancellationToken);
 
-            using WebClient webClient = new();
-            await webClient.DownloadFileTaskAsync(url, filePath);
-            return filePath;
+                using WebClient webClient = new();
+                await webClient.DownloadFileTaskAsync(url, filePath);
+                return filePath;
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                return null;
+            }
         }
 
-        protected static async UniTask ExtractFile(string zipPath, CancellationToken cancellationToken)
+        protected static void ExtractFile(string zipPath, string directory)
         {
-            if (!FileSystem.FileExists(zipPath))
-                return;
-
-            using ZipArchive archive = ZipFile.OpenRead(zipPath);
-            foreach (ZipArchiveEntry entry in archive.Entries)
+            try
             {
-                string destinationPath = $"{_coresDirectory}/{entry.FullName}";
-                FileSystem.DeleteFile(destinationPath);
-                await UniTask.Delay(200, DelayType.Realtime, cancellationToken: cancellationToken);
-                entry.ExtractToFile(destinationPath);
+                if (!FileSystem.FileExists(zipPath))
+                    return;
+
+                using ZipArchive archive = ZipFile.OpenRead(zipPath);
+                archive.ExtractToDirectory(directory);
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
             }
         }
 

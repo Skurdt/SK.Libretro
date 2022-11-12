@@ -68,12 +68,17 @@ namespace SK.Libretro
             }
         }
 
-        public static void MoveFile(string sourcePath, string destinationPath)
+        public static void MoveFile(string sourcePath, string destinationPath, bool overwrite)
         {
             try
             {
-                if (FileExists(sourcePath))
-                    File.Move(sourcePath, destinationPath);
+                if (!FileExists(sourcePath))
+                    return;
+
+                if (overwrite)
+                    DeleteFile(destinationPath);
+
+                File.Move(sourcePath, destinationPath);
             }
             catch
             {

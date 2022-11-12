@@ -284,7 +284,7 @@ namespace SK.Libretro
         {
             try
             {
-                FileSystem.MoveFile(old_path, new_path);
+                FileSystem.MoveFile(old_path, new_path, true);
                 return 0;
             }
             catch

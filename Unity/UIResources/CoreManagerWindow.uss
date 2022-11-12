@@ -7,13 +7,6 @@
     min-width: 320px;
 }
 
-#SearchField {
-    margin-left: 18px;
-    margin-right: 18px;
-    margin-top: 6px;
-    margin-bottom: 6px;
-}
-
 #CoreList {
     flex-grow: 1;
 }

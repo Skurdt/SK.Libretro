@@ -149,13 +149,13 @@ namespace SK.Libretro
             return _wrapper.Settings.UseCoreRotation;
         }
 
-        public bool SetGeometry(retro_game_geometry geometry)
+        public bool SetGeometry(in retro_game_geometry geometry)
         {
             if (SystemAVInfo.BaseWidth != geometry.base_width
              || SystemAVInfo.BaseHeight != geometry.base_height
              || SystemAVInfo.AspectRatio != geometry.aspect_ratio)
             {
-                SystemAVInfo.SetGeometry(ref geometry);
+                SystemAVInfo.SetGeometry(geometry);
                 return true;
             }
 
@@ -167,8 +167,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_system_av_info info = data.ToStructure<retro_system_av_info>();
-            SystemAVInfo = new(ref info);
+            SystemAVInfo = new(data.ToStructure<retro_system_av_info>());
             return true;
         }
 
@@ -256,9 +255,9 @@ namespace SK.Libretro
                     using FileStream stream = new(_path, FileMode.Open);
                     byte[] data             = new byte[stream.Length];
                     GameInfo.data           = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
-                    _gameInfoExt.data        = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
+                    _gameInfoExt.data       = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
                     GameInfo.size           = (nuint)data.Length;
-                    _gameInfoExt.size        = (nuint)data.Length;
+                    _gameInfoExt.size       = (nuint)data.Length;
                     _ = stream.Read(data, 0, (int)stream.Length);
                     Marshal.Copy(data, 0, GameInfo.data, data.Length);
                     Marshal.Copy(data, 0, _gameInfoExt.data, data.Length);
@@ -280,7 +279,7 @@ namespace SK.Libretro
                     return false;
 
                 _wrapper.Core.GetSystemAVInfo(out retro_system_av_info info);
-                SystemAVInfo = new(ref info);
+                SystemAVInfo = new(info);
                 return true;
             }
             catch (Exception e)

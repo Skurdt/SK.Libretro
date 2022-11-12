@@ -32,18 +32,18 @@ namespace SK.Libretro
         public int MaxWidth      { get; private set; }
         public int MaxHeight     { get; private set; }
         public float AspectRatio { get; private set; }
-        public double Fps { get; private set; }
-        public int SampleRate { get; private set; }
+        public double Fps        { get; private set; }
+        public int SampleRate    { get; private set; }
 
-        public SystemAVInfo(ref retro_system_av_info info)
+        public SystemAVInfo(in retro_system_av_info info)
         {
-            SetGeometry(ref info.geometry);
+            SetGeometry(info.geometry);
 
             Fps         = info.timing.fps;
             SampleRate  = Convert.ToInt32(info.timing.sample_rate);
         }
 
-        public void SetGeometry(ref retro_game_geometry geometry)
+        public void SetGeometry(in retro_game_geometry geometry)
         {
             BaseWidth   = (int)geometry.base_width;
             BaseHeight  = (int)geometry.base_height;
