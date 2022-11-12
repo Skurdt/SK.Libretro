@@ -20,40 +20,54 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace SK.Libretro.Unity.Editor
 {
     internal sealed class CoreListWindow : EditorWindow
     {
-        private static System.Action<string> _coreSelectedCallback;
-        private static IEnumerable<string> _coreNames;
-        private Vector2 _scrollPos;
-        private string _searchQuery = "";
+        private static string _coresDirectory = "";
+        private static Action<string> _coreSelectedCallback;
 
-        public static void ShowWindow(string coresDirectory, System.Action<string> coreSelectedCallback)
+        private IEnumerable<string> _coreNames  = Array.Empty<string>();
+        private List<string> _filteredCoreNames = new();
+        private ListView _listView;
+
+        public static void ShowWindow(string coresDirectory, Action<string> coreSelectedCallback)
         {
-            UnityEngine.RuntimePlatform runtimePlatform;
-            try
-            {
-                runtimePlatform = GetCurrentPlatform();
-            }
-            catch (System.NotSupportedException e)
-            {
-                Debug.LogError(e.Message);
-                return;
-            }
-
             if (!Directory.Exists(coresDirectory))
                 return;
 
+            _coresDirectory       = coresDirectory;
             _coreSelectedCallback = coreSelectedCallback;
 
-            string filter = runtimePlatform switch
+            GetWindow<CoreListWindow>("Available Cores").minSize = new Vector2(311f, 200f);
+        }
+
+        private void CreateGUI()
+        {
+            Toolbar toolbar = new();
+            toolbar.style.marginTop    = 4f;
+            toolbar.style.marginBottom = 4f;
+            ToolbarSearchField searchField = new();
+            searchField.style.flexShrink = 1f;
+            searchField.style.flexGrow   = 1f;
+            toolbar.Add(searchField);
+            rootVisualElement.Add(toolbar);
+
+            if (string.IsNullOrWhiteSpace(_coresDirectory))
+                return;
+
+            _ = searchField.RegisterValueChangedCallback(SearchFieldValueChangedCallback);
+
+            string filter = Application.platform switch
             {
                 UnityEngine.RuntimePlatform.OSXEditor     => "*.dylib",
                 UnityEngine.RuntimePlatform.LinuxEditor   => "*.so",
@@ -61,54 +75,42 @@ namespace SK.Libretro.Unity.Editor
                 _ => "*.*"
             };
 
-            _coreNames = Directory.EnumerateFiles(coresDirectory, filter, SearchOption.TopDirectoryOnly)
-                                  .Select(x =>  Path.GetFileNameWithoutExtension(x).Replace("_libretro", ""));
-            GetWindow<CoreListWindow>("Available Cores").minSize = new Vector2(311f, 200f);
+            _coreNames = Directory.EnumerateFiles(_coresDirectory, filter, SearchOption.TopDirectoryOnly)
+                                  .Select(x => Path.GetFileNameWithoutExtension(x).Replace("_libretro", ""));
+            _filteredCoreNames = _coreNames.ToList();
+
+            _listView = new()
+            {
+                makeItem        = ListViewMakeItemCallback,
+                bindItem        = ListViewBindItemCallback,
+                itemsSource     = _filteredCoreNames,
+                fixedItemHeight = 22f
+            };
+            _listView.style.flexGrow = 1f;
+            rootVisualElement.Add(_listView);
         }
 
-        private void OnGUI()
+        private void SearchFieldValueChangedCallback(ChangeEvent<string> evnt)
         {
-            using (new EditorGUILayout.HorizontalScope())
-            {
-                _searchQuery = EditorGUILayout.TextField("Search", _searchQuery);
-                if (GUILayout.Button("x", GUILayout.Width(EditorGUIUtility.singleLineHeight), GUILayout.Height(EditorGUIUtility.singleLineHeight)))
-                {
-                    EditorGUI.FocusTextInControl(null);
-                    _searchQuery = "";
-                }
-            }
-
-            IEnumerable<string> filteredCoreNames = _coreNames;
-            if (!string.IsNullOrWhiteSpace(_searchQuery))
-                filteredCoreNames = _coreNames.Where(x => x.Contains(_searchQuery));
-
-            using EditorGUILayout.ScrollViewScope scrollView = new(_scrollPos, EditorStyles.helpBox);
-            _scrollPos = scrollView.scrollPosition;
-
-            foreach (string coreName in filteredCoreNames)
-            {
-                if (GUILayout.Button(coreName))
-                {
-                    _coreSelectedCallback?.Invoke(coreName);
-                    _coreSelectedCallback = null;
-                    GetWindow<CoreListWindow>().Close();
-                }
-            }
+            _filteredCoreNames = string.IsNullOrWhiteSpace(evnt.newValue)
+                               ? _coreNames.ToList()
+                               : _coreNames.Where(x => x.Contains(evnt.newValue, StringComparison.OrdinalIgnoreCase)).ToList();
+            _listView.itemsSource = _filteredCoreNames;
+            _listView.Rebuild();
         }
 
-        private static UnityEngine.RuntimePlatform GetCurrentPlatform()
+        private VisualElement ListViewMakeItemCallback() => new Button();
+
+        private void ListViewBindItemCallback(VisualElement element, int index)
         {
-            switch (Application.platform)
-            {
-                case UnityEngine.RuntimePlatform.LinuxEditor:
-                case UnityEngine.RuntimePlatform.OSXEditor:
-                case UnityEngine.RuntimePlatform.WindowsEditor:
-                    return Application.platform;
-                default:
-                {
-                    throw new System.NotSupportedException($"[LibretroCoreListWindow] Invalid/Unsupported platform detected: {Application.platform}");
-                }
-            }
+            Button button = element as Button;
+            button.text = _filteredCoreNames[index];
+            button.clickable = null;
+            button.clicked += () => {
+                _coreSelectedCallback?.Invoke(button.text);
+                _coreSelectedCallback = null;
+                GetWindow<CoreListWindow>().Close();
+            };
         }
     }
 }
