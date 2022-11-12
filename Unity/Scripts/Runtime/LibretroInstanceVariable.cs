@@ -43,6 +43,8 @@ namespace SK.Libretro.Unity
             }
         }
 
+        public (Options, Options) Options => Current ? Current.Options : default;
+
         public bool DiskHandlerEnabled => Current && Current.DiskHandlerEnabled;
 
         [NonSerialized] private LibretroInstance _current;

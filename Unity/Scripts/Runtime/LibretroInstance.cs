@@ -78,6 +78,8 @@ namespace SK.Libretro.Unity
             }
         }
 
+        public (Options, Options) Options => _bridge is not null ? _bridge.Options : default;
+
         public byte[] SaveMemory => _bridge is not null ? _bridge.SaveMemory : Array.Empty<byte>();
 
         public byte[] RtcMemory => _bridge is not null ? _bridge.RtcMemory : Array.Empty<byte>();
@@ -138,5 +140,7 @@ namespace SK.Libretro.Unity
         public void SaveSRAM() => _bridge?.SaveSRAM();
 
         public void LoadSRAM() => _bridge?.LoadSRAM();
+
+        public void SaveOptions(bool global) => _bridge?.SaveOptions(global);
     }
 }

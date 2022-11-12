@@ -107,8 +107,6 @@ namespace SK.Libretro
             LedHandler               = new(settings.LedProcessor);
             MessageHandler           = new(this, settings.MessageProcessor);
             MemoryHandler            = new(this);
-
-            CoreInstances.Instance.Add(this);
         }
 
         public bool StartContent(string coreName, string gameDirectory, string[] gameNames)
@@ -125,7 +123,7 @@ namespace SK.Libretro
             if (FrameTimeInterface.callback.IsNotNull())
                 FrameTimeInterfaceCallback = FrameTimeInterface.callback.GetDelegate<retro_frame_time_callback_t>();
 
-            if (!Game.Start(gameDirectory, gameNames))
+            if (!Game.Start(gameDirectory, gameNames?[0]))
             {
                 StopContent();
                 return false;
@@ -152,8 +150,6 @@ namespace SK.Libretro
 
         public void StopContent()
         {
-            CoreInstances.Instance.Remove(this);
-
             Game.Dispose();
             Core.Dispose();
 

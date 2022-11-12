@@ -48,9 +48,9 @@ namespace SK.Libretro
 
         public Game(Wrapper wrapper) => _wrapper = wrapper;
 
-        public bool Start(string gameDirectory, string[] gameNames)
+        public bool Start(string gameDirectory, string gameName)
         {
-            Name = gameNames is not null ? gameNames[0] : null;
+            Name = gameName;
 
             try
             {

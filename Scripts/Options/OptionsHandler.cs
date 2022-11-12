@@ -106,17 +106,17 @@ namespace SK.Libretro
                 retro_variable variable = data.ToStructure<retro_variable>();
                 while (variable is not null && variable.key.IsNotNull() && variable.value.IsNotNull())
                 {
-                    string key = variable.key.AsString();
-                    string inValue = variable.value.AsString();
-                    string[] lineSplit = inValue.Split(';');
+                    string key     = variable.key.AsString();
+                    string value   = variable.value.AsString();
+                    string[] split = value.Split(';');
                     if (CoreOptions[key] is null)
-                        CoreOptions[key] = lineSplit.Length > 3 ? new Option(lineSplit) : new Option(key, lineSplit);
+                        CoreOptions[key] = split.Length > 3 ? new Option(split) : new Option(key, split);
                     else
                     {
-                        if (lineSplit.Length > 3)
-                            CoreOptions[key].Update(lineSplit);
+                        if (split.Length > 3)
+                            CoreOptions[key].Update(split);
                         else
-                            CoreOptions[key].Update(key, lineSplit);
+                            CoreOptions[key].Update(key, split);
                     }
 
                     data += Marshal.SizeOf(variable);
@@ -165,16 +165,17 @@ namespace SK.Libretro
         {
             lock (_lock)
             {
-                string filePath;
                 if (global)
-                    filePath = $"{Wrapper.OptionsDirectory}/{_wrapper.Core.Name}.json";
+                {
+                    string filePath = $"{Wrapper.OptionsDirectory}/{_wrapper.Core.Name}.json";
+                    Serialize(CoreOptions, filePath);
+                }
                 else
                 {
                     string directoryPath = FileSystem.GetOrCreateDirectory($"{Wrapper.OptionsDirectory}/{_wrapper.Core.Name}");
-                    filePath = $"{directoryPath}/{_wrapper.Game.Name}.json";
+                    string filePath      = $"{directoryPath}/{_wrapper.Game.Name}.json";
+                    Serialize(GameOptions, filePath);
                 }
-
-                Serialize(CoreOptions, filePath);
 
                 _updateVariables = updateVariables;
             }

@@ -287,6 +287,21 @@ namespace SK.Libretro.Unity
             }
         }
 
+        public (Options, Options) Options
+        {
+            get
+            {
+                lock (_lock)
+                    return _options;
+            }
+
+            private set
+            {
+                lock (_lock)
+                    _options = value;
+            }
+        }
+
         public bool DiskHandlerEnabled
         {
             get
@@ -333,6 +348,7 @@ namespace SK.Libretro.Unity
         private byte[] _rtcMemory;
         private byte[] _systemMemory;
         private byte[] _videoMemory;
+        private (Options, Options) _options;
         private bool _diskHandlerEnabled;
 
         private Thread _thread;
@@ -427,12 +443,14 @@ namespace SK.Libretro.Unity
                 wrapper.InitGraphics();
                 wrapper.InitAudio();
                 wrapper.InputHandler.Enabled = true;
-                _diskHandlerEnabled = wrapper.DiskHandler.Enabled;
-                ControllersMap      = wrapper.InputHandler.DeviceMap;
+                DiskHandlerEnabled = wrapper.DiskHandler.Enabled;
+                ControllersMap     = wrapper.InputHandler.DeviceMap;
 
                 //_wrapper.RewindEnabled = _settings.RewindEnabled;
 
-                InvokeOnInstanceStartedEvent();
+                Options = (wrapper.OptionsHandler.CoreOptions, wrapper.OptionsHandler.GameOptions);
+
+                InvokeInstanceEvent(_instanceStartedCallback);
 
                 System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
                 double gameFrameTime = 1.0 / wrapper.Game.SystemAVInfo.Fps;
@@ -478,7 +496,7 @@ namespace SK.Libretro.Unity
                     }
                 }
 
-                InvokeOnInstanceStoppedEvent();
+                InvokeInstanceEvent(_instanceStoppedCallback);
 
                 lock (_lock)
                     wrapper.StopContent();
@@ -557,6 +575,9 @@ namespace SK.Libretro.Unity
         public void LoadSRAM() =>
             _bridgeCommands.Enqueue(new LoadSRAMBridgeCommand());
 
+        public void SaveOptions(bool global) =>
+            _bridgeCommands.Enqueue(new SaveOptionsBridgeCommand(global));
+
         public void SetControllerPortDevice(uint port, RETRO_DEVICE device) =>
             _bridgeCommands.Enqueue(new SetControllerPortDeviceBridgeCommand(port, device));
 
@@ -575,36 +596,20 @@ namespace SK.Libretro.Unity
                 _instanceComponent.Renderer.material = _originalMaterial;
         }
 
-        private void InvokeOnInstanceStartedEvent()
+        private void InvokeInstanceEvent(Action action)
         {
-            if (_instanceStartedCallback is null)
+            if (action is null)
                 return;
 
             _manualResetEvent.Reset();
-            using CancellationTokenSource instanceStartedTokenSource = new();
+            using CancellationTokenSource tokenSource = new();
             MainThreadDispatcher.Enqueue(() =>
             {
-                _instanceStartedCallback();
+                action();
                 _manualResetEvent.Set();
-                instanceStartedTokenSource.Cancel();
+                tokenSource.Cancel();
             });
-            _manualResetEvent.Wait(instanceStartedTokenSource.Token);
-        }
-
-        private void InvokeOnInstanceStoppedEvent()
-        {
-            if (_instanceStoppedCallback is null)
-                return;
-
-            _manualResetEvent.Reset();
-            using CancellationTokenSource instanceStoppedTokenSource = new();
-            MainThreadDispatcher.Enqueue(() =>
-            {
-                _instanceStoppedCallback();
-                _manualResetEvent.Set();
-                instanceStoppedTokenSource.Cancel();
-            });
-            _manualResetEvent.Wait(instanceStoppedTokenSource.Token);
+            _manualResetEvent.Wait(tokenSource.Token);
         }
 
         private (ILogProcessor, IGraphicsProcessor, IAudioProcessor, IInputProcessor, ILedProcessor) GetProcessors()

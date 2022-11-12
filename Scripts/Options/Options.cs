@@ -28,7 +28,7 @@ namespace SK.Libretro
     [System.Serializable]
     public sealed class Options : IEnumerable<Option>
     {
-        internal int Count => _options.Count;
+        public int Count => _options.Count;
 
         private readonly SortedList<string, Option> _options = new();
 

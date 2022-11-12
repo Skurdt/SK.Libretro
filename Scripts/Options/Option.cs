@@ -55,20 +55,20 @@ namespace SK.Libretro
             CurrentValue = value;
         }
 
-        internal void Update(string key, string[] lineSplit)
-        {
-            Key            = key;
-            Description    = lineSplit[0];
-            PossibleValues = lineSplit[1].Trim().Split('|');
-        }
-
-        internal void Update(int index)
+        public void Update(int index)
         {
             if (PossibleValues is null || PossibleValues.Length == 0)
                 return;
 
             int clampedIndex = index.Clamp(0, PossibleValues.Length - 1);
             CurrentValue = PossibleValues[clampedIndex];
+        }
+
+        internal void Update(string key, string[] lineSplit)
+        {
+            Key            = key;
+            Description    = lineSplit[0];
+            PossibleValues = lineSplit[1].Trim().Split('|');
         }
 
         internal void Update(string[] lineSplit)
