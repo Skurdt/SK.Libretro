@@ -70,7 +70,7 @@ namespace SK.Libretro.Unity
                 Height      = height,
                 PitchPixels = pitch / sizeof(ushort),
                 TextureData = _texture.GetRawTextureData<uint>()
-            }.Schedule();
+            }.Schedule(width * height, 64);
             _jobHandle.Complete();
             _texture.Apply();
         });
@@ -88,7 +88,7 @@ namespace SK.Libretro.Unity
                 Height      = height,
                 PitchPixels = pitch / sizeof(uint),
                 TextureData = _texture.GetRawTextureData<uint>()
-            }.Schedule();
+            }.Schedule(width * height, 64);
             _jobHandle.Complete();
             _texture.Apply();
         });
@@ -106,7 +106,7 @@ namespace SK.Libretro.Unity
                 Height      = height,
                 PitchPixels = pitch / sizeof(uint),
                 TextureData = _texture.GetRawTextureData<uint>()
-            }.Schedule();
+            }.Schedule(width * height, 64);
             _jobHandle.Complete();
             _texture.Apply();
         });
@@ -124,7 +124,7 @@ namespace SK.Libretro.Unity
                 Height      = height,
                 PitchPixels = pitch / sizeof(ushort),
                 TextureData = _texture.GetRawTextureData<uint>()
-            }.Schedule();
+            }.Schedule(width * height, 64);
             _jobHandle.Complete();
             _texture.Apply();
         });

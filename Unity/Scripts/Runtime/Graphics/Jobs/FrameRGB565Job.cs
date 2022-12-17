@@ -28,7 +28,7 @@ using Unity.Jobs;
 namespace SK.Libretro.Unity
 {
     [BurstCompile]
-    public unsafe struct FrameRGB565Job : IJob
+    public unsafe struct FrameRGB565Job : IJobParallelFor
     {
         [ReadOnly, NativeDisableUnsafePtrRestriction] public ushort* SourceData;
         public int Width;
@@ -36,15 +36,13 @@ namespace SK.Libretro.Unity
         public int PitchPixels;
         [WriteOnly] public NativeArray<uint> TextureData;
 
-        public void Execute()
+        public void Execute(int index)
         {
-            ushort* line = SourceData;
-            for (int y = Height - 1; y >= 0; --y)
-            {
-                for (int x = 0; x < Width; ++x)
-                    TextureData[(y * Width) + x] = GraphicsUtilities.RGB565toBGRA32(line[x]);
-                line += PitchPixels;
-            }
+            int x = index % Width;
+            int y = (index - x) / Width;
+            y = Height - 1 - y;
+            int offset = y * PitchPixels;
+            TextureData[index] = GraphicsUtilities.RGB565toBGRA32(SourceData[offset + x]);
         }
     }
 }

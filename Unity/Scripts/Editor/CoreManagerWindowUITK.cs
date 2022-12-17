@@ -112,7 +112,7 @@ namespace SK.Libretro.Unity.Editor
             _coreListView.makeItem = CoreListViewMakeItemCallback;
             _coreListView.bindItem = CoreListViewBindItemCallback;
             _coreListView.itemsSource = _coreListDisplay;
-            _coreListView.onSelectionChange += CoreListViewOnSelectionChangeCallback;
+            _coreListView.selectionChanged += CoreListViewOnSelectionChangeCallback;
             _coreListView.SetSelection(EditorPrefs.GetInt("CoreManagerWindowSelectedIndex", -1));
         }
 
