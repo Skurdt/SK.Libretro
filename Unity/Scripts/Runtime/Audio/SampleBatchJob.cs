@@ -24,6 +24,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
+using Unity.Mathematics;
 
 namespace SK.Libretro.Unity
 {
@@ -32,7 +33,18 @@ namespace SK.Libretro.Unity
     {
         [ReadOnly, NativeDisableUnsafePtrRestriction] public short* SourceSamples;
         [WriteOnly] public NativeArray<float> DestinationSamples;
+        [ReadOnly] public int SourceSampleRate;
+        [ReadOnly] public int TargetSampleRate;
 
-        public void Execute(int index) => DestinationSamples[index] = SourceSamples[index] * AudioHandler.NORMALIZED_GAIN;
+        public void Execute(int index)
+        {
+            float sampleIndex         = index * (float)SourceSampleRate / TargetSampleRate;
+            int sampleIndex1          = (int)math.floor(sampleIndex);
+            int sampleIndex2          = (int)math.ceil(sampleIndex);
+            float interpolationFactor = sampleIndex - sampleIndex1;
+            DestinationSamples[index] = math.lerp(SourceSamples[sampleIndex1] * AudioHandler.NORMALIZED_GAIN,
+                                                  SourceSamples[sampleIndex2] * AudioHandler.NORMALIZED_GAIN,
+                                                  interpolationFactor);
+        }
     }
 }

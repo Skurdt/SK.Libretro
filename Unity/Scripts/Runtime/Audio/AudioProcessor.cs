@@ -32,6 +32,8 @@ namespace SK.Libretro.Unity
     {
         private const int AUDIO_BUFFER_SIZE = 65536;
 
+        private int _inputSampleRate;
+        private int _outputSampleRate;
         private AudioSource _audioSource;
         private NativeList<float> _audioBufferList;
 
@@ -52,6 +54,9 @@ namespace SK.Libretro.Unity
 
         public void Init(int sampleRate) => MainThreadDispatcher.Enqueue(() =>
         {
+            _inputSampleRate  = sampleRate;
+            _outputSampleRate = AudioSettings.outputSampleRate;
+
             if (!_audioSource)
                 _audioSource = GetComponent<AudioSource>();
             _audioSource.Stop();
@@ -62,11 +67,6 @@ namespace SK.Libretro.Unity
             if (_audioBufferList.IsCreated)
                 _audioBufferList.Dispose();
             _audioBufferList = new(AUDIO_BUFFER_SIZE, Allocator.Persistent);
-
-            AudioConfiguration audioConfig = AudioSettings.GetConfiguration();
-            audioConfig.sampleRate = sampleRate;
-            _ = AudioSettings.Reset(audioConfig);
-
             _audioSource.Play();
         });
 
@@ -100,7 +100,9 @@ namespace SK.Libretro.Unity
             _jobHandle = new SampleBatchJob
             {
                 SourceSamples      = (short*)data,
-                DestinationSamples = _samples
+                DestinationSamples = _samples,
+                SourceSampleRate   = _inputSampleRate,
+                TargetSampleRate   = _outputSampleRate
             }.Schedule(numFrames, 64);
             _jobHandle.Complete();
             _audioBufferList.AddRange(_samples);
