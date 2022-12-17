@@ -21,6 +21,7 @@
  * SOFTWARE. */
 
 using System;
+using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
@@ -32,23 +33,25 @@ namespace SK.Libretro.Unity
     {
         private const int AUDIO_BUFFER_SIZE = 65536;
 
+        private readonly List<float> _audioBufferList = new(AUDIO_BUFFER_SIZE);
+
+        private AudioSource _audioSource;
         private int _inputSampleRate;
         private int _outputSampleRate;
-        private AudioSource _audioSource;
-        private NativeList<float> _audioBufferList;
 
-        private NativeArray<float> _samples;
         private JobHandle _jobHandle;
+        private NativeArray<float> _samples;
 
         private void OnDestroy() => Dispose();
 
         private void OnAudioFilterRead(float[] data, int channels)
         {
-            if (!_audioBufferList.IsCreated || _audioBufferList.Length < data.Length)
+            if (_audioBufferList.Count < data.Length)
                 return;
 
             for (int i = 0; i < data.Length; ++i)
                 data[i] = _audioBufferList[i];
+
             _audioBufferList.RemoveRange(0, data.Length);
         }
 
@@ -64,9 +67,6 @@ namespace SK.Libretro.Unity
             if (_samples.IsCreated)
                 _samples.Dispose();
 
-            if (_audioBufferList.IsCreated)
-                _audioBufferList.Dispose();
-            _audioBufferList = new(AUDIO_BUFFER_SIZE, Allocator.Persistent);
             _audioSource.Play();
         });
 
@@ -80,9 +80,6 @@ namespace SK.Libretro.Unity
 
             if (_samples.IsCreated)
                 _samples.Dispose();
-
-            if (_audioBufferList.IsCreated)
-                _audioBufferList.Dispose();
         });
 
         public void ProcessSample(short left, short right) => MainThreadDispatcher.Enqueue(() =>
@@ -95,6 +92,9 @@ namespace SK.Libretro.Unity
 
         public unsafe void ProcessSampleBatch(IntPtr data, nuint frames) => MainThreadDispatcher.Enqueue(() =>
         {
+            if (!_jobHandle.IsCompleted)
+                _jobHandle.Complete();
+
             int numFrames = (int)frames * 2;
             CreateBuffer(numFrames);
             _jobHandle = new SampleBatchJob
