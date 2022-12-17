@@ -175,7 +175,7 @@ namespace SK.Libretro.Unity.Editor
                     return;
 
                 using ZipArchive archive = ZipFile.OpenRead(zipPath);
-                archive.ExtractToDirectory(directory);
+                archive.ExtractToDirectory(directory, true);
             }
             catch (Exception e)
             {
