@@ -130,8 +130,6 @@ namespace SK.Libretro
         private readonly retro_set_rumble_state_t _setRumbleState;
 
         private readonly List<retro_input_descriptor> _inputDescriptors = new();
-        private readonly List<retro_controller_info> _controllerInfo = new();
-        private readonly List<retro_controller_description> _controllerDescriptions = new();
         private readonly string[,] _buttonDescriptions = new string[MAX_USERS, FIRST_META_KEY];
 
         private retro_keyboard_event_t _keyboardEvent;
@@ -205,13 +203,17 @@ namespace SK.Libretro
             retro_input_descriptor descriptor = data.ToStructure<retro_input_descriptor>();
             while (descriptor is not null && !descriptor.desc.IsNull())
             {
-                _inputDescriptors.Add(descriptor);
+                _inputDescriptors.Add(new()
+                {
+                    port   = descriptor.port,
+                    device = descriptor.device,
+                    index  = descriptor.index,
+                    id     = descriptor.id,
+                    desc   = descriptor.desc
+                });
 
                 if (descriptor.device is RETRO_DEVICE.JOYPAD)
-                {
-                    string desc = descriptor.desc.AsString();
-                    _buttonDescriptions[descriptor.port, descriptor.id] = desc;
-                }
+                    _buttonDescriptions[descriptor.port, descriptor.id] = descriptor.desc.AsString();
                 else if (descriptor.device is RETRO_DEVICE.ANALOG)
                 {
                     RETRO_DEVICE_ID_ANALOG id = (RETRO_DEVICE_ID_ANALOG)descriptor.id;
@@ -288,25 +290,23 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            _controllerInfo.Clear();
-            _controllerDescriptions.Clear();
-
             retro_controller_info controllerInfo = data.ToStructure<retro_controller_info>();
-            while (!controllerInfo.types.IsNull())
+            int index = 0;
+            while (controllerInfo.types.IsNotNull())
             {
-                _controllerInfo.Add(controllerInfo);
-
                 for (int deviceIndex = 0; deviceIndex < controllerInfo.num_types; ++deviceIndex)
                 {
                     retro_controller_description controllerDescription = controllerInfo.types.ToStructure<retro_controller_description>();
-                    _controllerDescriptions.Add(controllerDescription);
-
+                    if (controllerDescription.desc.IsNotNull())
+                        DeviceMap.Add(index, new() { Description = controllerDescription.desc.AsString(), Device = (RETRO_DEVICE)controllerDescription.id });
+                    
                     controllerInfo.types += Marshal.SizeOf(controllerDescription);
                     controllerInfo.types.ToStructure(controllerDescription);
                 }
 
                 data += Marshal.SizeOf(controllerInfo);
                 data.ToStructure(controllerInfo);
+                index++;
             }
 
             return true;
