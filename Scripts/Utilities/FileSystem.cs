@@ -98,6 +98,11 @@ namespace SK.Libretro
             }
         }
 
+        public static string[] GetDirectoriesInDirectory(string path, string searchPattern, bool includeSubFolders = false)
+        {
+            return Directory.GetDirectories(path, searchPattern);
+        }
+
         public static void SerializeToJson<T>(T sourceObject, string targetPath)
         {
             try

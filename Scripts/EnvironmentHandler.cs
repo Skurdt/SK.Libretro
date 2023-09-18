@@ -22,21 +22,66 @@
 
 using SK.Libretro.Header;
 using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace SK.Libretro
 {
     internal sealed class EnvironmentHandler
     {
+        private delegate bool CallbackDelegate(RETRO_ENVIRONMENT cmd, IntPtr data);
+
         private readonly Wrapper _wrapper;
         private readonly retro_environment_t _callback;
+
+        private readonly Thread _thread;
 
         public EnvironmentHandler(Wrapper wrapper)
         {
             _callback = EnvironmentCallback;
             _wrapper  = wrapper;
+            _thread   = Thread.CurrentThread;
+            lock (instancePerHandle)
+            {
+                instancePerHandle.Add(_thread, this);
+            }
         }
 
-        public void SetCoreCallback(retro_set_environment_t setEnvironment) => setEnvironment(_callback);
+        ~EnvironmentHandler()
+        {
+            lock(instancePerHandle)
+            {
+                instancePerHandle.Remove(_thread);
+            }
+        }
+
+        public void SetCoreCallback(retro_set_environment_t setEnvironment) => setEnvironment(NativeEnvironmentCallback);
+
+        public class MonoPInvokeCallbackAttribute : System.Attribute
+        {
+            private Type type;
+            public MonoPInvokeCallbackAttribute(Type t) { type = t; }
+        }
+
+        // IL2CPP does not support marshaling delegates that point to instance methods to native code.
+        // Using static method and per instance table.
+        private static Dictionary<Thread, EnvironmentHandler> instancePerHandle = new Dictionary<Thread, EnvironmentHandler>();
+
+        [MonoPInvokeCallbackAttribute(typeof(CallbackDelegate))]
+        private static bool NativeEnvironmentCallback(RETRO_ENVIRONMENT cmd, IntPtr data)
+        {
+            EnvironmentHandler instance;
+            bool ok;
+            lock (instancePerHandle)
+            {
+                ok = instancePerHandle.TryGetValue(Thread.CurrentThread, out instance);
+            }
+            if (ok)
+            {
+                return instance._callback(cmd, data);
+            }
+            return false;
+        }
 
         private bool EnvironmentCallback(RETRO_ENVIRONMENT cmd, IntPtr data) => cmd switch
         {

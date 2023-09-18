@@ -26,18 +26,19 @@ namespace SK.Libretro
     {
         public readonly Platform Platform;
 
-        public LogLevel LogLevel                    { get; init; } = LogLevel.Warning;
-        public string MainDirectory                 { get; init; } = "";
-        public Language Language                    { get; init; } = Language.English;
-        public string UserName                      { get; init; } = "Default User";
-        public bool UseCoreRotation                 { get; init; }
-        public bool CropOverscan                    { get; init; } = true;
-        public ILogProcessor LogProcessor           { get; init; }
-        public IGraphicsProcessor GraphicsProcessor { get; init; }
-        public IAudioProcessor AudioProcessor       { get; init; }
-        public IInputProcessor InputProcessor       { get; init; }
-        public ILedProcessor LedProcessor           { get; init; }
-        public IMessageProcessor MessageProcessor   { get; init; }
+        public LogLevel LogLevel                    { get; set; } = LogLevel.Warning;
+        public string MainDirectory                 { get; set; } = "";
+        public string TempDirectory                 { get; set; } = "";
+        public Language Language                    { get; set; } = Language.English;
+        public string UserName                      { get; set; } = "Default User";
+        public bool UseCoreRotation                 { get; set; }
+        public bool CropOverscan                    { get; set; } = true;
+        public ILogProcessor LogProcessor           { get; set; }
+        public IGraphicsProcessor GraphicsProcessor { get; set; }
+        public IAudioProcessor AudioProcessor       { get; set; }
+        public IInputProcessor InputProcessor       { get; set; }
+        public ILedProcessor LedProcessor           { get; set; }
+        public IMessageProcessor MessageProcessor   { get; set; }
 
         public WrapperSettings(Platform platform) => Platform = platform;
     }

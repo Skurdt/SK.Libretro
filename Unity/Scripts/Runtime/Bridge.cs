@@ -122,6 +122,37 @@ namespace SK.Libretro.Unity
             }
         }
 
+        private string LibretroDirectory
+        {
+            get
+            {
+                lock (_lock)
+                    return _libretroDirectory;
+            }
+
+            set
+            {
+                lock (_lock)
+                    _libretroDirectory = value;
+            }
+        }
+
+        private string TempDirectory
+        {
+            get
+            {
+                lock (_lock)
+                    return _tempDirectory;
+            }
+
+            set
+            {
+                lock (_lock)
+                    _tempDirectory = value;
+            }
+        }
+
+
         private string CoreName
         {
             get
@@ -328,6 +359,8 @@ namespace SK.Libretro.Unity
         private readonly ConcurrentQueue<IBridgeCommand> _bridgeCommands;
         private readonly object _lock;
 
+        private string _libretroDirectory;
+        private string _tempDirectory;
         private string _coreName;
         private string _gamesDirectory;
         private string[] _gameNames;
@@ -372,7 +405,9 @@ namespace SK.Libretro.Unity
             MainThreadDispatcher.Construct();
         }
 
-        public void StartContent(string coreName,
+        public void StartContent(string libretroDirectory,
+                                 string tempDirectory,
+                                 string coreName,
                                  string gamesDirectory,
                                  string[] gameNames,
                                  Action instanceStartedCallback,
@@ -381,15 +416,29 @@ namespace SK.Libretro.Unity
             if (Running)
                 return;
 
+            if (string.IsNullOrWhiteSpace(libretroDirectory))
+            {
+                Debug.LogError("Libretro Directory is not set");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(tempDirectory))
+            {
+                Debug.LogError("Core Directory is not set");
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(coreName))
             {
                 Debug.LogError("Core is not set");
                 return;
             }
 
+            TempDirectory           = tempDirectory;
             CoreName                 = coreName;
             GamesDirectory           = gamesDirectory;
             GameNames                = gameNames;
+            LibretroDirectory        = libretroDirectory;
             _instanceStartedCallback = instanceStartedCallback;
             _instanceStoppedCallback = instanceStoppedCallback;
 
@@ -425,7 +474,8 @@ namespace SK.Libretro.Unity
                 WrapperSettings wrapperSettings = new(platform)
                 {
                     LogLevel          = LogLevel.Warning,
-                    MainDirectory     = $"{Application.streamingAssetsPath}/libretro~",
+                    MainDirectory     = LibretroDirectory,
+                    TempDirectory    = TempDirectory,
                     LogProcessor      = logProcessor,
                     GraphicsProcessor = graphicsProcessor,
                     AudioProcessor    = audioProcessor,
@@ -442,7 +492,7 @@ namespace SK.Libretro.Unity
 
                 wrapper.InitGraphics();
                 wrapper.InitAudio();
-                wrapper.InputHandler.Enabled = true;
+                wrapper.InputHandler.Enabled = InputEnabled;
                 DiskHandlerEnabled = wrapper.DiskHandler.Enabled;
                 ControllersMap     = wrapper.InputHandler.DeviceMap;
 

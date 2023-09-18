@@ -23,6 +23,8 @@
 using SK.Libretro.Header;
 using System;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace SK.Libretro
 {
@@ -33,11 +35,38 @@ namespace SK.Libretro
         private readonly ILogProcessor _processor;
         private readonly retro_log_printf_t _logPrintf;
 
+        private readonly Thread _thread;
+        private static Dictionary<Thread, LogHandler> instancePerHandle = new Dictionary<Thread, LogHandler>();
+
         public LogHandler(ILogProcessor processor, LogLevel logLevel)
         {
             _processor = processor ?? new NullLogProcessor();
             _level     = logLevel;
             _logPrintf = LogPrintf;
+            _thread = Thread.CurrentThread;
+            lock(instancePerHandle)
+            {
+                instancePerHandle.Add(_thread, this);
+            }
+        }
+
+        ~LogHandler()
+        {
+            lock(instancePerHandle)
+            {
+                instancePerHandle.Remove(_thread);
+            }
+        }
+
+        private static LogHandler GetInstance(Thread thread)
+        {
+            LogHandler instance;
+            bool ok;
+            lock (instancePerHandle)
+            {
+                ok = instancePerHandle.TryGetValue(thread, out instance);
+            }
+            return ok ? instance : null;
         }
 
         public void SetLogLevel(LogLevel level) => _level = level;
@@ -79,7 +108,29 @@ namespace SK.Libretro
             return true;
         }
 
-        protected virtual void LogPrintf(retro_log_level level,
+        private delegate void LogPrintfCallbackDelegate(retro_log_level level,
+                                    string format,
+                                    IntPtr arg1,
+                                    IntPtr arg2,
+                                    IntPtr arg3,
+                                    IntPtr arg4,
+                                    IntPtr arg5,
+                                    IntPtr arg6,
+                                    IntPtr arg7,
+                                    IntPtr arg8,
+                                    IntPtr arg9,
+                                    IntPtr arg10,
+                                    IntPtr arg11,
+                                    IntPtr arg12);
+
+        public class MonoPInvokeCallbackAttribute : System.Attribute
+        {
+            private Type type;
+            public MonoPInvokeCallbackAttribute(Type t) { type = t; }
+        }
+
+        [MonoPInvokeCallbackAttribute(typeof(LogPrintfCallbackDelegate))]
+        protected static void LogPrintf(retro_log_level level,
                                          string format,
                                          IntPtr arg1,
                                          IntPtr arg2,
@@ -95,8 +146,12 @@ namespace SK.Libretro
                                          IntPtr arg12)
         {
             LogLevel logLevel = level.ToLogLevel();
-            if (logLevel >= _level)
-                LogMessage(logLevel, format);
+            LogHandler instance = GetInstance(Thread.CurrentThread);
+            if (instance == null)
+                return;
+
+            if (logLevel >= instance._level)
+                instance.LogMessage(logLevel, format);
         }
 
         protected void LogMessage(LogLevel level, string message)

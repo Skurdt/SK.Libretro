@@ -84,7 +84,7 @@ namespace SK.Libretro
                 OptionsDirectory     = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/core_options");
                 SavesDirectory       = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/saves");
                 StatesDirectory      = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/states");
-                TempDirectory        = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/temp");
+                TempDirectory        = FileSystem.GetOrCreateDirectory(!string.IsNullOrWhiteSpace(settings.TempDirectory) ? settings.TempDirectory : $"{_mainDirectory}/temp");
             }
 
             Core = new(this);

@@ -23,12 +23,17 @@
 using SK.Libretro.Header;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace SK.Libretro
 {
     internal sealed class InputHandler
     {
+        private delegate void PollCallbackDelegate();
+        private delegate short StateCallbackDelegate(uint port, RETRO_DEVICE device, uint index, uint id);
+
         private const int MAX_USERS_SUPPORTED = 2;
 
         private const int MAX_USERS              = 16;
@@ -134,18 +139,71 @@ namespace SK.Libretro
 
         private retro_keyboard_event_t _keyboardEvent;
 
+        private Thread _thread;
+
         public InputHandler(IInputProcessor processor)
         {
             _processor      = processor ?? new NullInputProcessor();
             _pollCallback   = PollCallback;
             _stateCallback  = StateCallback;
             _setRumbleState = SetRumbleState;
+            _thread         = Thread.CurrentThread;
+            lock (instancePerHandle)
+            {
+                instancePerHandle.Add(_thread, this);
+            }
+        }
+
+        ~InputHandler()
+        {
+            lock (instancePerHandle)
+            {
+                instancePerHandle.Remove(_thread);
+            }
         }
 
         public void SetCoreCallbacks(retro_set_input_poll_t setInputPoll, retro_set_input_state_t setInputState)
         {
-            setInputPoll(_pollCallback);
-            setInputState(_stateCallback);
+            setInputPoll(NativePollCallback);
+            setInputState(NativeStateBatchCallback);
+        }
+
+        public class MonoPInvokeCallbackAttribute : System.Attribute
+        {
+            private Type type;
+            public MonoPInvokeCallbackAttribute(Type t) { type = t; }
+        }
+
+        // IL2CPP does not support marshaling delegates that point to instance methods to native code.
+        // Using static method and per instance table.
+        private static Dictionary<Thread, InputHandler> instancePerHandle = new Dictionary<Thread, InputHandler>();
+        private static InputHandler GetInstance(Thread thread)
+        {
+            InputHandler instance;
+            bool ok;
+            lock (instancePerHandle)
+            {
+                ok = instancePerHandle.TryGetValue(thread, out instance);
+            }
+            return ok ? instance : null;
+        }
+        
+        [MonoPInvokeCallbackAttribute(typeof(PollCallbackDelegate))]
+        private static void NativePollCallback()
+        {
+            InputHandler instance = GetInstance(Thread.CurrentThread);
+            if (instance == null)
+                return;
+            instance._pollCallback();
+        }
+
+        [MonoPInvokeCallbackAttribute(typeof(StateCallbackDelegate))]
+        private static short NativeStateBatchCallback(uint port, RETRO_DEVICE device, uint index, uint id)
+        {
+            InputHandler instance = GetInstance(Thread.CurrentThread);
+            if (instance == null)
+                return 0;
+            return instance._stateCallback(port, device, index, id);
         }
 
         public bool GetRumbleInterface(IntPtr data)
@@ -154,6 +212,7 @@ namespace SK.Libretro
                 return false;
 
             retro_rumble_interface rumbleInterface = data.ToStructure<retro_rumble_interface>();
+
             rumbleInterface.set_rumble_state = _setRumbleState.GetFunctionPointer();
             Marshal.StructureToPtr(rumbleInterface, data, false);
             return true;
@@ -205,64 +264,66 @@ namespace SK.Libretro
             {
                 _inputDescriptors.Add(new()
                 {
-                    port   = descriptor.port,
+                    port = descriptor.port,
                     device = descriptor.device,
-                    index  = descriptor.index,
-                    id     = descriptor.id,
-                    desc   = descriptor.desc
+                    index = descriptor.index,
+                    id = descriptor.id,
+                    desc = descriptor.desc
                 });
 
                 if (descriptor.device is RETRO_DEVICE.JOYPAD)
+                {
                     _buttonDescriptions[descriptor.port, descriptor.id] = descriptor.desc.AsString();
+                }
                 else if (descriptor.device is RETRO_DEVICE.ANALOG)
                 {
                     RETRO_DEVICE_ID_ANALOG id = (RETRO_DEVICE_ID_ANALOG)descriptor.id;
                     switch (id)
                     {
                         case RETRO_DEVICE_ID_ANALOG.X:
-                        {
-                            RETRO_DEVICE_INDEX_ANALOG index = (RETRO_DEVICE_INDEX_ANALOG)descriptor.index;
-                            switch (index)
                             {
-                                case RETRO_DEVICE_INDEX_ANALOG.LEFT:
+                                RETRO_DEVICE_INDEX_ANALOG index = (RETRO_DEVICE_INDEX_ANALOG)descriptor.index;
+                                switch (index)
                                 {
-                                    string desc = descriptor.desc.AsString();
-                                    _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_LEFT_X_PLUS] = desc;
-                                    _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_LEFT_X_MINUS] = desc;
+                                    case RETRO_DEVICE_INDEX_ANALOG.LEFT:
+                                        {
+                                            string desc = descriptor.desc.AsString();
+                                            _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_LEFT_X_PLUS] = desc;
+                                            _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_LEFT_X_MINUS] = desc;
+                                        }
+                                        break;
+                                    case RETRO_DEVICE_INDEX_ANALOG.RIGHT:
+                                        {
+                                            string desc = descriptor.desc.AsString();
+                                            _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_RIGHT_X_PLUS] = desc;
+                                            _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_RIGHT_X_MINUS] = desc;
+                                        }
+                                        break;
                                 }
-                                break;
-                                case RETRO_DEVICE_INDEX_ANALOG.RIGHT:
-                                {
-                                    string desc = descriptor.desc.AsString();
-                                    _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_RIGHT_X_PLUS] = desc;
-                                    _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_RIGHT_X_MINUS] = desc;
-                                }
-                                break;
                             }
-                        }
-                        break;
+                            break;
                         case RETRO_DEVICE_ID_ANALOG.Y:
-                        {
-                            RETRO_DEVICE_INDEX_ANALOG index = (RETRO_DEVICE_INDEX_ANALOG)descriptor.index;
-                            switch (index)
                             {
-                                case RETRO_DEVICE_INDEX_ANALOG.LEFT:
+                                RETRO_DEVICE_INDEX_ANALOG index = (RETRO_DEVICE_INDEX_ANALOG)descriptor.index;
+                                switch (index)
                                 {
-                                    string desc = descriptor.desc.AsString();
-                                    _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_LEFT_Y_PLUS] = desc;
-                                    _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_LEFT_Y_MINUS] = desc;
+                                    case RETRO_DEVICE_INDEX_ANALOG.LEFT:
+                                        {
+                                            string desc = descriptor.desc.AsString();
+                                            _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_LEFT_Y_PLUS] = desc;
+                                            _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_LEFT_Y_MINUS] = desc;
+                                        }
+                                        break;
+                                    case RETRO_DEVICE_INDEX_ANALOG.RIGHT:
+                                        {
+                                            string desc = descriptor.desc.AsString();
+                                            _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_RIGHT_Y_PLUS] = desc;
+                                            _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_RIGHT_Y_MINUS] = desc;
+                                        }
+                                        break;
                                 }
-                                break;
-                                case RETRO_DEVICE_INDEX_ANALOG.RIGHT:
-                                {
-                                    string desc = descriptor.desc.AsString();
-                                    _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_RIGHT_Y_PLUS] = desc;
-                                    _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_RIGHT_Y_MINUS] = desc;
-                                }
-                                break;
                             }
-                        }
-                        break;
+                            break;
                     }
                 }
 
@@ -299,7 +360,7 @@ namespace SK.Libretro
                     retro_controller_description controllerDescription = controllerInfo.types.ToStructure<retro_controller_description>();
                     if (controllerDescription.desc.IsNotNull())
                         DeviceMap.Add(index, new() { Description = controllerDescription.desc.AsString(), Device = (RETRO_DEVICE)controllerDescription.id });
-                    
+
                     controllerInfo.types += Marshal.SizeOf(controllerDescription);
                     controllerInfo.types.ToStructure(controllerDescription);
                 }
@@ -408,8 +469,16 @@ namespace SK.Libretro
             _ => 0
         };
 
-        private bool SetRumbleState(uint port, retro_rumble_effect effect, ushort strength) =>
-            _processor.SetRumbleState(port, effect, strength);
+        private delegate void SetRumbleStateCallbackDelegate(uint port, retro_rumble_effect effect, ushort strength);
+
+        [MonoPInvokeCallbackAttribute(typeof(SetRumbleStateCallbackDelegate))]
+        private static bool SetRumbleState(uint port, retro_rumble_effect effect, ushort strength)
+        {
+            InputHandler instance = GetInstance(Thread.CurrentThread);
+            if (instance == null)
+                return false;
+            return instance._processor.SetRumbleState(port, effect, strength);
+        }
 
         private static short BoolToShort(bool boolValue) => (short)(boolValue ? 1 : 0);
     }

@@ -22,12 +22,16 @@
 
 using SK.Libretro.Header;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace SK.Libretro
 {
     internal sealed class GraphicsHandler : IDisposable
     {
+        private delegate void CallbackDelegate(IntPtr data, uint width, uint height, nuint pitch, int instanceId);
+
         public bool Enabled { get; set; }
 
         private readonly Wrapper _wrapper;
@@ -39,11 +43,41 @@ namespace SK.Libretro
 
         private HardwareRenderHelperWindow _hardwareRenderHelperWindow;
 
+        private Thread _thread;
+
         public GraphicsHandler(Wrapper wrapper, IGraphicsProcessor processor)
         {
             _wrapper         = wrapper;
             _processor       = processor;
             _refreshCallback = RefreshCallback;
+            _thread          = Thread.CurrentThread;
+            lock (instancePerHandle)
+            {
+                instancePerHandle.Add(_thread, this);
+            }
+        }
+
+        ~GraphicsHandler()
+        {
+            lock (instancePerHandle)
+            {
+                instancePerHandle.Remove(_thread);
+            }
+        }
+
+        // IL2CPP does not support marshaling delegates that point to instance methods to native code.
+        // Using static method and per instance table.
+        private static Dictionary<Thread, GraphicsHandler> instancePerHandle = new Dictionary<Thread, GraphicsHandler>();
+        
+        private static GraphicsHandler GetInstance(Thread thread)
+        {
+            GraphicsHandler instance;
+            bool ok;
+            lock (instancePerHandle)
+            {
+                ok = instancePerHandle.TryGetValue(thread, out instance);
+            }
+            return ok ? instance : null;
         }
 
         public void Init(bool enabled)
@@ -79,7 +113,22 @@ namespace SK.Libretro
             _hardwareRenderHelperWindow?.Dispose();
         }
 
-        public void SetCoreCallback(retro_set_video_refresh_t setVideoRefresh) => setVideoRefresh(_refreshCallback);
+        public void SetCoreCallback(retro_set_video_refresh_t setVideoRefresh) => setVideoRefresh(NativeGraphicsCallback);
+
+        public class MonoPInvokeCallbackAttribute : System.Attribute
+        {
+            private Type type;
+            public MonoPInvokeCallbackAttribute(Type t) { type = t; }
+        }
+
+        [MonoPInvokeCallbackAttribute(typeof(CallbackDelegate))]
+        private static void NativeGraphicsCallback(IntPtr data, uint width, uint height, nuint pitch)
+        {
+            GraphicsHandler instance = GetInstance(Thread.CurrentThread);
+            if (instance == null)
+                return;
+            instance._refreshCallback(data, width, height, pitch);
+        }
 
         public bool GetOverscan(IntPtr data)
         {

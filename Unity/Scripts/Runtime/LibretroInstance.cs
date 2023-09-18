@@ -29,15 +29,17 @@ namespace SK.Libretro.Unity
     [DisallowMultipleComponent]
     public sealed class LibretroInstance : MonoBehaviour
     {
-        [field: SerializeField] public Camera Camera { get; private set; }
-        [field: SerializeField, Layer] public int LightgunRaycastLayer { get; private set; }
-        [field: SerializeField] public Renderer Renderer { get; private set; }
-        [field: SerializeField] public Collider Collider { get; private set; }
-        [field: SerializeField] public Transform Viewer { get; private set; }
-        [field: SerializeField] public InstanceSettings Settings { get; private set; }
-        [field: SerializeField] public string CoreName { get; private set; }
-        [field: SerializeField] public string GamesDirectory { get; private set; }
-        [field: SerializeField] public string[] GameNames { get; private set; }
+        [field: SerializeField] public Camera Camera { get; set; }
+        [field: SerializeField, Layer] public int LightgunRaycastLayer { get; set; }
+        [field: SerializeField] public Renderer Renderer { get; set; }
+        [field: SerializeField] public Collider Collider { get; set; }
+        [field: SerializeField] public Transform Viewer { get; set; }
+        [field: SerializeField] public InstanceSettings Settings { get; set; }
+        [field: SerializeField] public string TempDirectory { get; set; }
+        [field: SerializeField] public string LibretroDirectory { get; set; }
+        [field: SerializeField] public string CoreName { get; set; }
+        [field: SerializeField] public string GamesDirectory { get; set; }
+        [field: SerializeField] public string[] GameNames { get; set; }
 
         public event Action OnInstanceStarted;
         public event Action OnInstanceStopped;
@@ -92,18 +94,22 @@ namespace SK.Libretro.Unity
 
         private void OnDisable() => StopContent();
 
-        public void Initialize(string coreName, string gamesDirectory, params string[] gameNames)
+        public void Initialize(string libretroDirectory, string tempDirectory, string coreName, string gamesDirectory, params string[] gameNames)
         {
-            CoreName       = coreName;
-            GamesDirectory = gamesDirectory;
-            GameNames      = gameNames;
+            LibretroDirectory = libretroDirectory;
+            TempDirectory     = tempDirectory;
+            CoreName          = coreName;
+            GamesDirectory    = gamesDirectory;
+            GameNames         = gameNames;
         }
 
         public void DeInitialize()
         {
-            CoreName       = null;
-            GamesDirectory = null;
-            GameNames      = null;
+            LibretroDirectory = null;
+            TempDirectory     = null;
+            CoreName          = null;
+            GamesDirectory    = null;
+            GameNames         = null;
         }
 
         public void StartContent()
@@ -112,7 +118,7 @@ namespace SK.Libretro.Unity
                 return;
 
             _bridge = new(this);
-            _bridge.StartContent(CoreName, GamesDirectory, GameNames, OnInstanceStarted, OnInstanceStopped);
+            _bridge.StartContent(LibretroDirectory, TempDirectory, CoreName, GamesDirectory, GameNames, OnInstanceStarted, OnInstanceStopped);
         }
 
         public void PauseContent() => _bridge?.PauseContent();
