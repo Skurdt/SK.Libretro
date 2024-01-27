@@ -115,6 +115,7 @@ namespace SK.Libretro
                 case Platform.OSX:
                     _dll = new DynamicLibraryOSX(true);
                     break;
+                case Platform.Android:
                 case Platform.Linux:
                     _dll = new DynamicLibraryLinux(true);
                     break;
@@ -222,14 +223,28 @@ namespace SK.Libretro
         {
             try
             {
-                string corePath = $"{Wrapper.CoresDirectory}/{Name}_libretro.{_dll.Extension}";
+                string corePath;
+                switch (_wrapper.Settings.Platform)
+                {
+                    case Platform.Android:
+                        corePath = $"{Wrapper.CoresDirectory}/{Name}_libretro_android.{_dll.Extension}";
+                        break;
+                    case Platform.Win:
+                    case Platform.OSX:
+                    case Platform.Linux:
+                        corePath = $"{Wrapper.CoresDirectory}/{Name}_libretro.{_dll.Extension}";
+                        break;
+                    default:
+                        _wrapper.LogHandler.LogError($"Runtime platform '{_wrapper.Settings.Platform}' not supported.", "SK.Libretro.Core.Start");
+                        return false;
+                }
                 if (!FileSystem.FileExists(corePath))
                 {
                     _wrapper.LogHandler.LogError($"Core '{Name}' at path '{corePath}' not found.", "SK.Libretro.Core.LoadLibrary");
                     return false;
                 }
 
-                string instancePath = System.IO.Path.Combine(Wrapper.TempDirectory, $"{Name}_{Guid.NewGuid()}.{_dll.Extension}");
+                string instancePath = System.IO.Path.Combine($"{Wrapper.TempDirectory}", $"{Name}_{Guid.NewGuid()}.{_dll.Extension}");
                 File.Copy(corePath, instancePath);
 
                 _dll.Load(instancePath);

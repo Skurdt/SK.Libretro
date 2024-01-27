@@ -23,6 +23,8 @@
 using SK.Libretro.Header;
 using System;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace SK.Libretro
 {
@@ -32,13 +34,52 @@ namespace SK.Libretro
 
         private readonly retro_set_led_state_t _setLedState;
 
+        private readonly Thread _thread;
+        private static Dictionary<Thread, LedHandler> instancePerHandle = new Dictionary<Thread, LedHandler>();
+
         public LedHandler(ILedProcessor processor)
         {
             _processor   = processor ?? new NullLedProcessor();
             _setLedState = SetState;
+            _thread = Thread.CurrentThread;
+            lock(instancePerHandle)
+            {
+                instancePerHandle.Add(_thread, this);
+            }
         }
 
-        public void SetState(int led, int state) => _processor.SetState(led, state);
+        ~LedHandler()
+        {
+            lock(instancePerHandle)
+            {
+                instancePerHandle.Remove(_thread);
+            }
+        }
+
+        private static LedHandler GetInstance(Thread thread)
+        {
+            LedHandler instance;
+            bool ok;
+            lock (instancePerHandle)
+            {
+                ok = instancePerHandle.TryGetValue(thread, out instance);
+            }
+            return ok ? instance : null;
+        }
+
+        public class MonoPInvokeCallbackAttribute : System.Attribute
+        {
+            private Type type;
+            public MonoPInvokeCallbackAttribute(Type t) { type = t; }
+        }
+
+        private delegate void SetStateCallbackDelegate(IntPtr data);
+        [MonoPInvokeCallbackAttribute(typeof(SetStateCallbackDelegate))]
+        public static void SetState(int led, int state)
+        { 
+            LedHandler instance = GetInstance(Thread.CurrentThread);
+            instance._processor.SetState(led, state);
+        }
 
         public bool GetLedInterface(IntPtr data)
         {

@@ -47,19 +47,34 @@ namespace SK.Libretro
             _perf_log         = PerfLog;
         }
 
-        private long GetTimeUsec() => 0;
+        public class MonoPInvokeCallbackAttribute : System.Attribute
+        {
+            private Type type;
+            public MonoPInvokeCallbackAttribute(Type t) { type = t; }
+        }
 
-        private ulong GetCpuFeatures() => 0;
+        private delegate void VoidCallbackDelegate();
+        [MonoPInvokeCallbackAttribute(typeof(VoidCallbackDelegate))]
+        private static long GetTimeUsec() => 0;
 
-        private ulong GetPerfCounter() => 0;
+        [MonoPInvokeCallbackAttribute(typeof(VoidCallbackDelegate))]
+        private static ulong GetCpuFeatures() => 0;
 
-        private void PerfRegister(ref retro_perf_counter counter) { }
+        [MonoPInvokeCallbackAttribute(typeof(VoidCallbackDelegate))]
+        private static ulong GetPerfCounter() => 0;
 
-        private void PerfStart(ref retro_perf_counter counter) { }
+        private delegate void PerfCallbackDelegate(ref retro_perf_counter counter);
+        [MonoPInvokeCallbackAttribute(typeof(PerfCallbackDelegate))]
+        private static void PerfRegister(ref retro_perf_counter counter) { }
 
-        private void PerfStop(ref retro_perf_counter counter) { }
+        [MonoPInvokeCallbackAttribute(typeof(PerfCallbackDelegate))]
+        private static void PerfStart(ref retro_perf_counter counter) { }
 
-        private void PerfLog() { }
+        [MonoPInvokeCallbackAttribute(typeof(PerfCallbackDelegate))]
+        private static void PerfStop(ref retro_perf_counter counter) { }
+
+        [MonoPInvokeCallbackAttribute(typeof(VoidCallbackDelegate))]
+        private static void PerfLog() { }
 
         public bool GetPerfInterface(IntPtr data)
         {
