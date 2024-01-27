@@ -66,6 +66,7 @@ Shader "Unlit/libretro_crt_geom"
                 float2 ilfac : TEXCOORD4;
                 float2 one : TEXCOORD5;
                 float2 mod_factor : TEXCOORD6;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct v2f
@@ -78,6 +79,7 @@ Shader "Unlit/libretro_crt_geom"
                 float2 ilfac : TEXCOORD4;
                 float2 one : TEXCOORD5;
                 float2 mod_factor : TEXCOORD6;
+                UNITY_VERTEX_OUTPUT_STEREO
             };
 
             sampler2D _MainTex;
@@ -294,9 +296,11 @@ Shader "Unlit/libretro_crt_geom"
             v2f vert(appdata v)
             {
                 v2f o;
+                UNITY_SETUP_INSTANCE_ID(v);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv     = TRANSFORM_TEX(v.uv, _MainTex);
-
 
                 // Precalculate a bunch of useful values we'll need in the fragment
                 // shader.
@@ -315,7 +319,6 @@ Shader "Unlit/libretro_crt_geom"
 
                 // Resulting X pixel-coordinate of the pixel we're drawing.
                 o.mod_factor = o.uv.x * _MainTex_TexelSize.z;
-
 
                 return o;
             }
