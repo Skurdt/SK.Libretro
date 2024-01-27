@@ -173,10 +173,10 @@ namespace SK.Libretro.Unity
                 (AnalogLeftX, AnalogLeftY) = ctx.ReadValue<Vector2>().ToShort(0x7fff);
                 if (AnalogDirectionsToDigital)
                 {
-                    _joypadButtons.SetBitIf((uint)RETRO_DEVICE_ID_JOYPAD.UP, AnalogLeftY > 0);
-                    _joypadButtons.SetBitIf((uint)RETRO_DEVICE_ID_JOYPAD.DOWN, AnalogLeftY < 0);
-                    _joypadButtons.SetBitIf((uint)RETRO_DEVICE_ID_JOYPAD.LEFT, AnalogLeftX > 0);
-                    _joypadButtons.SetBitIf((uint)RETRO_DEVICE_ID_JOYPAD.RIGHT, AnalogLeftX < 0);
+                    _joypadButtons.SetBit((uint)RETRO_DEVICE_ID_JOYPAD.UP, AnalogLeftY > 0);
+                    _joypadButtons.SetBit((uint)RETRO_DEVICE_ID_JOYPAD.DOWN, AnalogLeftY < 0);
+                    _joypadButtons.SetBit((uint)RETRO_DEVICE_ID_JOYPAD.LEFT, AnalogLeftX < 0);
+                    _joypadButtons.SetBit((uint)RETRO_DEVICE_ID_JOYPAD.RIGHT, AnalogLeftX > 0);
                 }
             };
             _inputActions.Emulation.AnalogLeft.canceled += ctx =>
