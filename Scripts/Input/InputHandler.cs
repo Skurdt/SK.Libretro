@@ -319,7 +319,7 @@ namespace SK.Libretro
             if (_processor is null || !Enabled)
                 return 0;
 
-            //device &= RETRO_DEVICE_MASK;
+            device &= (RETRO_DEVICE)RETRO.DEVICE_MASK;
             return device switch
             {
                 RETRO_DEVICE.JOYPAD   => ProcessJoypadDevice(port, (RETRO_DEVICE_ID_JOYPAD)id),

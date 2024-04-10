@@ -662,7 +662,7 @@ namespace SK.Libretro.Unity
 
         private static IInputProcessor GetInputProcessor(bool analogToDigital)
         {
-            PlayerInputManager playerInputManager = Object.FindObjectOfType<PlayerInputManager>();
+            PlayerInputManager playerInputManager = Object.FindFirstObjectByType<PlayerInputManager>();
             if (!playerInputManager)
             {
                 GameObject processorGameObject = new("LibretroInputProcessor");
@@ -679,7 +679,7 @@ namespace SK.Libretro.Unity
             return inputProcessor;
         }
 
-        private static ILedProcessor GetLedProcessor() => Object.FindObjectOfType<LedProcessorBase>(true);
+        private static ILedProcessor GetLedProcessor() => Object.FindFirstObjectByType<LedProcessorBase>(FindObjectsInactive.Exclude);
 
         private void TakeScreenshot(string screenshotPath) => MainThreadDispatcher.Enqueue(async () =>
         {

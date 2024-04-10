@@ -35,7 +35,7 @@ namespace SK.Libretro
         public double Fps        { get; private set; }
         public int SampleRate    { get; private set; }
 
-        public SystemAVInfo(in retro_system_av_info info)
+        public void Init(in retro_system_av_info info)
         {
             SetGeometry(info.geometry);
 

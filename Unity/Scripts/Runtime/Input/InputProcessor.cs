@@ -38,17 +38,20 @@ namespace SK.Libretro.Unity
         [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Input Callback")]
         private void OnPlayerJoined(PlayerInput player)
         {
+            if (!player.TryGetComponent(out PlayerInputProcessor processor))
+                return;
+
+            processor.InputActions = new();
+            player.actions = processor.InputActions.asset;
             player.actions.Enable();
 
             Debug.Log($"Player #{player.playerIndex} joined ({player.currentControlScheme}).");
-            if (!_controls.ContainsKey(player.playerIndex))
-            {
-                if (player.TryGetComponent(out PlayerInputProcessor processor))
-                {
-                    processor.AnalogDirectionsToDigital = AnalogToDigital;
-                    _controls.Add(player.playerIndex, processor);
-                }
-            }
+
+            if (_controls.ContainsKey(player.playerIndex))
+                return;
+
+            processor.AnalogDirectionsToDigital = AnalogToDigital;
+            _controls.Add(player.playerIndex, processor);
         }
 
         [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Input Callback")]

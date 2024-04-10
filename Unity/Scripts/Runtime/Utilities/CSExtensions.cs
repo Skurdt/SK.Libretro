@@ -20,45 +20,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using System;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace SK.Libretro.Unity
 {
-    internal sealed class MainThreadDispatcher : MonoBehaviour
+    public static class CSExtensions
     {
-        private static readonly ConcurrentQueue<Func<ValueTask>> _executionQueue = new();
-        private static MainThreadDispatcher _instance;
+        public static (short, short) ToShort(this Vector2 vec, int mul = 1) => (vec.x.ToShort(mul), vec.y.ToShort(mul));
+        public static short ToShort(this float floatValue, int mul = 1) => (short)(math.clamp(math.round(floatValue), short.MinValue, short.MaxValue) * mul);
 
-        public static void Construct()
+        public static void SetBit(this ref uint bits, in uint bit) => bits |= 1u << (int)bit;
+        public static void SetBit(this ref uint bits, in uint bit, in bool enable)
         {
-            if (_instance)
-                return;
-
-            _instance = FindFirstObjectByType<MainThreadDispatcher>();
-            if (!_instance)
-            {
-                GameObject obj = new("MainThreadDispatcher");
-                _instance = obj.AddComponent<MainThreadDispatcher>();
-                DontDestroyOnLoad(obj);
-            }
+            if (enable)
+                bits.SetBit(bit);
+            else
+                bits.UnsetBit(bit);
         }
-
-        private async void Update()
+        public static void SetBitIf(this ref uint bits, in uint bit, in bool cond)
         {
-            while (_executionQueue.Count > 0)
-                if (_executionQueue.TryDequeue(out Func<ValueTask> action))
-                    await action();
+            if (cond)
+                bits |= 1u << (int)bit;
         }
-
-        public static void Enqueue(Func<ValueTask> action) => _executionQueue.Enqueue(async () => await action());
-
-        public static void Enqueue(Action action) => Enqueue(async () =>
-        {
-            action();
-            await Task.Yield();
-        });
+        public static void UnsetBit(this ref uint bits, in uint bit) => bits &= ~(1u << (int)bit);
+        public static void ToggleBit(this ref uint bits, in uint bit) => bits ^= 1u << (int)bit;
+        public static bool IsBitSet(this uint bits, in uint bit) => (bits & (int)bit) != 0;
+        public static short IsBitSetAsShort(this uint bits, in uint bit) => (short)((bits >> (int)bit) & 1);
     }
 }

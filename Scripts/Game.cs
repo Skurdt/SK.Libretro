@@ -32,7 +32,7 @@ namespace SK.Libretro
     {
         public bool Running { get; private set; }
         public string Name { get; private set; }
-        public SystemAVInfo SystemAVInfo { get; private set; }
+        public SystemAVInfo SystemAVInfo { get; } = new();
         public int Rotation { get; private set; }
 
         public retro_game_info GameInfo = new();
@@ -81,7 +81,7 @@ namespace SK.Libretro
 
                 Running = LoadGame();
 
-                FreeGameInfo();
+                //FreeGameInfo();
 
                 return Running;
             }
@@ -167,7 +167,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            SystemAVInfo = new(data.ToStructure<retro_system_av_info>());
+            SystemAVInfo.Init(data.ToStructure<retro_system_av_info>());
             return true;
         }
 
@@ -279,7 +279,7 @@ namespace SK.Libretro
                     return false;
 
                 _wrapper.Core.GetSystemAVInfo(out retro_system_av_info info);
-                SystemAVInfo = new(info);
+                SystemAVInfo.Init(info);
                 return true;
             }
             catch (Exception e)

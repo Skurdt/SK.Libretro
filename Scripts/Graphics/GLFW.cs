@@ -49,6 +49,9 @@ namespace SK.Libretro
 
         [DllImport("glfw3", EntryPoint = "glfwInit")]
         public static extern bool Init();
+
+        [DllImport("glfw3", EntryPoint = "glfwTerminate")]
+        public static extern void Terminate();
         
         [DllImport("glfw3", EntryPoint = "glfwWindowHint")]
         public static extern void WindowHint(int hint, int value);
@@ -56,22 +59,19 @@ namespace SK.Libretro
         [DllImport("glfw3", EntryPoint = "glfwCreateWindow")]
         public static extern IntPtr CreateWindow(int width, int height, string title, IntPtr monitor, IntPtr share);
         
-        [DllImport("glfw3", EntryPoint = "glfwTerminate")]
-        public static extern void Terminate();
-        
-        [DllImport("glfw3", EntryPoint = "glfwMakeContextCurrent")]
-        public static extern void MakeContextCurrent(IntPtr window);
-        
         [DllImport("glfw3", EntryPoint = "glfwDestroyWindow")]
         public static extern void DestroyWindow(IntPtr window);
         
-        [DllImport("glfw3", EntryPoint = "glfwPollEvents")]
-        public static extern void PollEvents();
+        [DllImport("glfw3", EntryPoint = "glfwMakeContextCurrent")]
+        public static extern void MakeContextCurrent(IntPtr window);
         
         [DllImport("glfw3", EntryPoint = "glfwSwapBuffers")]
         public static extern void SwapBuffers(IntPtr window);
 
         [DllImport("glfw3", EntryPoint = "glfwGetProcAddress")]
         public static extern IntPtr GetProcAddress(string procname);
+
+        [DllImport("glfw3", EntryPoint = "glfwPollEvents")]
+        public static extern void PollEvents();
     }
 }
