@@ -467,6 +467,17 @@ namespace SK.Libretro.Unity
                 },
                 {
                     ""name"": """",
+                    ""id"": ""01677fe7-9cca-4fda-9a37-4935abe727da"",
+                    ""path"": ""<XRController>{RightHand}/{PrimaryButton}"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Quest"",
+                    ""action"": ""A"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""96354b97-ed6e-4294-ad85-4cf0aa8b7f0f"",
                     ""path"": ""<Keyboard>/numpad1"",
                     ""interactions"": """",
@@ -505,6 +516,17 @@ namespace SK.Libretro.Unity
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard & Mouse"",
+                    ""action"": ""B"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f66a0b6c-d7c8-4573-958c-1608c910c7ee"",
+                    ""path"": ""<XRController>{RightHand}/{SecondaryButton}"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Quest"",
                     ""action"": ""B"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -851,6 +873,17 @@ namespace SK.Libretro.Unity
                     ""isPartOfComposite"": false
                 },
                 {
+                    ""name"": """",
+                    ""id"": ""c31bf437-4f16-4d92-af3b-aa8323d6c469"",
+                    ""path"": ""<XRController>{LeftHand}/{Primary2DAxis}"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Quest"",
+                    ""action"": ""AnalogLeft"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
                     ""name"": ""IKJL"",
                     ""id"": ""e95e7196-0734-475d-ae26-f7b0c6aa1582"",
                     ""path"": ""2DVector(mode=2)"",
@@ -923,6 +956,17 @@ namespace SK.Libretro.Unity
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard & Mouse"",
+                    ""action"": ""AnalogRight"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""26c73062-cb13-4858-84e4-a43129946f0a"",
+                    ""path"": ""<XRController>{RightHand}/{Primary2DAxis}"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Quest"",
                     ""action"": ""AnalogRight"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -1190,6 +1234,28 @@ namespace SK.Libretro.Unity
                     ""action"": ""DPadRight"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e79cc9a2-d3cc-437b-9093-7658b1226494"",
+                    ""path"": ""<XRController>{LeftHand}/{PrimaryButton}"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Quest"",
+                    ""action"": ""Start"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""28250ed9-0631-4689-a264-98118a514cb3"",
+                    ""path"": ""<XRController>{LeftHand}/{SecondaryButton}"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Quest"",
+                    ""action"": ""Select"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -1217,6 +1283,22 @@ namespace SK.Libretro.Unity
             ""devices"": [
                 {
                     ""devicePath"": ""<Gamepad>"",
+                    ""isOptional"": false,
+                    ""isOR"": false
+                }
+            ]
+        },
+        {
+            ""name"": ""Quest"",
+            ""bindingGroup"": ""Quest"",
+            ""devices"": [
+                {
+                    ""devicePath"": ""<XRController>{LeftHand}/{Device}"",
+                    ""isOptional"": false,
+                    ""isOR"": false
+                },
+                {
+                    ""devicePath"": ""<XRController>{RightHand}/{Device}"",
                     ""isOptional"": false,
                     ""isOR"": false
                 }
@@ -1661,6 +1743,15 @@ namespace SK.Libretro.Unity
             {
                 if (m_GamepadSchemeIndex == -1) m_GamepadSchemeIndex = asset.FindControlSchemeIndex("Gamepad");
                 return asset.controlSchemes[m_GamepadSchemeIndex];
+            }
+        }
+        private int m_QuestSchemeIndex = -1;
+        public InputControlScheme QuestScheme
+        {
+            get
+            {
+                if (m_QuestSchemeIndex == -1) m_QuestSchemeIndex = asset.FindControlSchemeIndex("Quest");
+                return asset.controlSchemes[m_QuestSchemeIndex];
             }
         }
         public interface IEmulationActions
