@@ -22,11 +22,16 @@
 
 using SK.Libretro.Header;
 using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace SK.Libretro
 {
     internal sealed class AudioHandler : IDisposable
     {
+        private delegate void SampleCallbackDelegate(short left, short right);
+        private delegate nuint SampleBatchCallbackDelegate(IntPtr data, nuint frames);
+
         public const float NORMALIZED_GAIN = 1f / 0x8000;
 
         public bool Enabled { get; set; }
@@ -43,12 +48,42 @@ namespace SK.Libretro
 
         private uint _minimumLatency;
 
+        private Thread _thread;
+
         public AudioHandler(Wrapper wrapper, IAudioProcessor audioProcessor)
         {
             _wrapper             = wrapper;
             _processor           = audioProcessor ?? new NullAudioProcessor();
             _sampleCallback      = SampleCallback;
             _sampleBatchCallback = SampleBatchCallback;
+            _thread              = Thread.CurrentThread;
+            lock (instancePerHandle)
+            {
+                instancePerHandle.Add(_thread, this);
+            }
+        }
+
+        ~AudioHandler()
+        {
+            lock (instancePerHandle)
+            {
+                instancePerHandle.Remove(_thread);
+            }
+        }
+
+        // IL2CPP does not support marshaling delegates that point to instance methods to native code.
+        // Using static method and per instance table.
+        private static Dictionary<Thread, AudioHandler> instancePerHandle = new Dictionary<Thread, AudioHandler>();
+        
+        private static AudioHandler GetInstance(Thread thread)
+        {
+            AudioHandler instance;
+            bool ok;
+            lock (instancePerHandle)
+            {
+                ok = instancePerHandle.TryGetValue(thread, out instance);
+            }
+            return ok ? instance : null;
         }
 
         public void Init(bool enabled)
@@ -61,8 +96,32 @@ namespace SK.Libretro
 
         public void SetCoreCallbacks(retro_set_audio_sample_t setAudioSample, retro_set_audio_sample_batch_t setAudioSampleBatch)
         {
-            setAudioSample(_sampleCallback);
-            setAudioSampleBatch(_sampleBatchCallback);
+            setAudioSample(NativeAudioSampleCallback);
+            setAudioSampleBatch(NativeAudioSampleBatchCallback);
+        }
+
+        public class MonoPInvokeCallbackAttribute : System.Attribute
+        {
+            private Type type;
+            public MonoPInvokeCallbackAttribute(Type t) { type = t; }
+        }
+
+        [MonoPInvokeCallbackAttribute(typeof(SampleCallbackDelegate))]
+        private static void NativeAudioSampleCallback(short left, short right)
+        {
+            AudioHandler instance = GetInstance(Thread.CurrentThread);
+            if (instance == null)
+                return;
+            instance._sampleCallback(left, right);
+        }
+
+        [MonoPInvokeCallbackAttribute(typeof(SampleBatchCallbackDelegate))]
+        private static nuint NativeAudioSampleBatchCallback(IntPtr data, nuint frames)
+        {
+            AudioHandler instance = GetInstance(Thread.CurrentThread);
+            if (instance == null)
+                return 0;
+            return instance._sampleBatchCallback(data, frames);
         }
 
         public bool SetAudioCallback(IntPtr data)
