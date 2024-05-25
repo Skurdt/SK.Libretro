@@ -30,7 +30,7 @@ namespace SK.Libretro.Header
     internal delegate void retro_hw_context_reset_t();
     // typedef uintptr_t (RETRO_CALLCONV *retro_hw_get_current_framebuffer_t)(void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate UIntPtr retro_hw_get_current_framebuffer_t();
+    internal delegate IntPtr retro_hw_get_current_framebuffer_t();
     // typedef retro_proc_address_t (RETRO_CALLCONV *retro_hw_get_proc_address_t)(const char* sym);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate IntPtr retro_hw_get_proc_address_t([MarshalAs(UnmanagedType.LPStr)] string sym);

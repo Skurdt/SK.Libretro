@@ -79,6 +79,8 @@ namespace SK.Libretro
             _hardwareRenderHelperWindow?.Dispose();
         }
 
+        public void PollEvents() => _hardwareRenderHelperWindow?.PollEvents();
+
         public void SetCoreCallback(retro_set_video_refresh_t setVideoRefresh) => setVideoRefresh(_refreshCallback);
 
         public bool GetOverscan(IntPtr data)
@@ -130,7 +132,7 @@ namespace SK.Libretro
             _hardwareRenderHelperWindow = hwRenderCallback.context_type switch
             {
                 retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL
-                or retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE => new OpenGLHelperWindow(hwRenderCallback),
+                or retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE => new OpenGLHelperWindowSDL(hwRenderCallback),
 
                 retro_hw_context_type.RETRO_HW_CONTEXT_NONE
                 or _ => default

@@ -642,7 +642,7 @@ namespace SK.Libretro.Unity
         {
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
             AudioProcessor unityAudio = instanceTransform.GetComponentInChildren<AudioProcessor>();
-            return unityAudio && unityAudio.enabled ? unityAudio : new NAudio.AudioProcessor();
+            return unityAudio && unityAudio.enabled ? unityAudio : new AudioProcessorSDL();
 #else
             AudioProcessor unityAudio = instanceTransform.GetComponentInChildren<AudioProcessor>(true);
             if (unityAudio)
