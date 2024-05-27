@@ -116,6 +116,7 @@ namespace SK.Libretro
                     _dll = new DynamicLibraryOSX(true);
                     break;
                 case Platform.Linux:
+                case Platform.Android:
                     _dll = new DynamicLibraryLinux(true);
                     break;
                 default:
@@ -222,7 +223,12 @@ namespace SK.Libretro
         {
             try
             {
-                string corePath = $"{Wrapper.CoresDirectory}/{Name}_libretro.{_dll.Extension}";
+                string corePath = _wrapper.Settings.Platform switch
+                {
+                    Platform.Android => $"{Wrapper.CoresDirectory}/{Name}_libretro_android.{_dll.Extension}",
+                    _                => $"{Wrapper.CoresDirectory}/{Name}_libretro.{_dll.Extension}"
+                };
+
                 if (!FileSystem.FileExists(corePath))
                 {
                     _wrapper.LogHandler.LogError($"Core '{Name}' at path '{corePath}' not found.", "SK.Libretro.Core.LoadLibrary");
@@ -267,12 +273,12 @@ namespace SK.Libretro
                 _retro_get_memory_data            = _dll.GetFunction<retro_get_memory_data_t>("retro_get_memory_data");
                 _retro_get_memory_size            = _dll.GetFunction<retro_get_memory_size_t>("retro_get_memory_size");
                 
-                _retro_set_environment           = _dll.GetFunction<retro_set_environment_t>("retro_set_environment");
-                _retro_set_video_refresh         = _dll.GetFunction<retro_set_video_refresh_t>("retro_set_video_refresh");
-                _retro_set_audio_sample          = _dll.GetFunction<retro_set_audio_sample_t>("retro_set_audio_sample");
-                _retro_set_audio_sample_batch    = _dll.GetFunction<retro_set_audio_sample_batch_t>("retro_set_audio_sample_batch");
-                _retro_set_input_poll            = _dll.GetFunction<retro_set_input_poll_t>("retro_set_input_poll");
-                _retro_set_input_state           = _dll.GetFunction<retro_set_input_state_t>("retro_set_input_state");
+                _retro_set_environment            = _dll.GetFunction<retro_set_environment_t>("retro_set_environment");
+                _retro_set_video_refresh          = _dll.GetFunction<retro_set_video_refresh_t>("retro_set_video_refresh");
+                _retro_set_audio_sample           = _dll.GetFunction<retro_set_audio_sample_t>("retro_set_audio_sample");
+                _retro_set_audio_sample_batch     = _dll.GetFunction<retro_set_audio_sample_batch_t>("retro_set_audio_sample_batch");
+                _retro_set_input_poll             = _dll.GetFunction<retro_set_input_poll_t>("retro_set_input_poll");
+                _retro_set_input_state            = _dll.GetFunction<retro_set_input_state_t>("retro_set_input_state");
                 
                 return true;
             }

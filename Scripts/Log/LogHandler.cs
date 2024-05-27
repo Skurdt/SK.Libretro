@@ -23,6 +23,7 @@
 using SK.Libretro.Header;
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace SK.Libretro
 {
@@ -30,14 +31,14 @@ namespace SK.Libretro
     {
         protected LogLevel _level = LogLevel.Warning;
 
+        private static readonly retro_log_printf_t _logPrintf = LogPrintf;
+
         private readonly ILogProcessor _processor;
-        private readonly retro_log_printf_t _logPrintf;
 
         public LogHandler(ILogProcessor processor, LogLevel logLevel)
         {
             _processor = processor ?? new NullLogProcessor();
             _level     = logLevel;
-            _logPrintf = LogPrintf;
         }
 
         public void SetLogLevel(LogLevel level) => _level = level;
@@ -79,20 +80,44 @@ namespace SK.Libretro
             return true;
         }
 
-        protected virtual void LogPrintf(retro_log_level level,
-                                         string format,
-                                         IntPtr arg1,
-                                         IntPtr arg2,
-                                         IntPtr arg3,
-                                         IntPtr arg4,
-                                         IntPtr arg5,
-                                         IntPtr arg6,
-                                         IntPtr arg7,
-                                         IntPtr arg8,
-                                         IntPtr arg9,
-                                         IntPtr arg10,
-                                         IntPtr arg11,
-                                         IntPtr arg12)
+        [MonoPInvokeCallback(typeof(retro_log_printf_t))]
+        private static void LogPrintf(retro_log_level level,
+                                      string format,
+                                      IntPtr arg1,
+                                      IntPtr arg2,
+                                      IntPtr arg3,
+                                      IntPtr arg4,
+                                      IntPtr arg5,
+                                      IntPtr arg6,
+                                      IntPtr arg7,
+                                      IntPtr arg8,
+                                      IntPtr arg9,
+                                      IntPtr arg10,
+                                      IntPtr arg11,
+                                      IntPtr arg12)
+        {
+            if (!Wrapper.TryGetInstance(Thread.CurrentThread, out Wrapper wrapper))
+                return;
+
+            LogLevel logLevel = level.ToLogLevel();
+            if (logLevel >= wrapper.LogHandler._level)
+                wrapper.LogHandler.LogMessage(logLevel, format);
+        }
+
+        protected virtual void Log(retro_log_level level,
+                                   string format,
+                                   IntPtr arg1,
+                                   IntPtr arg2,
+                                   IntPtr arg3,
+                                   IntPtr arg4,
+                                   IntPtr arg5,
+                                   IntPtr arg6,
+                                   IntPtr arg7,
+                                   IntPtr arg8,
+                                   IntPtr arg9,
+                                   IntPtr arg10,
+                                   IntPtr arg11,
+                                   IntPtr arg12)
         {
             LogLevel logLevel = level.ToLogLevel();
             if (logLevel >= _level)

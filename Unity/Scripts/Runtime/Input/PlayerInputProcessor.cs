@@ -196,8 +196,8 @@ namespace SK.Libretro.Unity
 
         private void HandleKeyboardKeys()
         {
-            for (uint i = 0; i < NUM_KEYBOARD_KEYS; ++i)
-                _keyboardKeys.SetBit(i, Input.GetKey((KeyCode)i));
+            //for (uint i = 0; i < NUM_KEYBOARD_KEYS; ++i)
+            //    _keyboardKeys.SetBit(i, Input.GetKey((KeyCode)i));
         }
 
         private void HandleLightgunPosition()

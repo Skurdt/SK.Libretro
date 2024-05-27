@@ -20,11 +20,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-#if UNITY_EDITOR || UNITY_STANDALONE
 namespace System.Runtime.CompilerServices
 {
-    internal static class IsExternalInit
+    public static class IsExternalInit
     {
     }
 }
-#endif

@@ -24,6 +24,7 @@ using SK.Libretro.Header;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace SK.Libretro
 {
@@ -62,29 +63,36 @@ namespace SK.Libretro
 
         //private const int REWIND_FRAMES_INTERVAL = 10;
 
+        private static readonly object _lock = new();
+        private static readonly Dictionary<Thread, Wrapper> _instances = new();
+
         private static string _mainDirectory       = null;
         private static string _systemDirectory     = null;
         private static string _coreAssetsDirectory = null;
 
+        private readonly Thread _thread;
         private readonly List<IntPtr> _unsafeStrings = new();
+        private long _frameTimeLast                  = 0;
+        //private uint _totalFrameCount                = 0;
 
-        private long _frameTimeLast      = 0;
-        //private uint _totalFrameCount    = 0;
+        public static bool TryGetInstance(Thread thread, out Wrapper wrapper) => _instances.TryGetValue(thread, out wrapper);
 
         public Wrapper(WrapperSettings settings)
         {
+            _thread = Thread.CurrentThread;
+
             Settings = settings;
 
             if (_mainDirectory is null)
             {
                 _mainDirectory       = FileSystem.GetOrCreateDirectory(!string.IsNullOrWhiteSpace(settings.MainDirectory) ? settings.MainDirectory : "libretro");
+                TempDirectory        = FileSystem.GetOrCreateDirectory(!string.IsNullOrWhiteSpace(settings.TempDirectory) ? settings.TempDirectory : $"{_mainDirectory}/temp");
                 CoresDirectory       = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/cores");
                 _systemDirectory     = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/system");
                 _coreAssetsDirectory = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/core_assets");
                 OptionsDirectory     = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/core_options");
                 SavesDirectory       = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/saves");
                 StatesDirectory      = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/states");
-                TempDirectory        = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/temp");
             }
 
             Core = new(this);
@@ -113,6 +121,10 @@ namespace SK.Libretro
         {
             if (string.IsNullOrWhiteSpace(coreName))
                 return false;
+
+            lock (_lock)
+                if (!_instances.TryAdd(_thread, this))
+                    return false;
 
             if (!Core.Start(coreName))
             {
@@ -158,6 +170,9 @@ namespace SK.Libretro
             VFSHandler.Dispose();
 
             PointerUtilities.Free(_unsafeStrings);
+
+            lock (_lock)
+                _ = _instances.Remove(_thread);
         }
 
         public void RunFrame()

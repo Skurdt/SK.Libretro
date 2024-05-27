@@ -23,6 +23,7 @@
 using SK.Libretro.Header;
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace SK.Libretro
 {
@@ -30,9 +31,10 @@ namespace SK.Libretro
     {
         public bool Enabled { get; set; }
 
+        private static readonly retro_video_refresh_t _refreshCallback = RefreshCallback;
+
         private readonly Wrapper _wrapper;
         private readonly IGraphicsProcessor _processor;
-        private readonly retro_video_refresh_t _refreshCallback;
 
         private retro_pixel_format _pixelFormat;
         private GraphicsFrameHandlerBase _frameHandler;
@@ -41,9 +43,8 @@ namespace SK.Libretro
 
         public GraphicsHandler(Wrapper wrapper, IGraphicsProcessor processor)
         {
-            _wrapper         = wrapper;
-            _processor       = processor;
-            _refreshCallback = RefreshCallback;
+            _wrapper   = wrapper;
+            _processor = processor;
         }
 
         public void Init(bool enabled)
@@ -160,10 +161,14 @@ namespace SK.Libretro
             return true;
         }
 
-        private void RefreshCallback(IntPtr data, uint width, uint height, nuint pitch)
+        [MonoPInvokeCallback(typeof(retro_video_refresh_t))]
+        private static void RefreshCallback(IntPtr data, uint width, uint height, nuint pitch)
         {
-            if (Enabled)
-                _frameHandler.ProcessFrame(data, width, height, pitch);
+            if (!Wrapper.TryGetInstance(Thread.CurrentThread, out Wrapper wrapper))
+                return;
+
+            if (wrapper.GraphicsHandler.Enabled)
+                wrapper.GraphicsHandler._frameHandler.ProcessFrame(data, width, height, pitch);
         }
     }
 }

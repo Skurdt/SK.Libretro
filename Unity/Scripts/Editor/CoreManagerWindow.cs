@@ -56,21 +56,29 @@ namespace SK.Libretro.Unity.Editor
             public List<Core> Cores = new();
         }
 
-        protected static readonly string _buildbotUrl       = $"https://buildbot.libretro.com/nightly/{CurrentPlatform}/x86_64/latest/";
-        protected static readonly string _libretroDirectory = $"{Application.streamingAssetsPath}/libretro~";
-        protected static readonly string _coresDirectory    = $"{_libretroDirectory}/cores";
-        protected static readonly string _coresStatusFile   = $"{_libretroDirectory}/cores.json";
+        protected static string _buildbotUrl;
+        protected static string _libretroDirectory;
+        protected static string _coresDirectory;
+        protected static string _coresStatusFile;
 
         protected static string CurrentPlatform => Application.platform switch
         {
             UnityEngine.RuntimePlatform.LinuxEditor   => "linux",
             UnityEngine.RuntimePlatform.OSXEditor     => "apple/osx",
             UnityEngine.RuntimePlatform.WindowsEditor => "windows",
-            _ => InvalidPlatformDetected()
+            _                                         => InvalidPlatformDetected()
         };
 
         protected CoreList _coreList;
         protected List<Core> _coreListDisplay;
+
+        private void Awake()
+        {
+            _buildbotUrl       ??= $"https://buildbot.libretro.com/nightly/{CurrentPlatform}/x86_64/latest/";
+            _libretroDirectory ??= $"{Application.persistentDataPath}/libretro~";
+            _coresDirectory    ??= $"{_libretroDirectory}/cores";
+            _coresStatusFile   ??= $"{_libretroDirectory}/cores.json";
+        }
 
         protected void UpdateCoreListData()
         {

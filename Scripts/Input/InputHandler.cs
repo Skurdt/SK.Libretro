@@ -24,6 +24,7 @@ using SK.Libretro.Header;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace SK.Libretro
 {
@@ -124,23 +125,18 @@ namespace SK.Libretro
 
         public readonly ControllersMap DeviceMap = new();
 
+        private static readonly retro_input_poll_t _pollCallback         = PollCallback;
+        private static readonly retro_input_state_t _stateCallback       = StateCallback;
+        private static readonly retro_set_rumble_state_t _setRumbleState = SetRumbleState;
+
         private readonly IInputProcessor _processor;
-        private readonly retro_input_poll_t _pollCallback;
-        private readonly retro_input_state_t _stateCallback;
-        private readonly retro_set_rumble_state_t _setRumbleState;
 
         private readonly List<retro_input_descriptor> _inputDescriptors = new();
         private readonly string[,] _buttonDescriptions = new string[MAX_USERS, FIRST_META_KEY];
 
         private retro_keyboard_event_t _keyboardEvent;
 
-        public InputHandler(IInputProcessor processor)
-        {
-            _processor      = processor ?? new NullInputProcessor();
-            _pollCallback   = PollCallback;
-            _stateCallback  = StateCallback;
-            _setRumbleState = SetRumbleState;
-        }
+        public InputHandler(IInputProcessor processor) => _processor = processor ?? new NullInputProcessor();
 
         public void SetCoreCallbacks(retro_set_input_poll_t setInputPoll, retro_set_input_state_t setInputState)
         {
@@ -312,22 +308,27 @@ namespace SK.Libretro
             return true;
         }
 
-        private void PollCallback() { }
+        [MonoPInvokeCallback(typeof(retro_input_poll_t))]
+        private static void PollCallback() { }
 
-        private short StateCallback(uint port, RETRO_DEVICE device, uint index, uint id)
+        [MonoPInvokeCallback(typeof(retro_input_state_t))]
+        private static short StateCallback(uint port, RETRO_DEVICE device, uint index, uint id)
         {
-            if (_processor is null || !Enabled)
+            if (!Wrapper.TryGetInstance(Thread.CurrentThread, out Wrapper wrapper))
+                return 0;
+
+            if (!wrapper.InputHandler.Enabled)
                 return 0;
 
             device &= (RETRO_DEVICE)RETRO.DEVICE_MASK;
             return device switch
             {
-                RETRO_DEVICE.JOYPAD   => ProcessJoypadDevice(port, (RETRO_DEVICE_ID_JOYPAD)id),
-                RETRO_DEVICE.MOUSE    => ProcessMouseDevice(port, (RETRO_DEVICE_ID_MOUSE)id),
-                RETRO_DEVICE.KEYBOARD => ProcessKeyboardDevice(port, (retro_key)id),
-                RETRO_DEVICE.LIGHTGUN => ProcessLightgunDevice(port, (RETRO_DEVICE_ID_LIGHTGUN)id),
-                RETRO_DEVICE.POINTER  => ProcessPointerDevice(port, (RETRO_DEVICE_ID_POINTER)id),
-                RETRO_DEVICE.ANALOG   => ProcessAnalogDevice(port, (RETRO_DEVICE_INDEX_ANALOG)index, (RETRO_DEVICE_ID_ANALOG)id),
+                RETRO_DEVICE.JOYPAD   => wrapper.InputHandler.ProcessJoypadDevice(port, (RETRO_DEVICE_ID_JOYPAD)id),
+                RETRO_DEVICE.MOUSE    => wrapper.InputHandler.ProcessMouseDevice(port, (RETRO_DEVICE_ID_MOUSE)id),
+                RETRO_DEVICE.KEYBOARD => wrapper.InputHandler.ProcessKeyboardDevice(port, (retro_key)id),
+                RETRO_DEVICE.LIGHTGUN => wrapper.InputHandler.ProcessLightgunDevice(port, (RETRO_DEVICE_ID_LIGHTGUN)id),
+                RETRO_DEVICE.POINTER  => wrapper.InputHandler.ProcessPointerDevice(port, (RETRO_DEVICE_ID_POINTER)id),
+                RETRO_DEVICE.ANALOG   => wrapper.InputHandler.ProcessAnalogDevice(port, (RETRO_DEVICE_INDEX_ANALOG)index, (RETRO_DEVICE_ID_ANALOG)id),
                 _ => 0
             };
         }
@@ -360,12 +361,12 @@ namespace SK.Libretro
         private short ProcessLightgunDevice(uint port, RETRO_DEVICE_ID_LIGHTGUN id) => id switch
         {
             RETRO_DEVICE_ID_LIGHTGUN.X
-            or RETRO_DEVICE_ID_LIGHTGUN.SCREEN_X => _processor.LightgunX((int)port),
-
-            RETRO_DEVICE_ID_LIGHTGUN.Y
-            or RETRO_DEVICE_ID_LIGHTGUN.SCREEN_Y => _processor.LightgunY((int)port),
-
-            RETRO_DEVICE_ID_LIGHTGUN.IS_OFFSCREEN => BoolToShort(_processor.LightgunIsOffscreen((int)port)),
+            or RETRO_DEVICE_ID_LIGHTGUN.SCREEN_X   => _processor.LightgunX((int)port),
+                                                   
+            RETRO_DEVICE_ID_LIGHTGUN.Y             
+            or RETRO_DEVICE_ID_LIGHTGUN.SCREEN_Y   => _processor.LightgunY((int)port),
+                                                   
+            RETRO_DEVICE_ID_LIGHTGUN.IS_OFFSCREEN  => BoolToShort(_processor.LightgunIsOffscreen((int)port)),
 
             RETRO_DEVICE_ID_LIGHTGUN.TRIGGER
             or RETRO_DEVICE_ID_LIGHTGUN.RELOAD
@@ -384,10 +385,10 @@ namespace SK.Libretro
 
         private short ProcessPointerDevice(uint port, RETRO_DEVICE_ID_POINTER id) => id switch
         {
-            RETRO_DEVICE_ID_POINTER.X => _processor.PointerX((int)port),
-            RETRO_DEVICE_ID_POINTER.Y => _processor.PointerY((int)port),
+            RETRO_DEVICE_ID_POINTER.X       => _processor.PointerX((int)port),
+            RETRO_DEVICE_ID_POINTER.Y       => _processor.PointerY((int)port),
             RETRO_DEVICE_ID_POINTER.PRESSED => _processor.PointerPressed((int)port),
-            RETRO_DEVICE_ID_POINTER.COUNT => _processor.PointerCount((int)port),
+            RETRO_DEVICE_ID_POINTER.COUNT   => _processor.PointerCount((int)port),
             _ => 0
         };
 
@@ -408,8 +409,9 @@ namespace SK.Libretro
             _ => 0
         };
 
-        private bool SetRumbleState(uint port, retro_rumble_effect effect, ushort strength) =>
-            _processor.SetRumbleState(port, effect, strength);
+        [MonoPInvokeCallback(typeof(retro_set_rumble_state_t))]
+        private static bool SetRumbleState(uint port, retro_rumble_effect effect, ushort strength)
+            => Wrapper.TryGetInstance(Thread.CurrentThread, out Wrapper wrapper) && wrapper.InputHandler._processor.SetRumbleState(port, effect, strength);
 
         private static short BoolToShort(bool boolValue) => (short)(boolValue ? 1 : 0);
     }

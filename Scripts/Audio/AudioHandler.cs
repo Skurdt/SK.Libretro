@@ -22,6 +22,7 @@
 
 using SK.Libretro.Header;
 using System;
+using System.Threading;
 
 namespace SK.Libretro
 {
@@ -31,24 +32,21 @@ namespace SK.Libretro
 
         public bool Enabled { get; set; }
 
+        private static readonly retro_audio_sample_t _sampleCallback            = SampleCallback;
+        private static readonly retro_audio_sample_batch_t _sampleBatchCallback = SampleBatchCallback;
+
         private readonly Wrapper _wrapper;
         private readonly IAudioProcessor _processor;
-        private readonly retro_audio_sample_t _sampleCallback;
-        private readonly retro_audio_sample_batch_t _sampleBatchCallback;
 
         private retro_audio_callback_t _audioCallback;
         private retro_audio_set_state_callback_t _audioCallbackSetState;
-
         private retro_audio_buffer_status_callback_t _audioBufferStatusCallback;
-
         private uint _minimumLatency;
 
         public AudioHandler(Wrapper wrapper, IAudioProcessor audioProcessor)
         {
-            _wrapper             = wrapper;
-            _processor           = audioProcessor ?? new NullAudioProcessor();
-            _sampleCallback      = SampleCallback;
-            _sampleBatchCallback = SampleBatchCallback;
+            _wrapper   = wrapper;
+            _processor = audioProcessor ?? new NullAudioProcessor();
         }
 
         public void Init(bool enabled)
@@ -95,16 +93,25 @@ namespace SK.Libretro
             return true;
         }
 
-        private void SampleCallback(short left, short right)
+        [MonoPInvokeCallback(typeof(retro_audio_sample_t))]
+        private static void SampleCallback(short left, short right)
         {
-            if (Enabled)
-                _processor.ProcessSample(left, right);
+            if (!Wrapper.TryGetInstance(Thread.CurrentThread, out Wrapper wrapper))
+                return;
+
+            if (wrapper.AudioHandler.Enabled)
+                wrapper.AudioHandler._processor.ProcessSample(left, right);
         }
 
-        private nuint SampleBatchCallback(IntPtr data, nuint frames)
+        [MonoPInvokeCallback(typeof(retro_audio_sample_batch_t))]
+        private static nuint SampleBatchCallback(IntPtr data, nuint frames)
         {
-            if (Enabled)
-                _processor.ProcessSampleBatch(data, frames);
+            if (!Wrapper.TryGetInstance(Thread.CurrentThread, out Wrapper wrapper))
+                return frames;
+
+            if (wrapper.AudioHandler.Enabled)
+                wrapper.AudioHandler._processor.ProcessSampleBatch(data, frames);
+
             return frames;
         }
     }

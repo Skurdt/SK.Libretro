@@ -24,6 +24,7 @@ using Cysharp.Threading.Tasks;
 using SK.Libretro.Header;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using Unity.Mathematics;
@@ -322,6 +323,8 @@ namespace SK.Libretro.Unity
         private const int DEFAULT_FASTFORWARD_FACTOR = 8;
 
         private readonly LibretroInstance _instanceComponent;
+        private readonly string _mainDirectory;
+        private readonly string _tempDirectory;
         private readonly Material _originalMaterial;
         private readonly int _shaderTextureId;
         private readonly ManualResetEventSlim _manualResetEvent;
@@ -357,6 +360,12 @@ namespace SK.Libretro.Unity
         public Bridge(LibretroInstance instance)
         {
             _instanceComponent = instance;
+            _mainDirectory     = $"{Application.persistentDataPath}/libretro~";
+            _tempDirectory     = Application.platform switch
+            {
+                UnityEngine.RuntimePlatform.Android => $"{GetAndroidPrivateAppDataPath()}/temp",
+                _                                   => $"{Application.persistentDataPath}/libretro~/temp"
+            };
             _originalMaterial  = instance.Renderer ? new(instance.Renderer.material) : null;
             _shaderTextureId   = Shader.PropertyToID(_instanceComponent.Settings.ShaderTextureName);
             _manualResetEvent  = new(false);
@@ -395,9 +404,9 @@ namespace SK.Libretro.Unity
 
             _thread = new Thread(LibretroThread)
             {
-                Name = $"LibretroThread_{CoreName}_{(GameNames.Length > 0 ? GameNames[0] : "nogame")}",
+                Name         = $"LibretroThread_{CoreName}_{(GameNames.Length > 0 ? GameNames[0] : "nogame")}",
                 IsBackground = true,
-                Priority = System.Threading.ThreadPriority.Lowest
+                Priority     = System.Threading.ThreadPriority.Lowest
             };
             _thread.SetApartmentState(ApartmentState.STA);
             _thread.Start();
@@ -410,14 +419,14 @@ namespace SK.Libretro.Unity
                 Platform platform = Application.platform switch
                 {
                     UnityEngine.RuntimePlatform.OSXEditor
-                    or UnityEngine.RuntimePlatform.OSXPlayer => Platform.OSX,
+                    or UnityEngine.RuntimePlatform.OSXPlayer     => Platform.OSX,
                     UnityEngine.RuntimePlatform.WindowsPlayer
                     or UnityEngine.RuntimePlatform.WindowsEditor => Platform.Win,
-                    UnityEngine.RuntimePlatform.IPhonePlayer => Platform.IOS,
-                    UnityEngine.RuntimePlatform.Android => Platform.Android,
+                    UnityEngine.RuntimePlatform.IPhonePlayer     => Platform.IOS,
+                    UnityEngine.RuntimePlatform.Android          => Platform.Android,
                     UnityEngine.RuntimePlatform.LinuxPlayer
-                    or UnityEngine.RuntimePlatform.LinuxEditor => Platform.Linux,
-                    _ => Platform.None
+                    or UnityEngine.RuntimePlatform.LinuxEditor   => Platform.Linux,
+                    _                                            => Platform.None
                 };
 
                 (ILogProcessor logProcessor, IGraphicsProcessor graphicsProcessor, IAudioProcessor audioProcessor, IInputProcessor inputProcessor, ILedProcessor ledProcessor) = GetProcessors();
@@ -425,7 +434,8 @@ namespace SK.Libretro.Unity
                 WrapperSettings wrapperSettings = new(platform)
                 {
                     LogLevel          = LogLevel.Warning,
-                    MainDirectory     = $"{Application.streamingAssetsPath}/libretro~",
+                    MainDirectory     = _mainDirectory,
+                    TempDirectory     = _tempDirectory,
                     LogProcessor      = logProcessor,
                     GraphicsProcessor = graphicsProcessor,
                     AudioProcessor    = audioProcessor,
@@ -640,10 +650,12 @@ namespace SK.Libretro.Unity
 
         private static IAudioProcessor GetAudioProcessor(Transform instanceTransform)
         {
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-            AudioProcessor unityAudio = instanceTransform.GetComponentInChildren<AudioProcessor>();
-            return unityAudio && unityAudio.enabled ? unityAudio : new AudioProcessorSDL();
-#else
+//#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+//            AudioProcessor unityAudio = instanceTransform.GetComponentInChildren<AudioProcessor>();
+//            return unityAudio && unityAudio.gameObject.activeSelf ? unityAudio : new AudioProcessorSDL();
+//#elif UNITY_ANDROID
+//            return null;
+//#else
             AudioProcessor unityAudio = instanceTransform.GetComponentInChildren<AudioProcessor>(true);
             if (unityAudio)
             {
@@ -657,7 +669,7 @@ namespace SK.Libretro.Unity
                 unityAudio = audioProcessorGameObject.AddComponent<AudioProcessor>();
             }
             return unityAudio;
-#endif
+//#endif
         }
 
         private static IInputProcessor GetInputProcessor(bool analogToDigital)
@@ -709,5 +721,10 @@ namespace SK.Libretro.Unity
             _manualResetEvent.Dispose();
             RestoreMaterial();
         });
+
+        private static string GetAndroidPrivateAppDataPath() => new AndroidJavaClass("com.unity3d.player.UnityPlayer")
+                                                               .GetStatic<AndroidJavaObject>("currentActivity")
+                                                               .Call<AndroidJavaObject>("getFilesDir")
+                                                               .Call<string>("getCanonicalPath");
     }
 }

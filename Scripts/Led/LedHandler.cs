@@ -23,22 +23,23 @@
 using SK.Libretro.Header;
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace SK.Libretro
 {
     internal sealed class LedHandler
     {
+        private static readonly retro_set_led_state_t _setLedState = SetState;
         private readonly ILedProcessor _processor;
 
-        private readonly retro_set_led_state_t _setLedState;
+        public LedHandler(ILedProcessor processor) => _processor = processor ?? new NullLedProcessor();
 
-        public LedHandler(ILedProcessor processor)
+        [MonoPInvokeCallback(typeof(retro_set_led_state_t))]
+        private static void SetState(int led, int state)
         {
-            _processor   = processor ?? new NullLedProcessor();
-            _setLedState = SetState;
+            if (Wrapper.TryGetInstance(Thread.CurrentThread, out Wrapper wrapper))
+                wrapper.LedHandler._processor.SetState(led, state);
         }
-
-        public void SetState(int led, int state) => _processor.SetState(led, state);
 
         public bool GetLedInterface(IntPtr data)
         {

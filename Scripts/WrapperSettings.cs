@@ -28,6 +28,7 @@ namespace SK.Libretro
 
         public LogLevel LogLevel                    { get; init; } = LogLevel.Warning;
         public string MainDirectory                 { get; init; } = "";
+        public string TempDirectory                 { get; init; } = "";
         public Language Language                    { get; init; } = Language.English;
         public string UserName                      { get; init; } = "Default User";
         public bool UseCoreRotation                 { get; init; }

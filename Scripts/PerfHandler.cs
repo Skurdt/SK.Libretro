@@ -28,38 +28,34 @@ namespace SK.Libretro
 {
     internal sealed class PerfHandler
     {
-        private readonly retro_perf_get_time_usec_t _get_time_usec;
-        private readonly retro_get_cpu_features_t _get_cpu_features;
-        private readonly retro_perf_get_counter_t _get_perf_counter;
-        private readonly retro_perf_register_t _perf_register;
-        private readonly retro_perf_start_t _perf_start;
-        private readonly retro_perf_stop_t _perf_stop;
-        private readonly retro_perf_log_t _perf_log;
+        private static readonly retro_perf_get_time_usec_t _get_time_usec  = GetTimeUsec;
+        private static readonly retro_get_cpu_features_t _get_cpu_features = GetCpuFeatures;         
+        private static readonly retro_perf_get_counter_t _get_perf_counter = GetPerfCounter;         
+        private static readonly retro_perf_register_t _perf_register       = PerfRegister;   
+        private static readonly retro_perf_start_t _perf_start             = PerfStart;
+        private static readonly retro_perf_stop_t _perf_stop               = PerfStop;
+        private static readonly retro_perf_log_t _perf_log                 = PerfLog;
 
-        public PerfHandler()
-        {
-            _get_time_usec    = GetTimeUsec;
-            _get_cpu_features = GetCpuFeatures;
-            _get_perf_counter = GetPerfCounter;
-            _perf_register    = PerfRegister;
-            _perf_start       = PerfStart;
-            _perf_stop        = PerfStop;
-            _perf_log         = PerfLog;
-        }
+        [MonoPInvokeCallback(typeof(retro_perf_get_time_usec_t))]
+        private static long GetTimeUsec() => 0;
 
-        private long GetTimeUsec() => 0;
+        [MonoPInvokeCallback(typeof(retro_get_cpu_features_t))]
+        private static ulong GetCpuFeatures() => 0;
 
-        private ulong GetCpuFeatures() => 0;
+        [MonoPInvokeCallback(typeof(retro_perf_get_counter_t))]
+        private static ulong GetPerfCounter() => 0;
 
-        private ulong GetPerfCounter() => 0;
+        [MonoPInvokeCallback(typeof(retro_perf_register_t))]
+        private static void PerfRegister(ref retro_perf_counter counter) { }
 
-        private void PerfRegister(ref retro_perf_counter counter) { }
+        [MonoPInvokeCallback(typeof(retro_perf_start_t))]
+        private static void PerfStart(ref retro_perf_counter counter) { }
 
-        private void PerfStart(ref retro_perf_counter counter) { }
+        [MonoPInvokeCallback(typeof(retro_perf_stop_t))]
+        private static void PerfStop(ref retro_perf_counter counter) { }
 
-        private void PerfStop(ref retro_perf_counter counter) { }
-
-        private void PerfLog() { }
+        [MonoPInvokeCallback(typeof(retro_perf_log_t))]
+        private static void PerfLog() { }
 
         public bool GetPerfInterface(IntPtr data)
         {
