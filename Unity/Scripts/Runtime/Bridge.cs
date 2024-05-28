@@ -722,9 +722,12 @@ namespace SK.Libretro.Unity
             RestoreMaterial();
         });
 
-        private static string GetAndroidPrivateAppDataPath() => new AndroidJavaClass("com.unity3d.player.UnityPlayer")
-                                                               .GetStatic<AndroidJavaObject>("currentActivity")
-                                                               .Call<AndroidJavaObject>("getFilesDir")
-                                                               .Call<string>("getCanonicalPath");
+        private static string GetAndroidPrivateAppDataPath()
+        {
+            using AndroidJavaClass unityPlayerClass = new("com.unity3d.player.UnityPlayer");
+            using AndroidJavaObject currentActivity = unityPlayerClass.GetStatic<AndroidJavaObject>("currentActivity");
+            using AndroidJavaObject getFilesDir     = currentActivity.Call<AndroidJavaObject>("getFilesDir");
+            return getFilesDir.Call<string>("getCanonicalPath");
+        }
     }
 }
