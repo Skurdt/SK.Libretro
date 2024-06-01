@@ -22,7 +22,6 @@
 
 using SK.Libretro.Header;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -31,89 +30,86 @@ namespace SK.Libretro.Unity
     [RequireComponent(typeof(PlayerInputManager))]
     internal sealed class InputProcessor : MonoBehaviour, IInputProcessor
     {
-        public bool AnalogToDigital { get; set; }
+        public LeftStickBehaviour LeftStickBehaviour { get; set; }
 
         private readonly Dictionary<int, PlayerInputProcessor> _controls = new();
 
-        [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Input Callback")]
-        private void OnPlayerJoined(PlayerInput player)
+        private PlayerInputManager _playerInputManager;
+
+        private void Awake() => _playerInputManager = GetComponent<PlayerInputManager>();
+
+        private void OnEnable()
         {
-            if (!player.TryGetComponent(out PlayerInputProcessor processor))
-                return;
-
-            processor.InputActions = new();
-            player.actions = processor.InputActions.asset;
-            player.actions.Enable();
-
-            Debug.Log($"Player #{player.playerIndex} joined ({player.currentControlScheme}).");
-
-            if (_controls.ContainsKey(player.playerIndex))
-                return;
-
-            processor.AnalogDirectionsToDigital = AnalogToDigital;
-            _controls.Add(player.playerIndex, processor);
+            _playerInputManager.onPlayerJoined += OnPlayerJoined;
+            _playerInputManager.onPlayerLeft   += OnPlayerLeft;
         }
 
-        [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Input Callback")]
-        private void OnPlayerLeft(PlayerInput player)
+        private void OnDisable()
         {
-            Debug.Log($"Player #{player.playerIndex} left ({player.currentControlScheme}).");
-            if (_controls.ContainsKey(player.playerIndex))
-                _ = _controls.Remove(player.playerIndex);
+            _playerInputManager.onPlayerJoined -= OnPlayerJoined;
+            _playerInputManager.onPlayerLeft   -= OnPlayerLeft;
         }
 
-        public short JoypadButton(int port, RETRO_DEVICE_ID_JOYPAD button) =>
-            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.JoypadButton(button) : (short)0;
-        
-        public short JoypadButtons(int port) =>
-            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.JoypadButtons : (short)0;
+        public short JoypadButton(int port, RETRO_DEVICE_ID_JOYPAD button) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.JoypadHandler.IsButtonDown(button) : (short)0;
+        public short JoypadButtons(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.JoypadHandler.Buttons: (short)0;
 
-        public short MouseX(int port) =>
-            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.MouseX : (short)0;
-        
-        public short MouseY(int port) =>
-            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? (short)-processor.MouseY : (short)0;
-        
-        public short MouseWheel(int port) =>
-            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.MouseWheel : (short)0;
-        public short MouseButton(int port, RETRO_DEVICE_ID_MOUSE button) =>
-            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.MouseButton(button) : (short)0;
+        public short MouseX(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.MouseHandler.DeltaX : (short)0;
+        public short MouseY(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? (short)-processor.MouseHandler.DeltaY : (short)0;
+        public short MouseWheel(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.MouseHandler.Wheel : (short)0;
+        public short MouseButton(int port, RETRO_DEVICE_ID_MOUSE button) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.MouseHandler.IsButtonDown(button) : (short)0;
 
-        public short KeyboardKey(int port, retro_key key) =>
-            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.KeyboardKey(key) : (short)0;
+        public short KeyboardKey(int port, retro_key key) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.KeyboardHandler.IsKeyDown(key) : (short)0;
 
-        public short LightgunX(int port) =>
-            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.LightgunX : (short)0;
-        
-        public short LightgunY(int port) =>
-            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.LightgunY : (short)0;
-        
-        public bool LightgunIsOffscreen(int port) =>
-            _controls.TryGetValue(port, out PlayerInputProcessor processor) && processor.LightgunIsOffscreen;
-        
-        public short LightgunButton(int port, RETRO_DEVICE_ID_LIGHTGUN button) =>
-            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.LightgunButton(button) : (short)0;
+        public short LightgunX(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.LightgunHandler.X : (short)0;
+        public short LightgunY(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.LightgunHandler.Y : (short)0;
+        public bool LightgunIsOffscreen(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) && !processor.LightgunHandler.InScreen;
+        public short LightgunButton(int port, RETRO_DEVICE_ID_LIGHTGUN button) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.LightgunHandler.IsButtonDown(button) : (short)0;
 
-        public short AnalogLeftX(int port)  =>
-            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.AnalogLeftX : (short)0;
-        
-        public short AnalogLeftY(int port)  =>
-            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? (short)-processor.AnalogLeftY : (short)0;
-        
-        public short AnalogRightX(int port) =>
-            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.AnalogRightX : (short)0;
-        
-        public short AnalogRightY(int port) =>
-            _controls.TryGetValue(port, out PlayerInputProcessor processor) ? (short)-processor.AnalogRightY : (short)0;
-        
-        public short PointerX(int port) => 0;
+        public short AnalogLeftX(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.AnalogHandler.LeftX : (short)0;
+        public short AnalogLeftY(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? (short)-processor.AnalogHandler.LeftY : (short)0;
+        public short AnalogRightX(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.AnalogHandler.RightX : (short)0;
+        public short AnalogRightY(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? (short)-processor.AnalogHandler.RightY : (short)0;
 
-        public short PointerY(int port) => 0;
+        public short PointerX(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.PointerHandler.X : (short)0;
+        public short PointerY(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.PointerHandler.Y : (short)0;
+        public short PointerPressed(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.PointerHandler.Pressed : (short)0;
+        public short PointerCount(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.PointerHandler.Count : (short)0;
 
-        public short PointerPressed(int port) => 0;
+        public bool SetRumbleState(int port, retro_rumble_effect effect, ushort strength) => _controls.TryGetValue(port, out PlayerInputProcessor processor) && processor.SetRumbleState(effect, strength);
 
-        public short PointerCount(int port) => 0;
+        private void OnPlayerJoined(PlayerInput playerInput)
+        {
+            playerInput.onDeviceLost     += OnDeviceLost;
+            playerInput.onDeviceRegained += OnDeviceRegained;
 
-        public bool SetRumbleState(uint port, retro_rumble_effect effect, ushort strength) => true;
+            if (_controls.ContainsKey(playerInput.playerIndex))
+                return;
+
+            if (!playerInput.TryGetComponent(out PlayerInputProcessor processor))
+                return;
+
+            processor.Init(LeftStickBehaviour);
+
+            _controls.Add(playerInput.playerIndex, processor);
+            Debug.Log($"Player #{playerInput.playerIndex} joined ({playerInput.currentControlScheme}).");
+        }
+
+        private void OnPlayerLeft(PlayerInput playerInput)
+        {
+            playerInput.onDeviceLost     -= OnDeviceLost;
+            playerInput.onDeviceRegained -= OnDeviceRegained;
+
+            if (!_controls.Remove(playerInput.playerIndex))
+                return;
+
+            if (!_controls.TryGetValue(playerInput.playerIndex, out PlayerInputProcessor processor))
+                return;
+
+            Debug.Log($"Player #{playerInput.playerIndex} left ({playerInput.currentControlScheme}).");
+        }
+
+        private static void OnDeviceLost(PlayerInput playerInput) => Debug.Log($"Player {playerInput.playerIndex} device lost ({string.Join(", ", playerInput.devices)})");
+
+        private static void OnDeviceRegained(PlayerInput playerInput) => Debug.Log($"Player {playerInput.playerIndex} device regained ({string.Join(", ", playerInput.devices)})");
     }
 }

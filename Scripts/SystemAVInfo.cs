@@ -35,7 +35,7 @@ namespace SK.Libretro
         public double Fps        { get; private set; }
         public int SampleRate    { get; private set; }
 
-        public void Init(in retro_system_av_info info)
+        public void Init(retro_system_av_info info)
         {
             SetGeometry(info.geometry);
 
@@ -43,7 +43,7 @@ namespace SK.Libretro
             SampleRate  = Convert.ToInt32(info.timing.sample_rate);
         }
 
-        public void SetGeometry(in retro_game_geometry geometry)
+        public void SetGeometry(retro_game_geometry geometry)
         {
             BaseWidth   = (int)geometry.base_width;
             BaseHeight  = (int)geometry.base_height;

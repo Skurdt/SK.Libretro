@@ -26,7 +26,7 @@ namespace SK.Libretro
 {
     public interface IInputProcessor
     {
-        bool AnalogToDigital { get; set; }
+        LeftStickBehaviour LeftStickBehaviour { get; set; }
 
         short JoypadButton(int port, RETRO_DEVICE_ID_JOYPAD button);
         short JoypadButtons(int port);
@@ -53,6 +53,6 @@ namespace SK.Libretro
         short PointerPressed(int port);
         short PointerCount(int port);
 
-        bool SetRumbleState(uint port, retro_rumble_effect effect, ushort strength);
+        bool SetRumbleState(int port, retro_rumble_effect effect, ushort strength);
     }
 }

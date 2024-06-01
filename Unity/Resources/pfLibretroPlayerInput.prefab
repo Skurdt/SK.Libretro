@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 165074478685472279}
   - component: {fileID: 7597854315968552249}
-  - component: {fileID: 2011899786822766919}
+  - component: {fileID: 6080708275882547366}
   m_Layer: 0
-  m_Name: pfLibretroUserInput
+  m_Name: pfLibretroPlayerInput
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -45,7 +45,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Actions: {fileID: 0}
+  m_Actions: {fileID: -944628639613478452, guid: 418edd066acfda440ae3c6fe7a55ce80,
+    type: 3}
   m_NotificationBehavior: 3
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
@@ -492,10 +493,10 @@ MonoBehaviour:
     m_ActionName: RetroPad/LightgunDpadRight[/Keyboard/d]
   m_NeverAutoSwitchControlSchemes: 1
   m_DefaultControlScheme: 
-  m_DefaultActionMap: Emulation
+  m_DefaultActionMap: 
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
---- !u!114 &2011899786822766919
+--- !u!114 &6080708275882547366
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -504,8 +505,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 5935147032659695642}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2eb77a6d4c597e946a168e94e1a7d536, type: 3}
+  m_Script: {fileID: 11500000, guid: 31755f215bba0594c99dcaab8132ede3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _libretroInstanceVariable: {fileID: 11400000, guid: 9faaf68029873df4697d6eb103e3bf41,
+  _libretroInstanceVariable: {fileID: 11400000, guid: 18fb6a4ce326c4d48922f876229e625a,
     type: 2}

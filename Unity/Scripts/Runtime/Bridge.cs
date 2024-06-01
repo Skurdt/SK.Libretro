@@ -24,12 +24,10 @@ using Cysharp.Threading.Tasks;
 using SK.Libretro.Header;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Object = UnityEngine.Object;
 
 namespace SK.Libretro.Unity
@@ -635,7 +633,7 @@ namespace SK.Libretro.Unity
             MainThreadDispatcher.Enqueue(() =>
             {
                 audio = GetAudioProcessor(_instanceComponent.transform);
-                input = GetInputProcessor(_instanceComponent.Settings.AnalogToDigital);
+                input = GetInputProcessor(_instanceComponent.Settings.LeftStickBehaviour);
                 led   = GetLedProcessor();
                 _manualResetEvent.Set();
                 getComponentsTokenSource.Cancel();
@@ -650,12 +648,10 @@ namespace SK.Libretro.Unity
 
         private static IAudioProcessor GetAudioProcessor(Transform instanceTransform)
         {
-//#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-//            AudioProcessor unityAudio = instanceTransform.GetComponentInChildren<AudioProcessor>();
-//            return unityAudio && unityAudio.gameObject.activeSelf ? unityAudio : new AudioProcessorSDL();
-//#elif UNITY_ANDROID
-//            return null;
-//#else
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+            AudioProcessor unityAudio = instanceTransform.GetComponentInChildren<AudioProcessor>(false);
+            return unityAudio && unityAudio.enabled ? unityAudio : new AudioProcessorSDL();
+#else
             AudioProcessor unityAudio = instanceTransform.GetComponentInChildren<AudioProcessor>(true);
             if (unityAudio)
             {
@@ -669,25 +665,15 @@ namespace SK.Libretro.Unity
                 unityAudio = audioProcessorGameObject.AddComponent<AudioProcessor>();
             }
             return unityAudio;
-//#endif
+#endif
         }
 
-        private static IInputProcessor GetInputProcessor(bool analogToDigital)
+        private static IInputProcessor GetInputProcessor(LeftStickBehaviour leftStickBehaviour)
         {
-            PlayerInputManager playerInputManager = Object.FindFirstObjectByType<PlayerInputManager>();
-            if (!playerInputManager)
-            {
-                GameObject processorGameObject = new("LibretroInputProcessor");
-                playerInputManager = processorGameObject.AddComponent<PlayerInputManager>();
-                playerInputManager.EnableJoining();
-                playerInputManager.joinBehavior = PlayerJoinBehavior.JoinPlayersWhenButtonIsPressed;
-                playerInputManager.playerPrefab = Resources.Load<GameObject>("pfLibretroUserInput");
-            }
-
-            if (!playerInputManager.TryGetComponent(out IInputProcessor inputProcessor))
-                inputProcessor = playerInputManager.gameObject.AddComponent<InputProcessor>();
-
-            inputProcessor.AnalogToDigital = analogToDigital;
+            InputProcessor inputProcessor = Object.FindFirstObjectByType<InputProcessor>();
+            if (!inputProcessor)
+                inputProcessor = Object.Instantiate(Resources.Load<InputProcessor>("pfLibretroInputProcessor"));
+            inputProcessor.LeftStickBehaviour = leftStickBehaviour;
             return inputProcessor;
         }
 

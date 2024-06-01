@@ -411,7 +411,7 @@ namespace SK.Libretro
 
         [MonoPInvokeCallback(typeof(retro_set_rumble_state_t))]
         private static bool SetRumbleState(uint port, retro_rumble_effect effect, ushort strength)
-            => Wrapper.TryGetInstance(Thread.CurrentThread, out Wrapper wrapper) && wrapper.InputHandler._processor.SetRumbleState(port, effect, strength);
+            => Wrapper.TryGetInstance(Thread.CurrentThread, out Wrapper wrapper) && wrapper.InputHandler._processor.SetRumbleState((int)port, effect, strength);
 
         private static short BoolToShort(bool boolValue) => (short)(boolValue ? 1 : 0);
     }

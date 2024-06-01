@@ -25,17 +25,17 @@ namespace SK.Libretro.Unity
     [System.Serializable]
     public sealed class InstanceSettings
     {
-        public bool AllowGLCoresInEditor = true;
-        public string ShaderTextureName  = "_MainTex";
-        public bool AudioDistanceControl = true;
-        public float AudioMaxVolume      = 1f;
-        public float AudioMinDistance    = 2f;
-        public float AudioMaxDistance    = 10f;
-        public bool AnalogToDigital      = false;
-        public bool RewindEnabled        = false;
-        public bool ReadSaveMemory       = false;
-        public bool ReadRtcMemory        = false;
-        public bool ReadSystemMemory     = false;
-        public bool ReadVideoMemory      = false;
+        public bool AllowGLCoresInEditor             = true;
+        public string ShaderTextureName              = "_MainTex";
+        public bool AudioDistanceControl             = true;
+        public float AudioMaxVolume                  = 1f;
+        public float AudioMinDistance                = 2f;
+        public float AudioMaxDistance                = 10f;
+        public LeftStickBehaviour LeftStickBehaviour = LeftStickBehaviour.AnalogAndDigital;
+        public bool RewindEnabled                    = false;
+        public bool ReadSaveMemory                   = false;
+        public bool ReadRtcMemory                    = false;
+        public bool ReadSystemMemory                 = false;
+        public bool ReadVideoMemory                  = false;
     }
 }

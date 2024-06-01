@@ -149,7 +149,7 @@ namespace SK.Libretro
             return _wrapper.Settings.UseCoreRotation;
         }
 
-        public bool SetGeometry(in retro_game_geometry geometry)
+        public bool SetGeometry(retro_game_geometry geometry)
         {
             if (SystemAVInfo.BaseWidth != geometry.base_width
              || SystemAVInfo.BaseHeight != geometry.base_height

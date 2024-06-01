@@ -3,8 +3,8 @@
     "rootNamespace": "SK.Libretro.Unity.Editor",
     "references": [
         "GUID:f51ebe6a0ceec4240a699833d6309b23",
-        "GUID:39dd5a9af0abb57419a105585282ccbb",
-        "GUID:400dc1aee615d994fac34ce04fbb49af"
+        "GUID:cd2552cf127855444879a5c5e66bcbf4",
+        "GUID:6259e8c77fbd2c5488cdd59f54a2f50b"
     ],
     "includePlatforms": [
         "Editor"

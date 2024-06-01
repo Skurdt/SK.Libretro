@@ -5,8 +5,8 @@
   "description": "Libretro support in Unity",
   "unity": "2022.3",
   "dependencies": {
-    "com.unity.burst": "1.8.13",
-    "com.unity.inputsystem": "1.7.0"
+    "com.unity.burst": "1.8.15",
+    "com.unity.inputsystem": "1.8.2"
   },
   "keywords": [],
   "author": {
