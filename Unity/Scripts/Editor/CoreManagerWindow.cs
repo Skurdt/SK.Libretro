@@ -72,7 +72,7 @@ namespace SK.Libretro.Unity.Editor
         protected CoreList _coreList;
         protected List<Core> _coreListDisplay;
 
-        private void Awake()
+        protected static void InitializePaths()
         {
             _buildbotUrl       ??= $"https://buildbot.libretro.com/nightly/{CurrentPlatform}/x86_64/latest/";
             _libretroDirectory ??= $"{Application.persistentDataPath}/libretro~";

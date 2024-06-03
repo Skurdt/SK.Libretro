@@ -50,6 +50,8 @@ namespace SK.Libretro.Unity.Editor
             if (CurrentPlatform is null)
                 return;
 
+            InitializePaths();
+
             _ = FileSystem.GetOrCreateDirectory(_libretroDirectory);
             _ = FileSystem.GetOrCreateDirectory(_coresDirectory);
             _ = FileSystem.GetOrCreateDirectory(_infoDirectory);
