@@ -358,11 +358,11 @@ namespace SK.Libretro.Unity
         public Bridge(LibretroInstance instance)
         {
             _instanceComponent = instance;
-            _mainDirectory     = $"{Application.persistentDataPath}/libretro~";
+            _mainDirectory     = $"{Application.persistentDataPath}/Libretro";
             _tempDirectory     = Application.platform switch
             {
                 UnityEngine.RuntimePlatform.Android => $"{GetAndroidPrivateAppDataPath()}/temp",
-                _                                   => $"{Application.persistentDataPath}/libretro~/temp"
+                _                                   => $"{_mainDirectory}/temp"
             };
             _originalMaterial  = instance.Renderer ? new(instance.Renderer.material) : null;
             _shaderTextureId   = Shader.PropertyToID(_instanceComponent.Settings.ShaderTextureName);

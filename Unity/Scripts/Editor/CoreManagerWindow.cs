@@ -75,7 +75,7 @@ namespace SK.Libretro.Unity.Editor
         protected static void InitializePaths()
         {
             _buildbotUrl       ??= $"https://buildbot.libretro.com/nightly/{CurrentPlatform}/x86_64/latest/";
-            _libretroDirectory ??= $"{Application.persistentDataPath}/libretro~";
+            _libretroDirectory ??= $"{Application.persistentDataPath}/Libretro";
             _coresDirectory    ??= $"{_libretroDirectory}/cores";
             _coresStatusFile   ??= $"{_libretroDirectory}/cores.json";
         }

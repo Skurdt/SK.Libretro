@@ -145,7 +145,7 @@ namespace SK.Libretro.Unity.Editor
 
         private void ShowSelectCoreWindow()
         {
-            string coresDirectory = $"{Application.persistentDataPath}/libretro~/cores";
+            string coresDirectory = $"{Application.persistentDataPath}/Libretro/cores";
             if (!Directory.Exists(coresDirectory))
             {
                 Debug.LogError($"[LibretroInstanceInspector] Cores directory not found: {coresDirectory}");
