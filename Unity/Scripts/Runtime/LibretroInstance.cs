@@ -29,11 +29,11 @@ namespace SK.Libretro.Unity
     [DisallowMultipleComponent]
     public sealed class LibretroInstance : MonoBehaviour
     {
-        [field: SerializeField] public Camera Camera { get; private set; }
-        [field: SerializeField, Layer] public int LightgunRaycastLayer { get; private set; }
-        [field: SerializeField] public Renderer Renderer { get; private set; }
-        [field: SerializeField] public Collider Collider { get; private set; }
-        [field: SerializeField] public Transform Viewer { get; private set; }
+        [field: SerializeField] public Camera Camera { get; set; }
+        [field: SerializeField, Layer] public int LightgunRaycastLayer { get; set; }
+        [field: SerializeField] public Renderer Renderer { get; set; }
+        [field: SerializeField] public Collider Collider { get; set; }
+        [field: SerializeField] public Transform Viewer { get; set; }
         [field: SerializeField] public InstanceSettings Settings { get; private set; }
         [field: SerializeField] public string CoreName { get; private set; }
         [field: SerializeField] public string GamesDirectory { get; private set; }
@@ -97,6 +97,8 @@ namespace SK.Libretro.Unity
             CoreName       = coreName;
             GamesDirectory = gamesDirectory;
             GameNames      = gameNames;
+
+            Settings ??= new();
         }
 
         public void DeInitialize()
@@ -110,6 +112,12 @@ namespace SK.Libretro.Unity
         {
             if (Running)
                 return;
+
+            if (!Renderer)
+                Renderer = GetComponent<Renderer>();
+
+            if (!Collider)
+                Collider = GetComponent<Collider>();
 
             _bridge = new(this);
             _bridge.StartContent(CoreName, GamesDirectory, GameNames, OnInstanceStarted, OnInstanceStopped);
