@@ -40,7 +40,7 @@ namespace SK.Libretro.Unity
 
         private void OnAudioFilterRead(float[] data, int channels)
         {
-            if (_circularBuffer.Length < data.Length)
+            if (!_circularBuffer.IsCreated || _circularBuffer.Length < data.Length)
                 return;
 
             for (int i = 0; i < data.Length; ++i)
