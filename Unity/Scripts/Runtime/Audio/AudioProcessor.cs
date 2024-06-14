@@ -28,7 +28,7 @@ using UnityEngine;
 namespace SK.Libretro.Unity
 {
     [RequireComponent(typeof(AudioSource)), DisallowMultipleComponent]
-    internal sealed class AudioProcessor : MonoBehaviour, IAudioProcessor
+    public sealed class AudioProcessor : MonoBehaviour, IAudioProcessor
     {
         private const int AUDIO_BUFFER_SIZE = 65535;
 
@@ -63,6 +63,7 @@ namespace SK.Libretro.Unity
 
             if (!_audioSource)
                 _audioSource = GetComponent<AudioSource>();
+            _audioSource.playOnAwake = false;
             _audioSource.Play();
         });
 
