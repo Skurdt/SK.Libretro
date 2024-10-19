@@ -52,18 +52,6 @@ namespace SK.Libretro.Unity.Editor
             _gamesProperty             = serializedObject.FindProperty($"<{nameof(LibretroInstance.GameNames)}>k__BackingField");
         }
 
-        //public override VisualElement CreateInspectorGUI()
-        //{
-        //    VisualElement root = new();
-        //    root.Add(new PropertyField(_cameraProperty));
-        //    root.Add(new PropertyField(_raycastLayerProperty));
-        //    root.Add(new PropertyField(_rendererProperty));
-        //    root.Add(new PropertyField(_colliderProperty));
-        //    root.Add(new PropertyField(_viewerProperty));
-        //    root.Add(new PropertyField(_settingsProperty));
-        //    return root;
-        //}
-
         public override void OnInspectorGUI()
         {
             serializedObject.Update();

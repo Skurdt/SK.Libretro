@@ -78,6 +78,9 @@ namespace SK.Libretro.Unity
 
         public void ProcessSample(short left, short right) => MainThreadDispatcher.Enqueue(() =>
         {
+            if (!_circularBuffer.IsCreated)
+                return;
+
             float ratio                 = (float)_outputSampleRate / _inputSampleRate;
             int sourceSamplesCount      = 2;
             int destinationSamplesCount = (int)(sourceSamplesCount * ratio);
@@ -99,6 +102,9 @@ namespace SK.Libretro.Unity
 
         public unsafe void ProcessSampleBatch(IntPtr data, nuint frames) => MainThreadDispatcher.Enqueue(() =>
         {
+            if (!_circularBuffer.IsCreated)
+                return;
+
             short* sourceSamples        = (short*)data;
             float ratio                 = (float)_outputSampleRate / _inputSampleRate;
             int sourceSamplesCount      = (int)frames * 2;
