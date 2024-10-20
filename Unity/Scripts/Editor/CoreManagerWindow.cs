@@ -20,7 +20,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using Cysharp.Threading.Tasks;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using System;
@@ -130,11 +129,10 @@ namespace SK.Libretro.Unity.Editor
             _coreListView.Rebuild();
         }
 
-        private async UniTask ToolbarDownloadInfoFilesButtonClickedCallback(ToolbarButton downloadInfoFilesButton)
+        private async Awaitable ToolbarDownloadInfoFilesButtonClickedCallback(ToolbarButton downloadInfoFilesButton)
         {
             downloadInfoFilesButton.SetEnabled(false);
-            using CancellationTokenSource tokenSource = new();
-            string infoRepositoryPath = await DownloadFile("https://github.com/libretro/libretro-core-info/archive/refs/heads/master.zip", _infoDirectory, tokenSource.Token);
+            string infoRepositoryPath = await DownloadFile("https://github.com/libretro/libretro-core-info/archive/refs/heads/master.zip", _infoDirectory);
             ExtractFile(infoRepositoryPath, _infoDirectory);
             FileSystem.DeleteFile(infoRepositoryPath);
 
@@ -204,7 +202,7 @@ namespace SK.Libretro.Unity.Editor
             label.text = core.DisplayName;
         }
 
-        private async UniTask CoreListItemButtonClickedCallback(Core core, Button button)
+        private async Awaitable CoreListItemButtonClickedCallback(Core core, Button button)
         {
             button.EnableInClassList("core-list-item-not-available", false);
             button.EnableInClassList("core-list-item-latest", false);
@@ -306,22 +304,21 @@ namespace SK.Libretro.Unity.Editor
             _coreListDisplay = _coreList.Cores;
         }
 
-        private async UniTask ListItemButtonClickedCallback(Core core, CancellationToken cancellationToken)
+        private async Awaitable ListItemButtonClickedCallback(Core core, CancellationToken cancellationToken)
         {
             core.Processing = true;
             await DownloadAndExtractTask(core, cancellationToken);
             core.Processing = false;
         }
 
-        private async UniTask DownloadAndExtractTask(Core core, CancellationToken cancellationToken)
+        private async Awaitable DownloadAndExtractTask(Core core, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                string zipPath = await DownloadFile($"{_buildbotUrl}{core.FullName}", _coresDirectory, cancellationToken);
+                string zipPath = await DownloadFile($"{_buildbotUrl}{core.FullName}", _coresDirectory);
                 ExtractFile(zipPath, _coresDirectory);
-                await UniTask.Delay(500, delayType: DelayType.Realtime, cancellationToken: cancellationToken);
                 FileSystem.DeleteFile(zipPath);
 
                 core.CurrentDate = core.LatestDate;
@@ -336,14 +333,13 @@ namespace SK.Libretro.Unity.Editor
             }
         }
 
-        private static async UniTask<string> DownloadFile(string url, string directory, CancellationToken cancellationToken)
+        private static async Awaitable<string> DownloadFile(string url, string directory)
         {
             try
             {
                 string fileName = Path.GetFileName(url);
                 string filePath = $"{directory}/{fileName}";
                 FileSystem.DeleteFile(filePath);
-                await UniTask.Delay(200, delayType: DelayType.Realtime, cancellationToken: cancellationToken);
 
                 using WebClient webClient = new();
                 await webClient.DownloadFileTaskAsync(url, filePath);

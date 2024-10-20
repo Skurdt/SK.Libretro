@@ -20,7 +20,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using Cysharp.Threading.Tasks;
 using SK.Libretro.Header;
 using System;
 using System.Collections.Concurrent;
@@ -684,7 +683,7 @@ namespace SK.Libretro.Unity
             if (!_texture || !Running)
                 return;
 
-            await UniTask.WaitForEndOfFrame(_instanceComponent);
+            await Awaitable.EndOfFrameAsync();
 
             Texture2D tex = new(_texture.width, _texture.height, TextureFormat.RGB24, false, false, true);
             tex.SetPixels32(_texture.GetPixels32());
