@@ -24,7 +24,6 @@ using SK.Libretro.Header;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace SK.Libretro
 {
@@ -314,21 +313,18 @@ namespace SK.Libretro
         [MonoPInvokeCallback(typeof(retro_input_state_t))]
         private static short StateCallback(uint port, RETRO_DEVICE device, uint index, uint id)
         {
-            if (!Wrapper.TryGetInstance(Thread.CurrentThread, out Wrapper wrapper))
-                return 0;
-
-            if (!wrapper.InputHandler.Enabled)
+            if (!Wrapper.Instance.InputHandler.Enabled)
                 return 0;
 
             device &= (RETRO_DEVICE)RETRO.DEVICE_MASK;
             return device switch
             {
-                RETRO_DEVICE.JOYPAD   => wrapper.InputHandler.ProcessJoypadDevice(port, (RETRO_DEVICE_ID_JOYPAD)id),
-                RETRO_DEVICE.MOUSE    => wrapper.InputHandler.ProcessMouseDevice(port, (RETRO_DEVICE_ID_MOUSE)id),
-                RETRO_DEVICE.KEYBOARD => wrapper.InputHandler.ProcessKeyboardDevice(port, (retro_key)id),
-                RETRO_DEVICE.LIGHTGUN => wrapper.InputHandler.ProcessLightgunDevice(port, (RETRO_DEVICE_ID_LIGHTGUN)id),
-                RETRO_DEVICE.POINTER  => wrapper.InputHandler.ProcessPointerDevice(port, (RETRO_DEVICE_ID_POINTER)id),
-                RETRO_DEVICE.ANALOG   => wrapper.InputHandler.ProcessAnalogDevice(port, (RETRO_DEVICE_INDEX_ANALOG)index, (RETRO_DEVICE_ID_ANALOG)id),
+                RETRO_DEVICE.JOYPAD   => Wrapper.Instance.InputHandler.ProcessJoypadDevice(port, (RETRO_DEVICE_ID_JOYPAD)id),
+                RETRO_DEVICE.MOUSE    => Wrapper.Instance.InputHandler.ProcessMouseDevice(port, (RETRO_DEVICE_ID_MOUSE)id),
+                RETRO_DEVICE.KEYBOARD => Wrapper.Instance.InputHandler.ProcessKeyboardDevice(port, (retro_key)id),
+                RETRO_DEVICE.LIGHTGUN => Wrapper.Instance.InputHandler.ProcessLightgunDevice(port, (RETRO_DEVICE_ID_LIGHTGUN)id),
+                RETRO_DEVICE.POINTER  => Wrapper.Instance.InputHandler.ProcessPointerDevice(port, (RETRO_DEVICE_ID_POINTER)id),
+                RETRO_DEVICE.ANALOG   => Wrapper.Instance.InputHandler.ProcessAnalogDevice(port, (RETRO_DEVICE_INDEX_ANALOG)index, (RETRO_DEVICE_ID_ANALOG)id),
                 _ => 0
             };
         }
@@ -411,7 +407,7 @@ namespace SK.Libretro
 
         [MonoPInvokeCallback(typeof(retro_set_rumble_state_t))]
         private static bool SetRumbleState(uint port, retro_rumble_effect effect, ushort strength)
-            => Wrapper.TryGetInstance(Thread.CurrentThread, out Wrapper wrapper) && wrapper.InputHandler._processor.SetRumbleState((int)port, effect, strength);
+            => Wrapper.Instance.InputHandler._processor.SetRumbleState((int)port, effect, strength);
 
         private static short BoolToShort(bool boolValue) => (short)(boolValue ? 1 : 0);
     }

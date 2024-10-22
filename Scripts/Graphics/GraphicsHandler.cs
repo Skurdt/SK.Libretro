@@ -23,7 +23,6 @@
 using SK.Libretro.Header;
 using System;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace SK.Libretro
 {
@@ -164,11 +163,8 @@ namespace SK.Libretro
         [MonoPInvokeCallback(typeof(retro_video_refresh_t))]
         private static void RefreshCallback(IntPtr data, uint width, uint height, nuint pitch)
         {
-            if (!Wrapper.TryGetInstance(Thread.CurrentThread, out Wrapper wrapper))
-                return;
-
-            if (wrapper.GraphicsHandler.Enabled)
-                wrapper.GraphicsHandler._frameHandler.ProcessFrame(data, width, height, pitch);
+            if (Wrapper.Instance.GraphicsHandler.Enabled)
+                Wrapper.Instance.GraphicsHandler._frameHandler.ProcessFrame(data, width, height, pitch);
         }
     }
 }

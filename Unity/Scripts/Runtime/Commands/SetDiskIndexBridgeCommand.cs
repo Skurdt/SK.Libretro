@@ -35,10 +35,10 @@ namespace SK.Libretro.Unity
             _index          = index;
         }
 
-        public void Execute(Wrapper wrapper)
+        public void Execute()
         {
-            if (wrapper.DiskHandler.Enabled && !string.IsNullOrWhiteSpace(_gamesDirectory) && _gameNames is not null && _index >= 0 && _index < _gameNames.Length)
-                _ = wrapper.DiskHandler.SetImageIndexAuto((uint)_index, $"{_gamesDirectory}/{_gameNames[_index]}");
+            if (Wrapper.Instance.DiskHandler.Enabled && !string.IsNullOrWhiteSpace(_gamesDirectory) && _gameNames is not null && _index >= 0 && _index < _gameNames.Length)
+                _ = Wrapper.Instance.DiskHandler.SetImageIndexAuto((uint)_index, $"{_gamesDirectory}/{_gameNames[_index]}");
         }
     }
 }

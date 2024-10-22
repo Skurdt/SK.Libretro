@@ -22,7 +22,6 @@
 
 using SK.Libretro.Header;
 using System;
-using System.Threading;
 
 namespace SK.Libretro
 {
@@ -96,22 +95,15 @@ namespace SK.Libretro
         [MonoPInvokeCallback(typeof(retro_audio_sample_t))]
         private static void SampleCallback(short left, short right)
         {
-            if (!Wrapper.TryGetInstance(Thread.CurrentThread, out Wrapper wrapper))
-                return;
-
-            if (wrapper.AudioHandler.Enabled)
-                wrapper.AudioHandler._processor.ProcessSample(left, right);
+            if (Wrapper.Instance.AudioHandler.Enabled)
+                Wrapper.Instance.AudioHandler._processor.ProcessSample(left, right);
         }
 
         [MonoPInvokeCallback(typeof(retro_audio_sample_batch_t))]
         private static nuint SampleBatchCallback(IntPtr data, nuint frames)
         {
-            if (!Wrapper.TryGetInstance(Thread.CurrentThread, out Wrapper wrapper))
-                return frames;
-
-            if (wrapper.AudioHandler.Enabled)
-                wrapper.AudioHandler._processor.ProcessSampleBatch(data, frames);
-
+            if (Wrapper.Instance.AudioHandler.Enabled)
+                Wrapper.Instance.AudioHandler._processor.ProcessSampleBatch(data, frames);
             return frames;
         }
     }

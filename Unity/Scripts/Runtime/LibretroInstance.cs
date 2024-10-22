@@ -42,53 +42,39 @@ namespace SK.Libretro.Unity
         public event Action OnInstanceStarted;
         public event Action OnInstanceStopped;
 
-        public bool Running => _bridge is not null && _bridge.Running;
+        public bool Running => Bridge.Instance.Running;
 
-        public ControllersMap ControllersMap => _bridge is not null ? _bridge.ControllersMap : ControllersMap.Empty;
+        public ControllersMap ControllersMap => Bridge.Instance.ControllersMap;
 
         public bool InputEnabled
         {
-            get => _bridge is not null && _bridge.InputEnabled;
-            set
-            {
-                if (_bridge is not null)
-                    _bridge.InputEnabled = value;
-            }
+            get => Bridge.Instance.InputEnabled;
+            set => Bridge.Instance.InputEnabled = value;
         }
 
-        public bool DiskHandlerEnabled => _bridge is not null && _bridge.DiskHandlerEnabled;
+        public bool DiskHandlerEnabled => Bridge.Instance.DiskHandlerEnabled;
 
         public bool FastForward
         {
-            get => _bridge is not null && _bridge.FastForward;
-            set
-            {
-                if (_bridge is not null)
-                    _bridge.FastForward = value;
-            }
+            get => Bridge.Instance.FastForward;
+            set => Bridge.Instance.FastForward = value;
         }
 
         public bool Rewind
         {
-            get => _bridge is not null && _bridge.Rewind;
-            set
-            {
-                if (_bridge is not null)
-                    _bridge.Rewind = value;
-            }
+            get => Bridge.Instance.Rewind;
+            set => Bridge.Instance.Rewind = value;
         }
 
-        public (Options, Options) Options => _bridge is not null ? _bridge.Options : default;
+        public (Options, Options) Options => Bridge.Instance.Options;
 
-        public byte[] SaveMemory => _bridge is not null ? _bridge.SaveMemory : Array.Empty<byte>();
+        public byte[] SaveMemory => Bridge.Instance.SaveMemory;
 
-        public byte[] RtcMemory => _bridge is not null ? _bridge.RtcMemory : Array.Empty<byte>();
+        public byte[] RtcMemory => Bridge.Instance.RtcMemory;
 
-        public byte[] SystemMemory => _bridge is not null ? _bridge.SystemMemory : Array.Empty<byte>();
+        public byte[] SystemMemory => Bridge.Instance.SystemMemory;
 
-        public byte[] VideoMemory => _bridge is not null ? _bridge.VideoMemory : Array.Empty<byte>();
-
-        private Bridge _bridge;
+        public byte[] VideoMemory => Bridge.Instance.VideoMemory;
 
         private void OnDisable() => StopContent();
 
@@ -119,36 +105,31 @@ namespace SK.Libretro.Unity
             if (!Collider)
                 Collider = GetComponent<Collider>();
 
-            _bridge = new(this);
-            _bridge.StartContent(CoreName, GamesDirectory, GameNames, OnInstanceStarted, OnInstanceStopped);
+            Bridge.Instance.StartContent(this, CoreName, GamesDirectory, GameNames, OnInstanceStarted, OnInstanceStopped);
         }
 
-        public void PauseContent() => _bridge?.PauseContent();
+        public void PauseContent() => Bridge.Instance.PauseContent();
 
-        public void ResumeContent() => _bridge?.ResumeContent();
+        public void ResumeContent() => Bridge.Instance.ResumeContent();
 
-        public void ResetContent() => _bridge?.ResetContent();
+        public void ResetContent() => Bridge.Instance.ResetContent();
 
-        public void StopContent()
-        {
-            _bridge?.StopContent();
-            _bridge = null;
-        }
+        public void StopContent() => Bridge.Instance.StopContent();
 
-        public void SetControllerPortDevice(uint port, RETRO_DEVICE id) => _bridge?.SetControllerPortDevice(port, id);
+        public void SetControllerPortDevice(uint port, RETRO_DEVICE id) => Bridge.Instance.SetControllerPortDevice(port, id);
 
-        public void SetStateSlot(int slot) => _bridge?.SetStateSlot(slot);
+        public void SetStateSlot(int slot) => Bridge.Instance.SetStateSlot(slot);
 
-        public void SaveStateWithScreenshot() => _bridge?.SaveStateWithScreenshot();
+        public void SaveStateWithScreenshot() => Bridge.Instance.SaveStateWithScreenshot();
 
-        public void LoadState() => _bridge?.LoadState();
+        public void LoadState() => Bridge.Instance.LoadState();
 
-        public void SetDiskIndex(int index) => _bridge?.SetDiskIndex(index);
+        public void SetDiskIndex(int index) => Bridge.Instance.SetDiskIndex(index);
 
-        public void SaveSRAM() => _bridge?.SaveSRAM();
+        public void SaveSRAM() => Bridge.Instance.SaveSRAM();
 
-        public void LoadSRAM() => _bridge?.LoadSRAM();
+        public void LoadSRAM() => Bridge.Instance.LoadSRAM();
 
-        public void SaveOptions(bool global) => _bridge?.SaveOptions(global);
+        public void SaveOptions(bool global) => Bridge.Instance.SaveOptions(global);
     }
 }

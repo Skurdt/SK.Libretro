@@ -35,6 +35,6 @@ namespace SK.Libretro.Unity
             _device = device;
         }
 
-        public void Execute(Wrapper wrapper) => wrapper.Core.SetControllerPortDevice(_port, _device);
+        public void Execute() => Wrapper.Instance.Core.SetControllerPortDevice(_port, _device);
     }
 }

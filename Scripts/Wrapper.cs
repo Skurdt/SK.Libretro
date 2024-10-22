@@ -24,63 +24,71 @@ using SK.Libretro.Header;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace SK.Libretro
 {
     internal sealed class Wrapper
     {
+        public static Wrapper Instance
+        {
+            get
+            {
+                _instance ??= new();
+                return _instance;
+            }
+        }
+
         public static string CoresDirectory      { get; private set; } = null;
         public static string OptionsDirectory    { get; private set; } = null;
         public static string SavesDirectory      { get; private set; } = null;
         public static string StatesDirectory     { get; private set; } = null;
         public static string TempDirectory       { get; private set; } = null;
 
-        public readonly WrapperSettings Settings;
+        public WrapperSettings Settings { get; private set; }
 
-        public readonly Core Core;
-        public readonly Game Game;
+        public Core Core { get; private set; }
+        public Game Game { get; private set; }
 
-        public readonly EnvironmentHandler EnvironmentHandler;
-        public readonly GraphicsHandler GraphicsHandler;
-        public readonly AudioHandler AudioHandler;
-        public readonly InputHandler InputHandler;
-        public readonly LogHandler LogHandler;
-        public readonly OptionsHandler OptionsHandler;
-        public readonly VFSHandler VFSHandler;
-        public readonly SerializationHandler SerializationHandler;
-        public readonly DiskHandler DiskHandler;
-        public readonly PerfHandler PerfHandler;
-        public readonly LedHandler LedHandler;
-        public readonly MessageHandler MessageHandler;
-        public readonly MemoryHandler MemoryHandler;
+        public EnvironmentHandler EnvironmentHandler { get; private set; }
+        public GraphicsHandler GraphicsHandler { get; private set; }
+        public AudioHandler AudioHandler { get; private set; }
+        public InputHandler InputHandler { get; private set; }
+        public LogHandler LogHandler { get; private set; }
+        public OptionsHandler OptionsHandler { get; private set; }
+        public VFSHandler VFSHandler { get; private set; }
+        public SerializationHandler SerializationHandler { get; private set; }
+        public DiskHandler DiskHandler { get; private set; }
+        public PerfHandler PerfHandler { get; private set; }
+        public LedHandler LedHandler { get; private set; }
+        public MessageHandler MessageHandler { get; private set; }
+        public MemoryHandler MemoryHandler { get; private set; }
 
-        public bool RewindEnabled = false;
-        public bool PerformRewind = false;
+        public bool RewindEnabled { get; private set; } = false;
+        public bool PerformRewind { get; private set; } = false;
 
         public retro_frame_time_callback FrameTimeInterface;
         public retro_frame_time_callback_t FrameTimeInterfaceCallback;
 
         //private const int REWIND_FRAMES_INTERVAL = 10;
 
-        private static readonly object _lock = new();
-        private static readonly Dictionary<Thread, Wrapper> _instances = new();
+        private static Wrapper _instance;
+        private static string _mainDirectory;
+        private static string _systemDirectory;
+        private static string _coreAssetsDirectory;
 
-        private static string _mainDirectory       = null;
-        private static string _systemDirectory     = null;
-        private static string _coreAssetsDirectory = null;
-
-        private readonly Thread _thread;
         private readonly List<IntPtr> _unsafeStrings = new();
         private long _frameTimeLast                  = 0;
+
         //private uint _totalFrameCount                = 0;
 
-        public static bool TryGetInstance(Thread thread, out Wrapper wrapper) => _instances.TryGetValue(thread, out wrapper);
-
-        public Wrapper(WrapperSettings settings)
+        private Wrapper()
         {
-            _thread = Thread.CurrentThread;
+        }
 
+        public bool StartContent(WrapperSettings settings, string coreName, string gameDirectory, string[] gameNames)
+        {
+            if (string.IsNullOrWhiteSpace(coreName))
+                return false;
             Settings = settings;
 
             if (_mainDirectory is null)
@@ -115,16 +123,6 @@ namespace SK.Libretro
             LedHandler               = new(settings.LedProcessor);
             MessageHandler           = new(this, settings.MessageProcessor);
             MemoryHandler            = new(this);
-        }
-
-        public bool StartContent(string coreName, string gameDirectory, string[] gameNames)
-        {
-            if (string.IsNullOrWhiteSpace(coreName))
-                return false;
-
-            lock (_lock)
-                if (!_instances.TryAdd(_thread, this))
-                    return false;
 
             if (!Core.Start(coreName))
             {
@@ -170,9 +168,6 @@ namespace SK.Libretro
             VFSHandler.Dispose();
 
             PointerUtilities.Free(_unsafeStrings);
-
-            lock (_lock)
-                _ = _instances.Remove(_thread);
         }
 
         public void RunFrame()

@@ -28,6 +28,6 @@ namespace SK.Libretro.Unity
 
         public SetStateSlotBridgeCommand(int slot) => _slot = slot;
 
-        public void Execute(Wrapper wrapper) => wrapper.SerializationHandler.SetStateSlot(_slot);
+        public void Execute() => Wrapper.Instance.SerializationHandler.SetStateSlot(_slot);
     }
 }

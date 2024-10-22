@@ -30,9 +30,9 @@ namespace SK.Libretro.Unity
 
         public SaveStateWithScreenshotBridgeCommand(Action<string> takeScreenshotFunc) => _takeScreenshotFunc = takeScreenshotFunc;
 
-        public void Execute(Wrapper wrapper)
+        public void Execute()
         {
-            if (wrapper.SerializationHandler.SaveStateToDisk(out string screenshotPath))
+            if (Wrapper.Instance.SerializationHandler.SaveStateToDisk(out string screenshotPath))
                 _takeScreenshotFunc(screenshotPath);
         }
     }

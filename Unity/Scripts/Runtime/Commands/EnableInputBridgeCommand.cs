@@ -28,6 +28,6 @@ namespace SK.Libretro.Unity
 
         public EnableInputBridgeCommand(bool enable) => _enabled = enable;
 
-        public void Execute(Wrapper wrapper) => wrapper.InputHandler.Enabled = _enabled;
+        public void Execute() => Wrapper.Instance.InputHandler.Enabled = _enabled;
     }
 }

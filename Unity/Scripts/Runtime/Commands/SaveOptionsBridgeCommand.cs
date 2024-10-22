@@ -28,6 +28,6 @@ namespace SK.Libretro.Unity
 
         public SaveOptionsBridgeCommand(bool global) => _global = global;
 
-        public void Execute(Wrapper wrapper) => wrapper.OptionsHandler.Serialize(_global);
+        public void Execute() => Wrapper.Instance.OptionsHandler.Serialize(_global);
     }
 }

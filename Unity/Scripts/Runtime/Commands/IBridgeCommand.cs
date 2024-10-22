@@ -24,6 +24,6 @@ namespace SK.Libretro.Unity
 {
     internal interface IBridgeCommand
     {
-        public void Execute(Wrapper wrapper);
+        public void Execute();
     }
 }

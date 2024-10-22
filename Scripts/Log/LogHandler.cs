@@ -23,7 +23,6 @@
 using SK.Libretro.Header;
 using System;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace SK.Libretro
 {
@@ -96,12 +95,9 @@ namespace SK.Libretro
                                       IntPtr arg11,
                                       IntPtr arg12)
         {
-            if (!Wrapper.TryGetInstance(Thread.CurrentThread, out Wrapper wrapper))
-                return;
-
             LogLevel logLevel = level.ToLogLevel();
-            if (logLevel >= wrapper.LogHandler._level)
-                wrapper.LogHandler.LogMessage(logLevel, format);
+            if (logLevel >= Wrapper.Instance.LogHandler._level)
+                Wrapper.Instance.LogHandler.LogMessage(logLevel, format);
         }
 
         protected virtual void Log(retro_log_level level,
