@@ -76,7 +76,7 @@ namespace SK.Libretro.Unity
                 _circularBuffer.Dispose();
         });
 
-        public void ProcessSample(short left, short right) => MainThreadDispatcher.Enqueue(() =>
+        public void ProcessSample(short left, short right)
         {
             if (!_circularBuffer.IsCreated)
                 return;
@@ -98,13 +98,13 @@ namespace SK.Libretro.Unity
                                                   right * AudioHandler.NORMALIZED_GAIN,
                                                   interpolationFactor));
             }
-        });
+        }
 
-        public unsafe void ProcessSampleBatch(IntPtr data, nuint frames) => MainThreadDispatcher.Enqueue(() =>
+        public unsafe void ProcessSampleBatch(IntPtr data, nuint frames)
         {
             if (!_circularBuffer.IsCreated)
                 return;
-
+            
             short* sourceSamples        = (short*)data;
             float ratio                 = (float)_outputSampleRate / _inputSampleRate;
             int sourceSamplesCount      = (int)frames * 2;
@@ -123,6 +123,6 @@ namespace SK.Libretro.Unity
                                                   sourceSamples[sampleIndex2] * AudioHandler.NORMALIZED_GAIN,
                                                   interpolationFactor));
             }
-        });
+        }
     }
 }
