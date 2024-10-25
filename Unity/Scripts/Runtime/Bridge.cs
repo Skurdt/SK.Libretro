@@ -519,6 +519,8 @@ namespace SK.Libretro.Unity
                     Wrapper.Instance.StopContent();
 
                 StopThread();
+
+                _instance = null;
             }
             catch (Exception e) when (e is not ThreadAbortException)
             {
