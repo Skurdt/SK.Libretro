@@ -246,29 +246,28 @@ namespace SK.Libretro
             _gameInfoExt.file_in_archive = false;
             _gameInfoExt.persistent_data = false;
 
-            (bool result, ContentOverride contentOverride) = _contentOverrides.TryGet(extension);
-            bool needFullPath = result ? contentOverride.NeedFullpath : _wrapper.Core.SystemInfo.NeedFullPath;
-            if (!needFullPath)
-            {
-                try
-                {
-                    using FileStream stream = new(_path, FileMode.Open);
-                    byte[] data             = new byte[stream.Length];
-                    GameInfo.data           = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
-                    _gameInfoExt.data       = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
-                    GameInfo.size           = (nuint)data.Length;
-                    _gameInfoExt.size       = (nuint)data.Length;
-                    _ = stream.Read(data, 0, (int)stream.Length);
-                    Marshal.Copy(data, 0, GameInfo.data, data.Length);
-                    Marshal.Copy(data, 0, _gameInfoExt.data, data.Length);
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
-            }
+            //(bool result, ContentOverride contentOverride) = _contentOverrides.TryGet(extension);
+            //bool needFullPath = result ? contentOverride.NeedFullpath : _wrapper.Core.SystemInfo.NeedFullPath;
+            if (_wrapper.Core.SystemInfo.NeedFullPath)
+                return true;
 
-            return true;
+            try
+            {
+                using FileStream stream = new(_path, FileMode.Open);
+                byte[] data             = new byte[stream.Length];
+                GameInfo.data           = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
+                _gameInfoExt.data       = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
+                GameInfo.size           = (nuint)data.Length;
+                _gameInfoExt.size       = (nuint)data.Length;
+                _ = stream.Read(data, 0, (int)stream.Length);
+                Marshal.Copy(data, 0, GameInfo.data, data.Length);
+                Marshal.Copy(data, 0, _gameInfoExt.data, data.Length);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         private bool LoadGame()
