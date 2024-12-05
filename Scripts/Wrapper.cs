@@ -203,7 +203,7 @@ namespace SK.Libretro
                 return false;
 
             IntPtr stringPtr = GetUnsafeString(_systemDirectory);
-            Marshal.StructureToPtr(stringPtr, data, true);
+            Marshal.WriteIntPtr(data, stringPtr);
             return true;
         }
 
@@ -214,7 +214,7 @@ namespace SK.Libretro
 
             string path = FileSystem.GetOrCreateDirectory(Core.Path);
             IntPtr stringPtr = GetUnsafeString(path);
-            Marshal.StructureToPtr(stringPtr, data, true);
+            Marshal.WriteIntPtr(data, stringPtr);
             return true;
         }
 
@@ -225,7 +225,7 @@ namespace SK.Libretro
 
             string path = FileSystem.GetOrCreateDirectory($"{_coreAssetsDirectory}/{Core.Name}");
             IntPtr stringPtr = GetUnsafeString(path);
-            Marshal.StructureToPtr(stringPtr, data, true);
+            Marshal.WriteIntPtr(data, stringPtr);
             return true;
         }
 
@@ -235,7 +235,7 @@ namespace SK.Libretro
                 return false;
 
             IntPtr stringPtr = GetUnsafeString(Settings.UserName);
-            Marshal.StructureToPtr(stringPtr, data, true);
+            Marshal.WriteIntPtr(data, stringPtr);
             return true;
         }
 

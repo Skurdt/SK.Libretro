@@ -42,7 +42,7 @@ namespace SK.Libretro.Header
 
     // typedef bool (CALLCONV *retro_environment_t)(unsigned cmd, void *data);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.U1)]
+    [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_environment_t(RETRO_ENVIRONMENT cmd, IntPtr data);
 
     // typedef void (CALLCONV *retro_video_refresh_t)(const void *data, unsigned width, unsigned height, size_t pitch);
@@ -127,12 +127,12 @@ namespace SK.Libretro.Header
 
     // API bool retro_serialize(void* data, size_t size);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.U1)]
+    [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_serialize_t(IntPtr data, nuint size);
 
     // API bool retro_unserialize(const void* data, size_t size);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.U1)]
+    [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_unserialize_t(IntPtr data, nuint size);
 
     // API void retro_cheat_reset(void);
@@ -141,16 +141,16 @@ namespace SK.Libretro.Header
 
     // API void retro_cheat_set(unsigned index, bool enabled, const char* code);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate void retro_cheat_set_t(uint index, [MarshalAs(UnmanagedType.U1)] bool enabled, IntPtr code);
+    internal delegate void retro_cheat_set_t(uint index, [MarshalAs(UnmanagedType.I1)] bool enabled, IntPtr code);
 
     // API bool retro_load_game(const struct retro_game_info *game);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.U1)]
+    [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_load_game_t(ref retro_game_info game);
 
     // API bool retro_load_game_special(unsigned game_type, const struct retro_game_info *info, size_t num_info);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.U1)]
+    [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_load_game_special_t(uint game_type, ref retro_game_info info, nuint num_info);
 
     // API void retro_unload_game(void);

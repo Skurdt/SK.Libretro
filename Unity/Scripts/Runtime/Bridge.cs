@@ -37,8 +37,11 @@ namespace SK.Libretro.Unity
         {
             get
             {
-                _instance ??= new();
-                return _instance;
+                lock (_lock)
+                {
+                    _instance ??= new();
+                    return _instance;
+                }
             }
         }
 
@@ -332,11 +335,12 @@ namespace SK.Libretro.Unity
         private int ShaderTextureId                { get; set; }
         private Material OriginalMaterial          { get; set; }
 
+        private static readonly object _lock = new();
+
         private readonly string _mainDirectory;
         private readonly string _tempDirectory;
         private readonly ManualResetEventSlim _manualResetEvent;
         private readonly ConcurrentQueue<IBridgeCommand> _bridgeCommands;
-        private readonly object _lock;
 
         private string _coreName;
         private string _gamesDirectory;
@@ -375,7 +379,6 @@ namespace SK.Libretro.Unity
             };
             _manualResetEvent  = new(false);
             _bridgeCommands    = new();
-            _lock              = new();
             _fastForwardFactor = DEFAULT_FASTFORWARD_FACTOR;
 
             MainThreadDispatcher.Construct();
@@ -624,11 +627,18 @@ namespace SK.Libretro.Unity
             using CancellationTokenSource tokenSource = new();
             MainThreadDispatcher.Enqueue(() =>
             {
-                action();
-                _manualResetEvent.Set();
-                tokenSource.Cancel();
+                try
+                {
+                    action();
+                }
+                finally
+                {
+                    _manualResetEvent.Set();
+                    tokenSource.Cancel();
+                }
             });
             _manualResetEvent.Wait(tokenSource.Token);
+            tokenSource.Dispose();
         }
 
         private (ILogProcessor, IGraphicsProcessor, IAudioProcessor, IInputProcessor, ILedProcessor) GetProcessors()

@@ -31,18 +31,25 @@ namespace SK.Libretro.Unity
     {
         private static readonly ConcurrentQueue<Func<ValueTask>> _executionQueue = new();
         private static MainThreadDispatcher _instance;
+        private static readonly object _lock = new();
 
         public static void Construct()
         {
             if (_instance)
                 return;
 
-            _instance = FindFirstObjectByType<MainThreadDispatcher>();
-            if (!_instance)
+            lock (_lock)
             {
-                GameObject obj = new("MainThreadDispatcher");
-                _instance = obj.AddComponent<MainThreadDispatcher>();
-                DontDestroyOnLoad(obj);
+                if (_instance)
+                    return;
+
+                _instance = FindFirstObjectByType<MainThreadDispatcher>();
+                if (!_instance)
+                {
+                    GameObject obj = new("MainThreadDispatcher");
+                    _instance = obj.AddComponent<MainThreadDispatcher>();
+                    DontDestroyOnLoad(obj);
+                }
             }
         }
 
@@ -53,12 +60,12 @@ namespace SK.Libretro.Unity
                     await action();
         }
 
-        public static void Enqueue(Func<ValueTask> action) => _executionQueue.Enqueue(async () => await action());
+        public static void Enqueue(Func<ValueTask> action) => _executionQueue.Enqueue(action);
 
-        public static void Enqueue(Action action) => Enqueue(async () =>
+        public static void Enqueue(Action action) => Enqueue(() =>
         {
             action();
-            await Task.Yield();
+            return new ValueTask();
         });
     }
 }

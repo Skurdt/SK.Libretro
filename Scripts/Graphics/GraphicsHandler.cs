@@ -132,7 +132,9 @@ namespace SK.Libretro
             _hardwareRenderHelperWindow = hwRenderCallback.context_type switch
             {
                 retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL
-                or retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE => new OpenGLHelperWindowSDL(hwRenderCallback),
+                or retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE => _wrapper.Settings.Platform == Platform.Android
+                                                                       ? new OpenGLHelperWindowAndroid(hwRenderCallback, _processor.NativeWindow)
+                                                                       : new OpenGLHelperWindowSDL(hwRenderCallback),
 
                 retro_hw_context_type.RETRO_HW_CONTEXT_NONE
                 or _ => default

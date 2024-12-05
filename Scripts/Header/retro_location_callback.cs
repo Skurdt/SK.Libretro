@@ -30,14 +30,14 @@ namespace SK.Libretro.Header
     internal delegate void retro_location_set_interval_t(uint interval_ms, uint interval_distance);
     // typedef bool (RETRO_CALLCONV *retro_location_start_t) (void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.U1)]
+    [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_location_start_t();
     // typedef void (RETRO_CALLCONV *retro_location_stop_t) (void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate void retro_location_stop_t();
     // typedef bool (RETRO_CALLCONV *retro_location_get_position_t) (double* lat, double* lon, double* horiz_accuracy, double* vert_accuracy);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.U1)]
+    [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_location_get_position_t(ref double lat, ref double lon, ref double horiz_accuracy, ref double vert_accuracy);
     // typedef void (RETRO_CALLCONV *retro_location_lifetime_status_t) (void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

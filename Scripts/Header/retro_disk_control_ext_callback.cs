@@ -27,17 +27,17 @@ namespace SK.Libretro.Header
 {
     // typedef bool (RETRO_CALLCONV *retro_set_initial_image_t)(unsigned index, const char *path);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.U1)]
+    [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_set_initial_image_t(uint index, [MarshalAs(UnmanagedType.LPStr)] string path);
     
     // typedef bool (RETRO_CALLCONV *retro_get_image_path_t)(unsigned index, char *path, size_t len);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.U1)]
+    [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_get_image_path_t(uint index, [MarshalAs(UnmanagedType.LPStr)] ref string path, nuint len);
     
     // typedef bool (RETRO_CALLCONV *retro_get_image_label_t)(unsigned index, char *label, size_t len);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.U1)]
+    [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_get_image_label_t(uint index, [MarshalAs(UnmanagedType.LPStr)] ref string label, nuint len);
 
     internal struct retro_disk_control_ext_callback
