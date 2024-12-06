@@ -45,7 +45,7 @@ namespace SK.Libretro
         {
             Enabled = enabled;
 
-            if (Wrapper.Instance.Core.HwAccelerated)
+            if (_hardwareRenderProxy is not null)
             {
                 _frameHandler = _pixelFormat switch
                 {
@@ -92,6 +92,34 @@ namespace SK.Libretro
             return true;
         }
 
+        public bool GetCurrentSoftwareFramebuffer(IntPtr data)
+        {
+#if ENABLE_THIS
+            if (data.IsNull())
+                return false;
+
+            retro_framebuffer framebuffer = data.ToStructure<retro_framebuffer>();
+
+            uint width     = framebuffer.width;
+            uint height    = framebuffer.height;
+            IntPtr dataPtr = _processor.GetCurrentSoftwareFramebuffer((int)width, (int)height);
+            if (dataPtr.IsNull())
+                return false;
+
+            framebuffer.data         = dataPtr;
+            framebuffer.pitch        = width * 2;
+            framebuffer.format       = retro_pixel_format.RETRO_PIXEL_FORMAT_RGB565;
+            framebuffer.access_flags = (uint)RETRO_MEMORY_ACCESS.WRITE;
+            framebuffer.memory_flags = RETRO.MEMORY_TYPE_CACHED;
+
+            Marshal.StructureToPtr(framebuffer, data, true);
+            _frameHandler = new GraphicsFrameHandlerSoftwareFramebuffer(_processor);
+            return true;
+#else
+            return false;
+#endif
+        }
+
         public bool GetPreferredHwRender(IntPtr data)
         {
             if (data.IsNull())
@@ -118,7 +146,7 @@ namespace SK.Libretro
 
         public bool SetHwRender(IntPtr data)
         {
-            if (data.IsNull() || Wrapper.Instance.Core.HwAccelerated)
+            if (data.IsNull() || _hardwareRenderProxy is not null)
                 return false;
 
             retro_hw_render_callback hwRenderCallback = data.ToStructure<retro_hw_render_callback>();
@@ -139,7 +167,6 @@ namespace SK.Libretro
             hwRenderCallback.get_current_framebuffer = _hardwareRenderProxy.GetCurrentFrameBuffer.GetFunctionPointer();
             hwRenderCallback.get_proc_address        = _hardwareRenderProxy.GetProcAddress.GetFunctionPointer();
             Marshal.StructureToPtr(hwRenderCallback, data, true);
-            Wrapper.Instance.Core.HwAccelerated = true;
             return true;
         }
 

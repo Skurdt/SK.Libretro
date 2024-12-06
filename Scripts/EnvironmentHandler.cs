@@ -54,7 +54,7 @@ namespace SK.Libretro
             RETRO_ENVIRONMENT.GET_SAVE_DIRECTORY                          => Wrapper.Instance.SerializationHandler.GetSaveDirectory(data),
             RETRO_ENVIRONMENT.GET_USERNAME                                => Wrapper.Instance.GetUsername(data),
             RETRO_ENVIRONMENT.GET_LANGUAGE                                => Wrapper.Instance.GetLanguage(data),
-            RETRO_ENVIRONMENT.GET_CURRENT_SOFTWARE_FRAMEBUFFER            => EnvironmentNotImplemented(cmd, false),
+            RETRO_ENVIRONMENT.GET_CURRENT_SOFTWARE_FRAMEBUFFER            => Wrapper.Instance.GraphicsHandler.GetCurrentSoftwareFramebuffer(data),
             RETRO_ENVIRONMENT.GET_HW_RENDER_INTERFACE                     => EnvironmentNotImplemented(cmd),
             RETRO_ENVIRONMENT.GET_VFS_INTERFACE                           => Wrapper.Instance.VFSHandler.GetVfsInterface(data),
             RETRO_ENVIRONMENT.GET_LED_INTERFACE                           => Wrapper.Instance.LedHandler.GetLedInterface(data),

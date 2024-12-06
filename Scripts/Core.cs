@@ -38,7 +38,6 @@ namespace SK.Libretro
         public int PerformanceLevel { get; private set; }
         public bool SupportNoGame { get; private set; }
         public bool SupportsAchievements { get; private set; }
-        public bool HwAccelerated { get; set; }
 
         public readonly List<retro_subsystem_info> SubsystemInfo = new();
 

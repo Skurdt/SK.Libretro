@@ -175,8 +175,7 @@ namespace SK.Libretro
             if (!Game.Running || !Core.Initialized)
                 return;
 
-            if (Core.HwAccelerated)
-                GraphicsHandler.PollEvents();
+            GraphicsHandler.PollEvents();
 
             //_totalFrameCount++;
 

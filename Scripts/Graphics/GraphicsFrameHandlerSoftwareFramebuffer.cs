@@ -21,19 +21,20 @@
  * SOFTWARE. */
 
 using System;
-using System.Runtime.InteropServices;
 
-namespace SK.Libretro.Header
+namespace SK.Libretro
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct retro_framebuffer
+    internal sealed class GraphicsFrameHandlerSoftwareFramebuffer : GraphicsFrameHandlerBase
     {
-        public IntPtr data; // void*
-        public uint width;
-        public uint height;
-        public nuint pitch;
-        public retro_pixel_format format;
-        public uint access_flags;
-        public uint memory_flags;
+        public GraphicsFrameHandlerSoftwareFramebuffer(IGraphicsProcessor processor)
+        : base(processor)
+        {
+        }
+
+        public override void ProcessFrame(IntPtr data, uint width, uint height, nuint pitch)
+        {
+            if (data.IsNotNull())
+                _processor.ProcessFrameSoftwareFramebuffer(data, (int)pitch, (int)height);
+        }
     }
 }

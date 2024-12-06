@@ -634,7 +634,6 @@ namespace SK.Libretro.Unity
                 finally
                 {
                     _manualResetEvent.Set();
-                    tokenSource.Cancel();
                 }
             });
             _manualResetEvent.Wait(tokenSource.Token);
@@ -649,17 +648,23 @@ namespace SK.Libretro.Unity
             IInputProcessor input       = default;
             ILedProcessor led           = default;
 
-            using CancellationTokenSource getComponentsTokenSource = new();
             _manualResetEvent.Reset();
+            using CancellationTokenSource getComponentsTokenSource = new();
             MainThreadDispatcher.Enqueue(() =>
             {
-                audio = GetAudioProcessor(InstanceComponent.transform);
-                input = GetInputProcessor(InstanceComponent.Settings.LeftStickBehaviour);
-                led   = GetLedProcessor();
-                _manualResetEvent.Set();
-                getComponentsTokenSource.Cancel();
+                try
+                {
+                    audio = GetAudioProcessor(InstanceComponent.transform);
+                    input = GetInputProcessor(InstanceComponent.Settings.LeftStickBehaviour);
+                    led   = GetLedProcessor();
+                }
+                finally
+                {
+                    _manualResetEvent.Set();
+                }
             });
             _manualResetEvent.Wait(getComponentsTokenSource.Token);
+            getComponentsTokenSource.Dispose();
             return (log, graphics, audio, input, led);
         }
 

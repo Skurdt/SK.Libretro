@@ -26,7 +26,7 @@ namespace SK.Libretro.Header
     {
         RETRO_PIXEL_FORMAT_0RGB1555 = 0,
         RETRO_PIXEL_FORMAT_XRGB8888 = 1,
-        RETRO_PIXEL_FORMAT_RGB565 = 2,
-        RETRO_PIXEL_FORMAT_UNKNOWN = int.MaxValue
+        RETRO_PIXEL_FORMAT_RGB565   = 2,
+        RETRO_PIXEL_FORMAT_UNKNOWN  = int.MaxValue
     }
 }
