@@ -42,8 +42,6 @@ namespace SK.Libretro
 
         public readonly List<retro_subsystem_info> SubsystemInfo = new();
 
-        private readonly Wrapper _wrapper;
-
         private DynamicLibrary _dll;
 
         private retro_init_t _retro_init;
@@ -72,8 +70,6 @@ namespace SK.Libretro
         private retro_set_audio_sample_batch_t _retro_set_audio_sample_batch;
         private retro_set_input_poll_t _retro_set_input_poll;
         private retro_set_input_state_t _retro_set_input_state;
-
-        public Core(Wrapper wrapper) => _wrapper = wrapper;
 
         public void Dispose()
         {
@@ -107,7 +103,7 @@ namespace SK.Libretro
 
         public bool Start(string coreName)
         {
-            switch (_wrapper.Settings.Platform)
+            switch (Wrapper.Instance.Settings.Platform)
             {
                 case Platform.Win:
                     _dll = new DynamicLibraryWindows(true);
@@ -120,7 +116,7 @@ namespace SK.Libretro
                     _dll = new DynamicLibraryLinux(true);
                     break;
                 default:
-                    _wrapper.LogHandler.LogError($"Runtime platform '{_wrapper.Settings.Platform}' not supported.", "SK.Libretro.Core.Start");
+                    Wrapper.Instance.LogHandler.LogError($"Runtime platform '{Wrapper.Instance.Settings.Platform}' not supported.", "SK.Libretro.Core.Start");
                     return false;
             }
 
@@ -155,11 +151,11 @@ namespace SK.Libretro
 
         public void Run() => _retro_run();
 
-        public nuint SerializeSize() => _retro_serialize_size();
+        public long SerializeSize() => _retro_serialize_size();
 
-        public bool Serialize(IntPtr data, nuint size) => _retro_serialize(data, size);
+        public bool Serialize(IntPtr data, long size) => _retro_serialize(data, size);
 
-        public bool Unserialize(IntPtr data, nuint size) => _retro_unserialize(data, size);
+        public bool Unserialize(IntPtr data, long size) => _retro_unserialize(data, size);
 
         public void CheatReset() => _retro_cheat_reset();
 
@@ -223,7 +219,7 @@ namespace SK.Libretro
         {
             try
             {
-                string corePath = _wrapper.Settings.Platform switch
+                string corePath = Wrapper.Instance.Settings.Platform switch
                 {
                     Platform.Android => $"{Wrapper.CoresDirectory}/{Name}_libretro_android.{_dll.Extension}",
                     _                => $"{Wrapper.CoresDirectory}/{Name}_libretro.{_dll.Extension}"
@@ -231,7 +227,7 @@ namespace SK.Libretro
 
                 if (!FileSystem.FileExists(corePath))
                 {
-                    _wrapper.LogHandler.LogError($"Core '{Name}' at path '{corePath}' not found.", "SK.Libretro.Core.LoadLibrary");
+                    Wrapper.Instance.LogHandler.LogError($"Core '{Name}' at path '{corePath}' not found.", "SK.Libretro.Core.LoadLibrary");
                     return false;
                 }
 
@@ -243,7 +239,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                _wrapper.LogHandler.LogException(e);
+                Wrapper.Instance.LogHandler.LogException(e);
                 Dispose();
                 return false;
             }
@@ -284,7 +280,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                _wrapper.LogHandler.LogException(e);
+                Wrapper.Instance.LogHandler.LogException(e);
                 Dispose();
                 return false;
             }
@@ -298,10 +294,10 @@ namespace SK.Libretro
 
         private void SetCallbacks()
         {
-            _wrapper.EnvironmentHandler.SetCoreCallback(_retro_set_environment);
-            _wrapper.GraphicsHandler.SetCoreCallback(_retro_set_video_refresh);
-            _wrapper.AudioHandler.SetCoreCallbacks(_retro_set_audio_sample, _retro_set_audio_sample_batch);
-            _wrapper.InputHandler.SetCoreCallbacks(_retro_set_input_poll, _retro_set_input_state);
+            Wrapper.Instance.EnvironmentHandler.SetCoreCallback(_retro_set_environment);
+            Wrapper.Instance.GraphicsHandler.SetCoreCallback(_retro_set_video_refresh);
+            Wrapper.Instance.AudioHandler.SetCoreCallbacks(_retro_set_audio_sample, _retro_set_audio_sample_batch);
+            Wrapper.Instance.InputHandler.SetCoreCallbacks(_retro_set_input_poll, _retro_set_input_state);
         }
     }
 }

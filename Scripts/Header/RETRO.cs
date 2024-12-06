@@ -123,17 +123,17 @@ namespace SK.Libretro.Header
 
     // API size_t retro_serialize_size(void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate nuint retro_serialize_size_t();
+    internal delegate long retro_serialize_size_t();
 
     // API bool retro_serialize(void* data, size_t size);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [return: MarshalAs(UnmanagedType.I1)]
-    internal delegate bool retro_serialize_t(IntPtr data, nuint size);
+    internal delegate bool retro_serialize_t(IntPtr data, long size);
 
     // API bool retro_unserialize(const void* data, size_t size);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [return: MarshalAs(UnmanagedType.I1)]
-    internal delegate bool retro_unserialize_t(IntPtr data, nuint size);
+    internal delegate bool retro_unserialize_t(IntPtr data, long size);
 
     // API void retro_cheat_reset(void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

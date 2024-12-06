@@ -29,10 +29,6 @@ namespace SK.Libretro
     {
         private static readonly retro_environment_t _callback = EnvironmentCallback;
 
-        private readonly Wrapper _wrapper;
-
-        public EnvironmentHandler(Wrapper wrapper) => _wrapper = wrapper;
-
         public void SetCoreCallback(retro_set_environment_t setEnvironment) => setEnvironment(_callback);
 
         [MonoPInvokeCallback(typeof(retro_environment_t))]
@@ -58,7 +54,7 @@ namespace SK.Libretro
             RETRO_ENVIRONMENT.GET_SAVE_DIRECTORY                          => Wrapper.Instance.SerializationHandler.GetSaveDirectory(data),
             RETRO_ENVIRONMENT.GET_USERNAME                                => Wrapper.Instance.GetUsername(data),
             RETRO_ENVIRONMENT.GET_LANGUAGE                                => Wrapper.Instance.GetLanguage(data),
-            RETRO_ENVIRONMENT.GET_CURRENT_SOFTWARE_FRAMEBUFFER            => Wrapper.Instance.GraphicsHandler.GetCurrentSoftwareFramebuffer(),
+            RETRO_ENVIRONMENT.GET_CURRENT_SOFTWARE_FRAMEBUFFER            => EnvironmentNotImplemented(cmd, false),
             RETRO_ENVIRONMENT.GET_HW_RENDER_INTERFACE                     => EnvironmentNotImplemented(cmd),
             RETRO_ENVIRONMENT.GET_VFS_INTERFACE                           => Wrapper.Instance.VFSHandler.GetVfsInterface(data),
             RETRO_ENVIRONMENT.GET_LED_INTERFACE                           => Wrapper.Instance.LedHandler.GetLedInterface(data),
@@ -150,8 +146,8 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            _wrapper.LogHandler.LogInfo("Using FrameTime Callback", nameof(RETRO_ENVIRONMENT.SET_FRAME_TIME_CALLBACK));
-            _wrapper.FrameTimeInterface = data.ToStructure<retro_frame_time_callback>();
+            Wrapper.Instance.LogHandler.LogInfo("Using FrameTime Callback", nameof(RETRO_ENVIRONMENT.SET_FRAME_TIME_CALLBACK));
+            Wrapper.Instance.FrameTimeInterface = data.ToStructure<retro_frame_time_callback>();
             return true;
         }
 

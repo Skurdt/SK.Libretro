@@ -33,8 +33,6 @@ namespace SK.Libretro
 
         public bool Enabled { get; set; }
 
-        private readonly Wrapper _wrapper;
-
         private retro_set_eject_state_t _set_eject_state;
         private retro_get_eject_state_t _get_eject_state;
         private retro_get_image_index_t _get_image_index;
@@ -45,8 +43,6 @@ namespace SK.Libretro
         private retro_set_initial_image_t _set_initial_image;
         private retro_get_image_path_t _get_image_path;
         private retro_get_image_label_t _get_image_label;
-
-        public DiskHandler(Wrapper wrapper) => _wrapper = wrapper;
 
         public bool SetEjectState(bool ejected) => _set_eject_state(ejected);
 
@@ -64,34 +60,34 @@ namespace SK.Libretro
             if (!_set_eject_state(true))
                 return false;
 
-            foreach (string extension in _wrapper.Core.SystemInfo.ValidExtensions)
+            foreach (string extension in Wrapper.Instance.Core.SystemInfo.ValidExtensions)
             {
                 string filePath = $"{path}.{extension}";
                 if (!FileSystem.FileExists(filePath))
                     continue;
 
-                _wrapper.Game.GameInfo.path = filePath.AsAllocatedPtr();
+                Wrapper.Instance.Game.GameInfo.path = filePath.AsAllocatedPtr();
                 try
                 {
                     using FileStream stream = new(filePath, FileMode.Open);
                     byte[] data = new byte[stream.Length];
-                    _wrapper.Game.GameInfo.size = (nuint)data.Length;
-                    _wrapper.Game.GameInfo.data = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
+                    Wrapper.Instance.Game.GameInfo.size = (nuint)data.Length;
+                    Wrapper.Instance.Game.GameInfo.data = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
                     _ = stream.Read(data, 0, (int)stream.Length);
-                    Marshal.Copy(data, 0, _wrapper.Game.GameInfo.data, data.Length);
+                    Marshal.Copy(data, 0, Wrapper.Instance.Game.GameInfo.data, data.Length);
                 }
                 catch (Exception)
                 {
                     return false;
                 }
 
-                if (!_replace_image_index(index, ref _wrapper.Game.GameInfo))
+                if (!_replace_image_index(index, ref Wrapper.Instance.Game.GameInfo))
                 {
-                    _wrapper.Game.FreeGameInfo();
+                    Wrapper.Instance.Game.FreeGameInfo();
                     return false;
                 }
 
-                _wrapper.Game.FreeGameInfo();
+                Wrapper.Instance.Game.FreeGameInfo();
 
                 return _set_image_index(index) && _set_eject_state(false);
             }

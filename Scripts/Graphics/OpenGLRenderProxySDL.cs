@@ -25,26 +25,34 @@ using System;
 
 namespace SK.Libretro
 {
-    internal sealed class OpenGLHelperWindowSDL : HardwareRenderHelperWindow
+    internal sealed class OpenGLRenderProxySDL : HardwareRenderProxy
     {
         private IntPtr _glContext;
 
-        public OpenGLHelperWindowSDL(retro_hw_render_callback hwRenderCallback)
+        public OpenGLRenderProxySDL(retro_hw_render_callback hwRenderCallback)
         : base(hwRenderCallback)
         {
         }
 
         public override bool Init()
         {
-            if (SDL.InitSubSystem(SDL.INIT_VIDEO) != 0)
-                return false;
+            try
+            {
+                if (SDL.InitSubSystem(SDL.INIT_VIDEO) != 0)
+                    return false;
 
-            _windowHandle = SDL.CreateWindow("LibretroHardwareRenderHelperWindow", 1280, 1024, SDL.WINDOW_HIDDEN | SDL.WINDOW_OPENGL);
-            if (_windowHandle.IsNull())
-                return false;
+                _windowHandle = SDL.CreateWindow("LibretroHardwareRenderProxy", 1280, 1024, SDL.WINDOW_HIDDEN | SDL.WINDOW_OPENGL);
+                if (_windowHandle.IsNull())
+                    return false;
 
-            _glContext = SDL.GL_CreateContext(_windowHandle);
-            return _glContext.IsNotNull() && SDL.GL_MakeCurrent(_windowHandle, _glContext) == 0;
+                _glContext = SDL.GL_CreateContext(_windowHandle);
+                return _glContext.IsNotNull() && SDL.GL_MakeCurrent(_windowHandle, _glContext) == 0;
+            }
+            catch (Exception e)
+            {
+                Wrapper.Instance.LogHandler.LogException(e);
+                return false;
+            }
         }
 
         public override void PollEvents()
@@ -55,19 +63,23 @@ namespace SK.Libretro
 
         protected override void DeInit()
         {
-            if (_glContext.IsNotNull())
+            try
             {
-                _ = SDL.GL_DeleteContext(_glContext);
-                PointerUtilities.SetToNull(ref _glContext);
-            }
+                if (_glContext.IsNotNull())
+                {
+                    _ = SDL.GL_DeleteContext(_glContext);
+                    PointerUtilities.SetToNull(ref _glContext);
+                }
 
-            if (_windowHandle.IsNotNull())
+                if (_windowHandle.IsNotNull())
+                    SDL.DestroyWindow(_windowHandle);
+
+                SDL.QuitSubSystem(SDL.INIT_VIDEO);
+            }
+            catch (Exception e)
             {
-                SDL.DestroyWindow(_windowHandle);
-                PointerUtilities.SetToNull(ref _windowHandle);
+                Wrapper.Instance.LogHandler.LogException(e);
             }
-
-            SDL.QuitSubSystem(SDL.INIT_VIDEO);
         }
 
         protected override IntPtr GetCurrentFrameBufferCall() => (IntPtr)0;

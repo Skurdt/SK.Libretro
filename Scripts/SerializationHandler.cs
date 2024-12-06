@@ -33,29 +33,22 @@ namespace SK.Libretro
 
         //private const int REWIND_NUM_MAX_STATES = 256;
 
-        private readonly Wrapper _wrapper;
         //private readonly Deque<byte[]> _rewindStates;
         private ulong _quirks;
-        private ulong _stateSize;
         private string _coreDirectory;
         private string _gameDirectory;
         private int _currentStateSlot;
 
-        public SerializationHandler(Wrapper wrapper)
+        public SerializationHandler()
         {
-            _wrapper      = wrapper;
             //_rewindStates = new Deque<byte[]>(REWIND_NUM_MAX_STATES);
         }
 
         public void Init()
         {
-            ulong size = _wrapper.Core.SerializeSize();
-            if (size > 0)
-                _stateSize = size;
-
-            _coreDirectory = FileSystem.GetOrCreateDirectory($"{Wrapper.StatesDirectory}/{_wrapper.Core.Name}");
-            _gameDirectory = !string.IsNullOrWhiteSpace(_wrapper.Game.Name)
-                           ? $"{_coreDirectory}/{_wrapper.Game.Name}"
+            _coreDirectory = FileSystem.GetOrCreateDirectory($"{Wrapper.StatesDirectory}/{Wrapper.Instance.Core.Name}");
+            _gameDirectory = !string.IsNullOrWhiteSpace(Wrapper.Instance.Game.Name)
+                           ? $"{_coreDirectory}/{Wrapper.Instance.Game.Name}"
                            : null;
         }
 
@@ -64,8 +57,8 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            string path = FileSystem.GetOrCreateDirectory($"{Wrapper.SavesDirectory}/{_wrapper.Core.Name}");
-            IntPtr stringPtr = _wrapper.GetUnsafeString(path);
+            string path = FileSystem.GetOrCreateDirectory($"{Wrapper.SavesDirectory}/{Wrapper.Instance.Core.Name}");
+            IntPtr stringPtr = Wrapper.Instance.GetUnsafeString(path);
             Marshal.StructureToPtr(stringPtr, data, true);
             return true;
         }
@@ -88,7 +81,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                _wrapper.LogHandler.LogException(e);
+                Wrapper.Instance.LogHandler.LogException(e);
                 return false;
             }
         }
@@ -112,7 +105,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                _wrapper.LogHandler.LogException(e);
+                Wrapper.Instance.LogHandler.LogException(e);
                 path = null;
                 return false;
             }
@@ -123,7 +116,7 @@ namespace SK.Libretro
             GCHandle handle = default;
             try
             {
-                string coreDirectory = $"{Wrapper.StatesDirectory}/{_wrapper.Core.Name}";
+                string coreDirectory = $"{Wrapper.StatesDirectory}/{Wrapper.Instance.Core.Name}";
                 if (!Directory.Exists(coreDirectory))
                     return false;
 
@@ -134,21 +127,21 @@ namespace SK.Libretro
                 if (!FileSystem.FileExists(savePath))
                     return false;
 
-                nuint stateSize = _wrapper.Core.SerializeSize();
-                if (stateSize == 0 || stateSize != _stateSize)
+                long stateSize = Wrapper.Instance.Core.SerializeSize();
+                if (stateSize == 0)
                     return false;
 
                 byte[] data = File.ReadAllBytes(savePath);
                 handle = GCHandle.Alloc(data, GCHandleType.Pinned);
                 IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(data, 0);
-                bool result = _wrapper.Core.Unserialize(ptr, stateSize);
+                bool result = Wrapper.Instance.Core.Unserialize(ptr, stateSize);
                 if (result)
-                    _wrapper.AudioHandler.Init(true);
+                    Wrapper.Instance.AudioHandler.Init(true);
                 return result;
             }
             catch (Exception e)
             {
-                _wrapper.LogHandler.LogException(e);
+                Wrapper.Instance.LogHandler.LogException(e);
                 return false;
             }
             finally
@@ -165,7 +158,7 @@ namespace SK.Libretro
             //    if (_stateSize == 0)
             //        return;
 
-            //    //ulong size = _wrapper.Core.retro_serialize_size();
+            //    //ulong size = Wrapper.Instance.Core.retro_serialize_size();
             //    //if (size != _stateSize)
             //    //    _stateSize = size;
 
@@ -175,12 +168,12 @@ namespace SK.Libretro
             //    //    _rewindStates.AddToBack(new byte[_stateSize]);
 
             //    //GCHandle handle = GCHandle.Alloc(_rewindStates[_rewindStates.Count - 1], GCHandleType.Pinned);
-            //    //_ = _wrapper.Core.retro_serialize(handle.AddrOfPinnedObject(), _stateSize);
+            //    //_ = Wrapper.Instance.Core.retro_serialize(handle.AddrOfPinnedObject(), _stateSize);
             //    //handle.Free();
             //}
             //catch (Exception e)
             //{
-            //    _wrapper.LogHandler.LogException(e);
+            //    Wrapper.Instance.LogHandler.LogException(e);
             //}
         }
 
@@ -191,17 +184,17 @@ namespace SK.Libretro
             //    if (_stateSize == 0 || _rewindStates.Count == 0)
             //        return;
 
-            //    //ulong size = _wrapper.Core.retro_serialize_size();
+            //    //ulong size = Wrapper.Instance.Core.retro_serialize_size();
             //    //if (size != _stateSize)
             //    //    return;
 
             //    GCHandle handle = GCHandle.Alloc(_rewindStates.RemoveFromBack(), GCHandleType.Pinned);
-            //    _ = _wrapper.Core.retro_unserialize(handle.AddrOfPinnedObject(), _stateSize);
+            //    _ = Wrapper.Instance.Core.retro_unserialize(handle.AddrOfPinnedObject(), _stateSize);
             //    handle.Free();
             //}
             //catch (Exception e)
             //{
-            //    _wrapper.LogHandler.LogException(e);
+            //    Wrapper.Instance.LogHandler.LogException(e);
             //}
         }
 
@@ -209,26 +202,26 @@ namespace SK.Libretro
         {
             try
             {
-                int saveSize = (int)_wrapper.Core.GetMemorySize(RETRO_MEMORY.SAVE_RAM);
+                int saveSize = (int)Wrapper.Instance.Core.GetMemorySize(RETRO_MEMORY.SAVE_RAM);
                 if (saveSize == 0)
                     return false;
 
-                IntPtr saveData = _wrapper.Core.GetMemoryData(RETRO_MEMORY.SAVE_RAM);
+                IntPtr saveData = Wrapper.Instance.Core.GetMemoryData(RETRO_MEMORY.SAVE_RAM);
                 if (saveData.IsNull())
                     return false;
 
                 byte[] data = new byte[saveSize];
                 Marshal.Copy(saveData, data, 0, saveSize);
 
-                string coreDirectory = FileSystem.GetOrCreateDirectory($"{Wrapper.SavesDirectory}/{_wrapper.Core.Name}");
-                string path          = $"{coreDirectory}/{_wrapper.Game.Name}.srm";
+                string coreDirectory = FileSystem.GetOrCreateDirectory($"{Wrapper.SavesDirectory}/{Wrapper.Instance.Core.Name}");
+                string path          = $"{coreDirectory}/{Wrapper.Instance.Game.Name}.srm";
                 File.WriteAllBytes(path, data);
 
                 return true;
             }
             catch (Exception e)
             {
-                _wrapper.LogHandler.LogException(e);
+                Wrapper.Instance.LogHandler.LogException(e);
                 return false;
             }
         }
@@ -237,19 +230,19 @@ namespace SK.Libretro
         {
             try
             {
-                int saveSize = (int)_wrapper.Core.GetMemorySize(RETRO_MEMORY.SAVE_RAM);
+                int saveSize = (int)Wrapper.Instance.Core.GetMemorySize(RETRO_MEMORY.SAVE_RAM);
                 if (saveSize == 0)
                     return false;
 
-                IntPtr saveData = _wrapper.Core.GetMemoryData(RETRO_MEMORY.SAVE_RAM);
+                IntPtr saveData = Wrapper.Instance.Core.GetMemoryData(RETRO_MEMORY.SAVE_RAM);
                 if (saveData.IsNull())
                     return false;
 
-                string coreDirectory = $"{Wrapper.SavesDirectory}/{_wrapper.Core.Name}";
+                string coreDirectory = $"{Wrapper.SavesDirectory}/{Wrapper.Instance.Core.Name}";
                 if (!Directory.Exists(coreDirectory))
                     return false;
 
-                string path = $"{coreDirectory}/{_wrapper.Game.Name}.srm";
+                string path = $"{coreDirectory}/{Wrapper.Instance.Game.Name}.srm";
                 if (!FileSystem.FileExists(path))
                     return false;
 
@@ -262,7 +255,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                _wrapper.LogHandler.LogException(e);
+                Wrapper.Instance.LogHandler.LogException(e);
                 return false;
             }
         }
@@ -282,20 +275,17 @@ namespace SK.Libretro
             GCHandle handle = default;
             try
             {
-                nuint stateSize = _wrapper.Core.SerializeSize();
+                long stateSize = Wrapper.Instance.Core.SerializeSize();
                 if (stateSize == 0)
                 {
                     data = Array.Empty<byte>();
                     return false;
                 }
 
-                if (stateSize != _stateSize)
-                    _stateSize = stateSize;
-
                 data = new byte[stateSize];
                 handle = GCHandle.Alloc(data, GCHandleType.Pinned);
                 IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(data, 0);
-                return _wrapper.Core.Serialize(ptr, stateSize);
+                return Wrapper.Instance.Core.Serialize(ptr, stateSize);
             }
             catch
             {

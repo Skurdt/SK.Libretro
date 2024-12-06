@@ -103,26 +103,26 @@ namespace SK.Libretro
                 StatesDirectory      = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/states");
             }
 
-            Core = new(this);
-            Game = new(this);
+            Core = new();
+            Game = new();
 
-            EnvironmentHandler       = new(this);
-            GraphicsHandler          = new(this, settings.GraphicsProcessor);
-            AudioHandler             = new(this, settings.AudioProcessor);
+            EnvironmentHandler       = new();
+            GraphicsHandler          = new(settings.GraphicsProcessor);
+            AudioHandler             = new(settings.AudioProcessor);
             InputHandler             = new(settings.InputProcessor);
             LogHandler               = settings.Platform switch
             {
                 Platform.Win => new LogHandlerWin(settings.LogProcessor, settings.LogLevel),
                 _            => new LogHandler(settings.LogProcessor, settings.LogLevel),
             };
-            OptionsHandler           = new(this);
+            OptionsHandler           = new();
             VFSHandler               = new();
-            SerializationHandler     = new(this);
-            DiskHandler              = new(this);
+            SerializationHandler     = new();
+            DiskHandler              = new();
             PerfHandler              = new();
             LedHandler               = new(settings.LedProcessor);
-            MessageHandler           = new(this, settings.MessageProcessor);
-            MemoryHandler            = new(this);
+            MessageHandler           = new(settings.MessageProcessor);
+            MemoryHandler            = new();
 
             if (!Core.Start(coreName))
             {

@@ -28,6 +28,8 @@ namespace SK.Libretro
     {
         public IntPtr NativeWindow { get; }
 
+        public IntPtr GetSoftwareFrameBuffer(int width, int height) => IntPtr.Zero;
+        public void ProcessFrameSoftwareFramebuffer(IntPtr data, int width, int height, int pitch) { }
         public void ProcessFrame0RGB1555(IntPtr data, int width, int height, int pitch) { }
         public void ProcessFrameXRGB8888(IntPtr data, int width, int height, int pitch) { }
         public void ProcessFrameXRGB8888VFlip(IntPtr data, int width, int height, int pitch) { }

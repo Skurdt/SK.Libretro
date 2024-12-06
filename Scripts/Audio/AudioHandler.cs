@@ -34,7 +34,6 @@ namespace SK.Libretro
         private static readonly retro_audio_sample_t _sampleCallback            = SampleCallback;
         private static readonly retro_audio_sample_batch_t _sampleBatchCallback = SampleBatchCallback;
 
-        private readonly Wrapper _wrapper;
         private readonly IAudioProcessor _processor;
 
         private retro_audio_callback_t _audioCallback;
@@ -42,16 +41,12 @@ namespace SK.Libretro
         private retro_audio_buffer_status_callback_t _audioBufferStatusCallback;
         private uint _minimumLatency;
 
-        public AudioHandler(Wrapper wrapper, IAudioProcessor audioProcessor)
-        {
-            _wrapper   = wrapper;
-            _processor = audioProcessor ?? new NullAudioProcessor();
-        }
+        public AudioHandler(IAudioProcessor audioProcessor) => _processor = audioProcessor ?? new NullAudioProcessor();
 
         public void Init(bool enabled)
         {
             Enabled = enabled;
-            _processor.Init(_wrapper.Game.SystemAVInfo.SampleRate);
+            _processor.Init(Wrapper.Instance.Game.SystemAVInfo.SampleRate);
         }
 
         public void Dispose() => _processor.Dispose();

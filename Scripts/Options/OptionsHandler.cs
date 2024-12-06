@@ -35,11 +35,8 @@ namespace SK.Libretro
 
         private const uint CORE_OPTIONS_VERSION = 1;
 
-        private readonly Wrapper _wrapper;
         private readonly object _lock = new();
         private bool _updateVariables = false;
-
-        public OptionsHandler(Wrapper wrapper) => _wrapper = wrapper;
 
         public bool GetVariable(IntPtr data)
         {
@@ -55,18 +52,18 @@ namespace SK.Libretro
             {
                 if (CoreOptions is null)
                 {
-                    _wrapper.LogHandler.LogWarning($"Core didn't set its options. Requested key: {key}", nameof(RETRO_ENVIRONMENT.GET_VARIABLE));
+                    Wrapper.Instance.LogHandler.LogWarning($"Core didn't set its options. Requested key: {key}", nameof(RETRO_ENVIRONMENT.GET_VARIABLE));
                     return false;
                 }
 
                 if (!CoreOptions.TryGetValue(key, out coreOption))
                 {
-                    _wrapper.LogHandler.LogWarning($"Core option '{key}' not found.", nameof(RETRO_ENVIRONMENT.GET_VARIABLE));
+                    Wrapper.Instance.LogHandler.LogWarning($"Core option '{key}' not found.", nameof(RETRO_ENVIRONMENT.GET_VARIABLE));
                     return false;
                 }
             }
 
-            outVariable.value = _wrapper.GetUnsafeString(coreOption.CurrentValue);
+            outVariable.value = Wrapper.Instance.GetUnsafeString(coreOption.CurrentValue);
             Marshal.StructureToPtr(outVariable, data, true);
             return true;
         }
@@ -128,7 +125,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                _wrapper.LogHandler.LogException(e);
+                Wrapper.Instance.LogHandler.LogException(e);
                 return false;
             }
         }
@@ -167,13 +164,13 @@ namespace SK.Libretro
             {
                 if (global)
                 {
-                    string filePath = $"{Wrapper.OptionsDirectory}/{_wrapper.Core.Name}.json";
+                    string filePath = $"{Wrapper.OptionsDirectory}/{Wrapper.Instance.Core.Name}.json";
                     Serialize(CoreOptions, filePath);
                 }
                 else
                 {
-                    string directoryPath = FileSystem.GetOrCreateDirectory($"{Wrapper.OptionsDirectory}/{_wrapper.Core.Name}");
-                    string filePath      = $"{directoryPath}/{_wrapper.Game.Name}.json";
+                    string directoryPath = FileSystem.GetOrCreateDirectory($"{Wrapper.OptionsDirectory}/{Wrapper.Instance.Core.Name}");
+                    string filePath      = $"{directoryPath}/{Wrapper.Instance.Game.Name}.json";
                     Serialize(GameOptions, filePath);
                 }
 
@@ -185,8 +182,8 @@ namespace SK.Libretro
         {
             lock (_lock)
             {
-                CoreOptions = Deserialize($"{Wrapper.OptionsDirectory}/{_wrapper.Core.Name}.json") ?? new Options();
-                GameOptions = Deserialize($"{Wrapper.OptionsDirectory}/{_wrapper.Core.Name}/{_wrapper.Game.Name}.json") ?? ClassUtilities.DeepCopy(CoreOptions);
+                CoreOptions = Deserialize($"{Wrapper.OptionsDirectory}/{Wrapper.Instance.Core.Name}.json") ?? new Options();
+                GameOptions = Deserialize($"{Wrapper.OptionsDirectory}/{Wrapper.Instance.Core.Name}/{Wrapper.Instance.Game.Name}.json") ?? ClassUtilities.DeepCopy(CoreOptions);
             }
         }
 

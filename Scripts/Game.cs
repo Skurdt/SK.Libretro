@@ -25,7 +25,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace SK.Libretro
 {
@@ -38,7 +37,6 @@ namespace SK.Libretro
 
         public retro_game_info GameInfo = new();
 
-        private readonly Wrapper _wrapper;
         private readonly ContentOverrides _contentOverrides = new();
         private readonly List<retro_system_content_info_override> _systemContentInfoOverrides = new();
 
@@ -50,8 +48,6 @@ namespace SK.Libretro
         private bool _needFullPath;
         private bool _persistentData;
         private IntPtr _gameInfoExtPtr;
-
-        public Game(Wrapper wrapper) => _wrapper = wrapper;
 
         public bool Start(string gameDirectory, string gameName)
         {
@@ -80,7 +76,7 @@ namespace SK.Libretro
 
                 if (!GetGameInfo())
                 {
-                    _wrapper.LogHandler.LogError($"Game not set, core '{_wrapper.Core.Name}' needs a game to run.", "SK.Libretro.Game.Start");
+                    Wrapper.Instance.LogHandler.LogError($"Game not set, core '{Wrapper.Instance.Core.Name}' needs a game to run.", "SK.Libretro.Game.Start");
                     return false;
                 }
 
@@ -92,7 +88,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                _wrapper.LogHandler.LogException(e);
+                Wrapper.Instance.LogHandler.LogException(e);
             }
 
             return false;
@@ -103,7 +99,7 @@ namespace SK.Libretro
             if (Running)
             {
                 Running = false;
-                _wrapper.Core.UnloadGame();
+                Wrapper.Instance.Core.UnloadGame();
             }
 
             try
@@ -177,7 +173,7 @@ namespace SK.Libretro
             // ???????????????????
 
             Rotation = (int)data.ReadUInt32() * 90;
-            return _wrapper.Settings.UseCoreRotation;
+            return Wrapper.Instance.Settings.UseCoreRotation;
         }
 
         public bool SetGeometry(retro_game_geometry geometry)
@@ -238,10 +234,10 @@ namespace SK.Libretro
 
         private string GetGamePath(string directory, string gameName)
         {
-            if (_wrapper.Core.SystemInfo.ValidExtensions is null)
+            if (Wrapper.Instance.Core.SystemInfo.ValidExtensions is null)
                 return null;
 
-            foreach (string extension in _wrapper.Core.SystemInfo.ValidExtensions)
+            foreach (string extension in Wrapper.Instance.Core.SystemInfo.ValidExtensions)
             {
                 string filePath = $"{directory}/{gameName}.{extension}";
                 if (FileSystem.FileExists(filePath))
@@ -254,12 +250,12 @@ namespace SK.Libretro
         private bool GetGameInfo()
         {
             if (string.IsNullOrWhiteSpace(_path))
-                return _wrapper.Core.SupportNoGame;
+                return Wrapper.Instance.Core.SupportNoGame;
 
             GameInfo.path = _path.AsAllocatedPtr();
 
             (bool result, ContentOverride contentOverride) = _contentOverrides.TryGet(Path.GetExtension(_path).TrimStart('.'));
-            _needFullPath   = result ? contentOverride.NeedFullpath : _wrapper.Core.SystemInfo.NeedFullPath;
+            _needFullPath   = result ? contentOverride.NeedFullpath : Wrapper.Instance.Core.SystemInfo.NeedFullPath;
             _persistentData = result && contentOverride.PersistentData;
             if (_needFullPath)
                 return true;
@@ -289,16 +285,16 @@ namespace SK.Libretro
         {
             try
             {
-                if (!_wrapper.Core.LoadGame(ref GameInfo))
+                if (!Wrapper.Instance.Core.LoadGame(ref GameInfo))
                     return false;
 
-                _wrapper.Core.GetSystemAVInfo(out retro_system_av_info info);
+                Wrapper.Instance.Core.GetSystemAVInfo(out retro_system_av_info info);
                 SystemAVInfo.Init(info);
                 return true;
             }
             catch (Exception e)
             {
-                _wrapper.LogHandler.LogException(e);
+                Wrapper.Instance.LogHandler.LogException(e);
             }
 
             return false;

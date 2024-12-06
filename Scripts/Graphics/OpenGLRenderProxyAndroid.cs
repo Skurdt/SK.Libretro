@@ -1,17 +1,17 @@
-﻿using System.Runtime.InteropServices;
+﻿using SK.Libretro.Header;
 using System;
-using SK.Libretro.Header;
+using System.Runtime.InteropServices;
 
 namespace SK.Libretro
 {
-    internal sealed class OpenGLHelperWindowAndroid : HardwareRenderHelperWindow
+    internal sealed class OpenGLRenderProxyAndroid : HardwareRenderProxy
     {
         private IntPtr _eglDisplay = IntPtr.Zero;
         private IntPtr _eglSurface = IntPtr.Zero;
         private IntPtr _eglContext = IntPtr.Zero;
         private IntPtr _eglConfig = IntPtr.Zero;
 
-        public OpenGLHelperWindowAndroid(retro_hw_render_callback hwRenderCallback, IntPtr nativeWindow)
+        public OpenGLRenderProxyAndroid(retro_hw_render_callback hwRenderCallback, IntPtr nativeWindow)
         : base(hwRenderCallback)
             => _windowHandle = nativeWindow;
 

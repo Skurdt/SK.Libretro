@@ -26,20 +26,18 @@ namespace SK.Libretro
 {
     internal sealed class GraphicsFrameHandlerOpenGLXRGB8888VFlip : GraphicsFrameHandlerBase
     {
-        private readonly Wrapper _wrapper;
-        private readonly HardwareRenderHelperWindow _hardwareRenderHelperWindow;
+        private readonly HardwareRenderProxy _hardwareRenderProxy;
 
-        public GraphicsFrameHandlerOpenGLXRGB8888VFlip(Wrapper wrapper, IGraphicsProcessor processor, HardwareRenderHelperWindow hardwareRenderHelperWindow)
+        public GraphicsFrameHandlerOpenGLXRGB8888VFlip(IGraphicsProcessor processor, HardwareRenderProxy hardwareRenderProxy)
         : base(processor)
         {
-            _wrapper                    = wrapper;
-            _hardwareRenderHelperWindow = hardwareRenderHelperWindow;
-            _hardwareRenderHelperWindow?.InitContext();
+            _hardwareRenderProxy = hardwareRenderProxy;
+            _hardwareRenderProxy?.InitContext();
         }
 
         public override unsafe void ProcessFrame(IntPtr _, uint width, uint height, nuint pitch)
         {
-            if (_hardwareRenderHelperWindow is null)
+            if (_hardwareRenderProxy is null)
                 return;
 
             int bufferSize = (int)(width * height * 4);
@@ -49,7 +47,7 @@ namespace SK.Libretro
                 GL.ReadPixels(0, 0, (int)width, (int)height, GL.BGRA, GL.UNSIGNED_BYTE, bufferSrcPtr);
                 _processor.ProcessFrameXRGB8888VFlip((IntPtr)bufferSrcPtr, (int)width, (int)height, (int)width * 4);
             }
-            _hardwareRenderHelperWindow.SwapBuffers();
+            _hardwareRenderProxy.SwapBuffers();
         }
     }
 }

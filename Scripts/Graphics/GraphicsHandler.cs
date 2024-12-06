@@ -32,30 +32,25 @@ namespace SK.Libretro
 
         private static readonly retro_video_refresh_t _refreshCallback = RefreshCallback;
 
-        private readonly Wrapper _wrapper;
         private readonly IGraphicsProcessor _processor;
 
         private retro_pixel_format _pixelFormat;
         private GraphicsFrameHandlerBase _frameHandler;
 
-        private HardwareRenderHelperWindow _hardwareRenderHelperWindow;
+        private HardwareRenderProxy _hardwareRenderProxy;
 
-        public GraphicsHandler(Wrapper wrapper, IGraphicsProcessor processor)
-        {
-            _wrapper   = wrapper;
-            _processor = processor;
-        }
+        public GraphicsHandler(IGraphicsProcessor processor) => _processor = processor;
 
         public void Init(bool enabled)
         {
             Enabled = enabled;
 
-            if (_wrapper.Core.HwAccelerated)
+            if (Wrapper.Instance.Core.HwAccelerated)
             {
                 _frameHandler = _pixelFormat switch
                 {
                     retro_pixel_format.RETRO_PIXEL_FORMAT_0RGB1555 => new NullGraphicsFrameHandler(_processor),
-                    retro_pixel_format.RETRO_PIXEL_FORMAT_XRGB8888 => new GraphicsFrameHandlerOpenGLXRGB8888VFlip(_wrapper, _processor, _hardwareRenderHelperWindow),
+                    retro_pixel_format.RETRO_PIXEL_FORMAT_XRGB8888 => new GraphicsFrameHandlerOpenGLXRGB8888VFlip(_processor, _hardwareRenderProxy),
                     retro_pixel_format.RETRO_PIXEL_FORMAT_RGB565   => new NullGraphicsFrameHandler(_processor),
                     retro_pixel_format.RETRO_PIXEL_FORMAT_UNKNOWN
                     or _ => new NullGraphicsFrameHandler(_processor)
@@ -76,18 +71,18 @@ namespace SK.Libretro
         public void Dispose()
         {
             _processor.Dispose();
-            _hardwareRenderHelperWindow?.Dispose();
+            _hardwareRenderProxy?.Dispose();
         }
 
-        public void PollEvents() => _hardwareRenderHelperWindow?.PollEvents();
+        public void PollEvents() => _hardwareRenderProxy?.PollEvents();
 
         public void SetCoreCallback(retro_set_video_refresh_t setVideoRefresh) => setVideoRefresh(_refreshCallback);
 
         public bool GetOverscan(IntPtr data)
         {
             if (data.IsNotNull())
-                data.Write(_wrapper.Settings.CropOverscan);
-            return _wrapper.Settings.CropOverscan;
+                data.Write(Wrapper.Instance.Settings.CropOverscan);
+            return Wrapper.Instance.Settings.CropOverscan;
         }
 
         public bool GetCanDupe(IntPtr data)
@@ -96,8 +91,6 @@ namespace SK.Libretro
                 data.Write(true);
             return true;
         }
-
-        public bool GetCurrentSoftwareFramebuffer() => false;
 
         public bool GetPreferredHwRender(IntPtr data)
         {
@@ -125,28 +118,28 @@ namespace SK.Libretro
 
         public bool SetHwRender(IntPtr data)
         {
-            if (data.IsNull() || _wrapper.Core.HwAccelerated)
+            if (data.IsNull() || Wrapper.Instance.Core.HwAccelerated)
                 return false;
 
             retro_hw_render_callback hwRenderCallback = data.ToStructure<retro_hw_render_callback>();
-            _hardwareRenderHelperWindow = hwRenderCallback.context_type switch
+            _hardwareRenderProxy = hwRenderCallback.context_type switch
             {
                 retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL
-                or retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE => _wrapper.Settings.Platform == Platform.Android
-                                                                       ? new OpenGLHelperWindowAndroid(hwRenderCallback, _processor.NativeWindow)
-                                                                       : new OpenGLHelperWindowSDL(hwRenderCallback),
+                or retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE => Wrapper.Instance.Settings.Platform == Platform.Android
+                                                                       ? new OpenGLRenderProxyAndroid(hwRenderCallback, _processor.NativeWindow)
+                                                                       : new OpenGLRenderProxySDL(hwRenderCallback),
 
                 retro_hw_context_type.RETRO_HW_CONTEXT_NONE
                 or _ => default
             };
 
-            if (_hardwareRenderHelperWindow is null || !_hardwareRenderHelperWindow.Init())
+            if (_hardwareRenderProxy is null || !_hardwareRenderProxy.Init())
                 return false;
 
-            hwRenderCallback.get_current_framebuffer = _hardwareRenderHelperWindow.GetCurrentFrameBuffer.GetFunctionPointer();
-            hwRenderCallback.get_proc_address        = _hardwareRenderHelperWindow.GetProcAddress.GetFunctionPointer();
+            hwRenderCallback.get_current_framebuffer = _hardwareRenderProxy.GetCurrentFrameBuffer.GetFunctionPointer();
+            hwRenderCallback.get_proc_address        = _hardwareRenderProxy.GetProcAddress.GetFunctionPointer();
             Marshal.StructureToPtr(hwRenderCallback, data, true);
-            _wrapper.Core.HwAccelerated = true;
+            Wrapper.Instance.Core.HwAccelerated = true;
             return true;
         }
 
@@ -155,7 +148,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            if (_wrapper.Game.SetGeometry(data.ToStructure<retro_game_geometry>()))
+            if (Wrapper.Instance.Game.SetGeometry(data.ToStructure<retro_game_geometry>()))
             {
                 // TODO(Tom): Change width/height/aspect ratio
             }
@@ -165,8 +158,10 @@ namespace SK.Libretro
         [MonoPInvokeCallback(typeof(retro_video_refresh_t))]
         private static void RefreshCallback(IntPtr data, uint width, uint height, nuint pitch)
         {
-            if (Wrapper.Instance.GraphicsHandler.Enabled)
-                Wrapper.Instance.GraphicsHandler._frameHandler.ProcessFrame(data, width, height, pitch);
+            if (!Wrapper.Instance.GraphicsHandler.Enabled)
+                return;
+
+            Wrapper.Instance.GraphicsHandler._frameHandler.ProcessFrame(data, width, height, pitch);
         }
     }
 }
