@@ -21,21 +21,20 @@
  * SOFTWARE. */
 
 using System;
-using System.Runtime.InteropServices;
 
-namespace SK.Libretro.Header
+namespace SK.Libretro
 {
-    // typedef bool (RETRO_CALLCONV* retro_set_sensor_state_t) (unsigned port, enum retro_sensor_action action, unsigned rate);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.I1)]
-    internal delegate bool retro_set_sensor_state_t(uint port, retro_sensor_action action, uint rate);
-    // typedef float (RETRO_CALLCONV* retro_sensor_get_input_t) (unsigned port, unsigned id);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate float retro_sensor_get_input_t(uint port, uint id);
-
-    internal struct retro_sensor_interface
+    internal sealed class GraphicsFrameHandlerSoftwareFramebuffer : GraphicsFrameHandlerBase
     {
-        public IntPtr set_sensor_state; // retro_set_sensor_state_t
-        public IntPtr get_sensor_input; // retro_sensor_get_input_t
+        public GraphicsFrameHandlerSoftwareFramebuffer(IGraphicsProcessor processor)
+        : base(processor)
+        {
+        }
+
+        public override void ProcessFrame(IntPtr data, uint width, uint height, nuint pitch)
+        {
+            if (data.IsNotNull())
+                _processor.ProcessFrameSoftwareFramebuffer(data, (int)pitch, (int)height);
+        }
     }
 }

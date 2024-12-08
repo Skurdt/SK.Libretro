@@ -42,13 +42,13 @@ namespace SK.Libretro.Header
         public IntPtr context_reset;           // retro_hw_context_reset_t
         public IntPtr get_current_framebuffer; // retro_hw_get_current_framebuffer_t
         public IntPtr get_proc_address;        // retro_hw_get_proc_address_t
-        [MarshalAs(UnmanagedType.U1)] public bool depth;
-        [MarshalAs(UnmanagedType.U1)] public bool stencil;
-        [MarshalAs(UnmanagedType.U1)] public bool bottom_left_origin;
+        [MarshalAs(UnmanagedType.I1)] public bool depth;
+        [MarshalAs(UnmanagedType.I1)] public bool stencil;
+        [MarshalAs(UnmanagedType.I1)] public bool bottom_left_origin;
         public uint version_major;
         public uint version_minor;
-        [MarshalAs(UnmanagedType.U1)] public bool cache_context;
+        [MarshalAs(UnmanagedType.I1)] public bool cache_context;
         public IntPtr context_destroy;         // retro_hw_context_reset_t
-        [MarshalAs(UnmanagedType.U1)] public bool debug_context;
+        [MarshalAs(UnmanagedType.I1)] public bool debug_context;
     }
 }

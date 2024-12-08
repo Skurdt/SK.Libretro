@@ -21,6 +21,8 @@
  * SOFTWARE. */
 
 using System;
+using System.Runtime.InteropServices;
+using System.Threading;
 using Unity.Jobs;
 using UnityEngine;
 
@@ -28,7 +30,10 @@ namespace SK.Libretro.Unity
 {
     internal sealed class GraphicsProcessor : IGraphicsProcessor
     {
+        public IntPtr NativeWindow { get; }
+
         private readonly Action<Texture> _onTextureRecreated;
+        private readonly ManualResetEventSlim _manualResetEvent;
 
         private FilterMode _filterMode;
         private Texture2D _texture;
@@ -38,6 +43,7 @@ namespace SK.Libretro.Unity
         {
             _onTextureRecreated = textureRecreatedCallback;
             _filterMode         = filterMode;
+            _manualResetEvent   = new(false);
         }
 
         public void Dispose() => MainThreadDispatcher.Enqueue(() =>
@@ -55,6 +61,41 @@ namespace SK.Libretro.Unity
 
             if (_texture)
                 _texture.filterMode = filterMode;
+        });
+
+        public IntPtr GetCurrentSoftwareFramebuffer(int width, int height)
+        {
+            IntPtr result = IntPtr.Zero;
+
+            _manualResetEvent.Reset();
+            using CancellationTokenSource tokenSource = new();
+            MainThreadDispatcher.Enqueue(() =>
+            {
+                try
+                {
+                    CreateTexture(width, height, TextureFormat.RGB565);
+                    if (!_texture)
+                        throw new NullReferenceException("Texture not created");
+
+                    GCHandle handle = GCHandle.Alloc(_texture.GetRawTextureData(), GCHandleType.Pinned);
+                    result = handle.AddrOfPinnedObject();
+                    handle.Free();
+                }
+                finally
+                {
+                    _manualResetEvent.Set();
+                }
+            });
+            _manualResetEvent.Wait(tokenSource.Token);
+            tokenSource.Dispose();
+
+            return result;
+        }
+
+        public unsafe void ProcessFrameSoftwareFramebuffer(IntPtr data, int pitch, int height) => MainThreadDispatcher.Enqueue(() =>
+        {
+            _texture.LoadRawTextureData(data, pitch * height * sizeof(short));
+            _texture.Apply();
         });
 
         public unsafe void ProcessFrame0RGB1555(IntPtr data, int width, int height, int pitch) => MainThreadDispatcher.Enqueue(() =>
@@ -129,7 +170,7 @@ namespace SK.Libretro.Unity
             _texture.Apply();
         });
 
-        private void CreateTexture(int width, int height)
+        private void CreateTexture(int width, int height, TextureFormat textureFormat = TextureFormat.BGRA32)
         {
             if (!Application.isPlaying)
                 return;
@@ -137,7 +178,7 @@ namespace SK.Libretro.Unity
             if (!_texture || _texture.width != width || _texture.height != height)
             {
                 UnityEngine.Object.Destroy(_texture);
-                _texture = new Texture2D(width, height, TextureFormat.BGRA32, false, false, false)
+                _texture = new Texture2D(width, height, textureFormat, false, false, false)
                 {
                     filterMode = _filterMode
                 };

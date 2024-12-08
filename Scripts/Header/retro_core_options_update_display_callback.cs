@@ -27,7 +27,7 @@ namespace SK.Libretro.Header
 {
     // typedef bool (RETRO_CALLCONV* retro_core_options_update_display_callback_t) (void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.U1)]
+    [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_core_options_update_display_callback_t();
 
     internal struct retro_core_options_update_display_callback

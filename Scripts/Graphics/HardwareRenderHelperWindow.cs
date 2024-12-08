@@ -35,8 +35,6 @@ namespace SK.Libretro
         private readonly retro_hw_context_reset_t _contextReset;
         private readonly retro_hw_context_reset_t _contextDestroy;
 
-        private bool _disposedValue;
-
         public HardwareRenderHelperWindow(retro_hw_render_callback hwRenderCallback)
         {
             _contextReset         = hwRenderCallback.context_reset.GetDelegate<retro_hw_context_reset_t>();
@@ -45,12 +43,11 @@ namespace SK.Libretro
             GetProcAddress        = GetProcAddressCall;
         }
 
-        ~HardwareRenderHelperWindow() => Dispose(disposing: false);
-
         public void Dispose()
         {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            DeInit();
+            if (_windowHandle.IsNotNull())
+                PointerUtilities.SetToNull(ref _windowHandle);
         }
 
         public void InitContext() => _contextReset.Invoke();
@@ -66,21 +63,5 @@ namespace SK.Libretro
         protected abstract IntPtr GetCurrentFrameBufferCall();
 
         protected abstract IntPtr GetProcAddressCall(string functionName);
-
-        private void Dispose(bool disposing)
-        {
-            if (_disposedValue)
-                return;
-
-            if (disposing)
-                _contextDestroy?.Invoke();
-
-            DeInit();
-
-            if (_windowHandle.IsNotNull())
-                PointerUtilities.SetToNull(ref _windowHandle);
-
-            _disposedValue = true;
-        }
     }
 }

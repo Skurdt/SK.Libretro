@@ -70,10 +70,10 @@ namespace SK.Libretro.Header
     internal delegate int retro_vfs_mkdir_t([MarshalAs(UnmanagedType.LPStr)] string dir);
     // typedef struct retro_vfs_dir_handle *(RETRO_CALLCONV *retro_vfs_opendir_t)(const char* dir, bool include_hidden);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate IntPtr retro_vfs_opendir_t([MarshalAs(UnmanagedType.LPStr)] string dir, [MarshalAs(UnmanagedType.U1)] bool include_hidden);
+    internal delegate IntPtr retro_vfs_opendir_t([MarshalAs(UnmanagedType.LPStr)] string dir, [MarshalAs(UnmanagedType.I1)] bool include_hidden);
     // typedef bool (RETRO_CALLCONV *retro_vfs_readdir_t)(struct retro_vfs_dir_handle *dirstream);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.U1)]
+    [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_vfs_readdir_t(ref retro_vfs_dir_handle dirstream);
     // typedef const char*(RETRO_CALLCONV *retro_vfs_dirent_get_name_t)(struct retro_vfs_dir_handle *dirstream);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -81,7 +81,7 @@ namespace SK.Libretro.Header
     internal delegate string retro_vfs_dirent_get_name_t(ref retro_vfs_dir_handle dirstream);
     // typedef bool (RETRO_CALLCONV *retro_vfs_dirent_is_dir_t)(struct retro_vfs_dir_handle *dirstream);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.U1)]
+    [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_vfs_dirent_is_dir_t(ref retro_vfs_dir_handle dirstream);
     // typedef int (RETRO_CALLCONV *retro_vfs_closedir_t)(struct retro_vfs_dir_handle *dirstream);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -102,12 +102,12 @@ namespace SK.Libretro.Header
         public IntPtr remove;          // retro_vfs_remove_t
         public IntPtr rename;          // retro_vfs_rename_t
         public IntPtr truncate;        // retro_vfs_truncate_t
-        public IntPtr stat;            // retro_vfs_stat_t
-        public IntPtr mkdir;           // retro_vfs_mkdir_t
-        public IntPtr opendir;         // retro_vfs_opendir_t
-        public IntPtr readdir;         // retro_vfs_readdir_t
-        public IntPtr dirent_get_name; // retro_vfs_dirent_get_name_t
-        public IntPtr dirent_is_dir;   // retro_vfs_dirent_is_dir_t
-        public IntPtr closedir;        // retro_vfs_closedir_t
+        //public IntPtr stat;            // retro_vfs_stat_t
+        //public IntPtr mkdir;           // retro_vfs_mkdir_t
+        //public IntPtr opendir;         // retro_vfs_opendir_t
+        //public IntPtr readdir;         // retro_vfs_readdir_t
+        //public IntPtr dirent_get_name; // retro_vfs_dirent_get_name_t
+        //public IntPtr dirent_is_dir;   // retro_vfs_dirent_is_dir_t
+        //public IntPtr closedir;        // retro_vfs_closedir_t
     }
 }

@@ -21,7 +21,10 @@
  * SOFTWARE. */
 
 using System;
+using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -64,6 +67,9 @@ namespace SK.Libretro.Unity
             if (!_audioSource)
                 _audioSource = GetComponent<AudioSource>();
             _audioSource.playOnAwake = false;
+
+            InitBuffer(_outputSampleRate, 2, 4.0f);
+
             _audioSource.Play();
         });
 
@@ -81,8 +87,8 @@ namespace SK.Libretro.Unity
             if (!_circularBuffer.IsCreated)
                 return;
 
-            float ratio                 = (float)_outputSampleRate / _inputSampleRate;
-            int sourceSamplesCount      = 2;
+            float ratio = (float)_outputSampleRate / _inputSampleRate;
+            int sourceSamplesCount = 2;
             int destinationSamplesCount = (int)(sourceSamplesCount * ratio);
             for (int i = 0; i < destinationSamplesCount; i++)
             {
@@ -94,7 +100,7 @@ namespace SK.Libretro.Unity
                 if (sampleIndex2 > sourceSamplesCount - 1)
                     sampleIndex2 = sourceSamplesCount - 1;
                 float interpolationFactor = sampleIndex - sampleIndex1;
-                _circularBuffer.Enqueue(math.lerp(left  * AudioHandler.NORMALIZED_GAIN,
+                _circularBuffer.Enqueue(math.lerp(left * AudioHandler.NORMALIZED_GAIN,
                                                   right * AudioHandler.NORMALIZED_GAIN,
                                                   interpolationFactor));
             }
@@ -105,23 +111,69 @@ namespace SK.Libretro.Unity
             if (!_circularBuffer.IsCreated)
                 return;
 
-            short* sourceSamples        = (short*)data;
-            float ratio                 = (float)_outputSampleRate / _inputSampleRate;
-            int sourceSamplesCount      = (int)frames * 2;
+            short* sourceSamples = (short*)data;
+            float ratio = (float)_outputSampleRate / _inputSampleRate;
+            int sourceSamplesCount = (int)frames * 2;
             int destinationSamplesCount = (int)(sourceSamplesCount * ratio);
+
+            using NativeArray<float> tempBuffer = new(destinationSamplesCount, Allocator.TempJob);
+
+            new ProcessSampleBatchJob()
+            {
+                sourceSamples = sourceSamples,
+                ratio = ratio,
+                sourceSamplesCount = sourceSamplesCount,
+                destinationSamplesCount = destinationSamplesCount,
+                tempBuffer = tempBuffer
+            }.Schedule(destinationSamplesCount, 64).Complete();
+
             for (int i = 0; i < destinationSamplesCount; i++)
+                _circularBuffer.Enqueue(tempBuffer[i]);
+        }
+
+        private void InitBuffer(int sampleRate, int channels, float bufferDurationSeconds)
+        {
+            int bufferSize = (int)(sampleRate * channels * bufferDurationSeconds);
+            if (_circularBuffer.IsCreated)
+                _circularBuffer.Dispose();
+            _circularBuffer = new(bufferSize, Allocator.Persistent);
+        }
+
+        [BurstCompile]
+        private unsafe struct ProcessSampleBatchJob : IJobParallelFor
+        {
+            [NativeDisableUnsafePtrRestriction] public short* sourceSamples;
+            public float ratio;
+            public int sourceSamplesCount;
+            public int destinationSamplesCount;
+            public NativeArray<float> tempBuffer;
+
+            public void Execute(int i)
             {
                 float sampleIndex = i / ratio;
-                int sampleIndex1 = (int)math.floor(sampleIndex);
-                if (sampleIndex1 > sourceSamplesCount - 1)
-                    sampleIndex1 = sourceSamplesCount - 1;
-                int sampleIndex2 = (int)math.ceil(sampleIndex);
-                if (sampleIndex2 > sourceSamplesCount - 1)
-                    sampleIndex2 = sourceSamplesCount - 1;
+                int sampleIndex1 = math.clamp((int)math.floor(sampleIndex), 0, sourceSamplesCount - 1);
+                int sampleIndex0 = math.clamp(sampleIndex1 - 1, 0, sourceSamplesCount - 1);
+                int sampleIndex2 = math.clamp(sampleIndex1 + 1, 0, sourceSamplesCount - 1);
+                int sampleIndex3 = math.clamp(sampleIndex1 + 2, 0, sourceSamplesCount - 1);
+
                 float interpolationFactor = sampleIndex - sampleIndex1;
-                _circularBuffer.Enqueue(math.lerp(sourceSamples[sampleIndex1] * AudioHandler.NORMALIZED_GAIN,
-                                                  sourceSamples[sampleIndex2] * AudioHandler.NORMALIZED_GAIN,
-                                                  interpolationFactor));
+
+                float sample0 = sourceSamples[sampleIndex0] * AudioHandler.NORMALIZED_GAIN;
+                float sample1 = sourceSamples[sampleIndex1] * AudioHandler.NORMALIZED_GAIN;
+                float sample2 = sourceSamples[sampleIndex2] * AudioHandler.NORMALIZED_GAIN;
+                float sample3 = sourceSamples[sampleIndex3] * AudioHandler.NORMALIZED_GAIN;
+
+                float interpolatedSample = CubicInterpolate(sample0, sample1, sample2, sample3, interpolationFactor);
+                tempBuffer[i] = interpolatedSample;
+            }
+
+            private readonly float CubicInterpolate(float v0, float v1, float v2, float v3, float t)
+            {
+                float P = v3 - v2 - (v0 - v1);
+                float Q = v0 - v1 - P;
+                float R = v2 - v0;
+                float S = v1;
+                return (P * t * t * t) + (Q * t * t) + (R * t) + S;
             }
         }
     }

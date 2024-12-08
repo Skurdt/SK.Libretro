@@ -30,7 +30,7 @@ namespace SK.Libretro.Header
     internal delegate void retro_audio_callback_t();
     // typedef void (RETRO_CALLCONV *retro_audio_set_state_callback_t)(bool enabled);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate void retro_audio_set_state_callback_t([MarshalAs(UnmanagedType.U1)] bool enabled);
+    internal delegate void retro_audio_set_state_callback_t([MarshalAs(UnmanagedType.I1)] bool enabled);
 
     internal struct retro_audio_callback
     {

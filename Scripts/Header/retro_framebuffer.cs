@@ -26,7 +26,7 @@ using System.Runtime.InteropServices;
 namespace SK.Libretro.Header
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal sealed class retro_framebuffer
+    internal struct retro_framebuffer
     {
         public IntPtr data; // void*
         public uint width;

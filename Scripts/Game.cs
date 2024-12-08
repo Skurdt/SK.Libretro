@@ -44,7 +44,11 @@ namespace SK.Libretro
         private string _path          = "";
         private string _extractedPath = "";
 
-        private retro_game_info_ext _gameInfoExt = new();
+        private IntPtr _allocatedData;
+        private nuint _dataLength;
+        private bool _needFullPath;
+        private bool _persistentData;
+        private IntPtr _gameInfoExtPtr;
 
         public Game(Wrapper wrapper) => _wrapper = wrapper;
 
@@ -127,7 +131,33 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            Marshal.StructureToPtr(_gameInfoExt, data, true);
+            _gameInfoExtPtr = Marshal.AllocHGlobal(Marshal.SizeOf<retro_game_info_ext>());
+
+            string directory = Path.GetDirectoryName(_path).Replace(Path.DirectorySeparatorChar, '/');
+            string name      = Path.GetFileNameWithoutExtension(_path);
+            string extension = Path.GetExtension(_path).TrimStart('.');
+
+            retro_game_info_ext gameInfoExt = new()
+            {
+                full_path       = _path.AsAllocatedPtr(),
+                dir             = directory.AsAllocatedPtr(),
+                name            = name.AsAllocatedPtr(),
+                ext             = extension.AsAllocatedPtr(),
+                file_in_archive = false,
+                archive_path    = IntPtr.Zero,
+                archive_file    = IntPtr.Zero,
+                meta            = IntPtr.Zero
+            };
+
+            if (!_needFullPath)
+            {
+                gameInfoExt.persistent_data = _persistentData;
+                gameInfoExt.data            = _allocatedData;
+                gameInfoExt.size            = _dataLength;
+            }
+
+            Marshal.StructureToPtr(gameInfoExt, _gameInfoExtPtr, false);
+            Marshal.WriteIntPtr(data, _gameInfoExtPtr);
             return true;
         }
 
@@ -201,16 +231,6 @@ namespace SK.Libretro
             PointerUtilities.Free(ref GameInfo.data);
             PointerUtilities.Free(ref GameInfo.meta);
             GameInfo = default;
-
-            PointerUtilities.Free(ref _gameInfoExt.full_path);
-            PointerUtilities.Free(ref _gameInfoExt.archive_path);
-            PointerUtilities.Free(ref _gameInfoExt.archive_file);
-            PointerUtilities.Free(ref _gameInfoExt.dir);
-            PointerUtilities.Free(ref _gameInfoExt.name);
-            PointerUtilities.Free(ref _gameInfoExt.ext);
-            PointerUtilities.Free(ref _gameInfoExt.meta);
-            PointerUtilities.Free(ref _gameInfoExt.data);
-            _gameInfoExt = default;
         }
 
         private string GetGamePath(string directory, string gameName)
@@ -222,7 +242,7 @@ namespace SK.Libretro
             {
                 string filePath = $"{directory}/{gameName}.{extension}";
                 if (FileSystem.FileExists(filePath))
-                    return filePath;
+                    return filePath.Replace(Path.DirectorySeparatorChar, '/');
             }
 
             return null;
@@ -235,33 +255,26 @@ namespace SK.Libretro
 
             GameInfo.path = _path.AsAllocatedPtr();
 
-            string directory = Path.GetDirectoryName(_path);
-            string name      = Path.GetFileNameWithoutExtension(_path);
-            string extension = Path.GetExtension(_path).TrimStart('.');
-
-            _gameInfoExt.full_path       = _path.AsAllocatedPtr();
-            _gameInfoExt.dir             = directory.AsAllocatedPtr();
-            _gameInfoExt.name            = name.AsAllocatedPtr();
-            _gameInfoExt.ext             = extension.AsAllocatedPtr();
-            _gameInfoExt.file_in_archive = false;
-            _gameInfoExt.persistent_data = false;
-
-            //(bool result, ContentOverride contentOverride) = _contentOverrides.TryGet(extension);
-            //bool needFullPath = result ? contentOverride.NeedFullpath : _wrapper.Core.SystemInfo.NeedFullPath;
-            if (_wrapper.Core.SystemInfo.NeedFullPath)
+            (bool result, ContentOverride contentOverride) = _contentOverrides.TryGet(Path.GetExtension(_path).TrimStart('.'));
+            _needFullPath = result ? contentOverride.NeedFullpath : _wrapper.Core.SystemInfo.NeedFullPath;
+            _persistentData = result && contentOverride.PersistentData;
+            if (_needFullPath)
                 return true;
 
             try
             {
                 using FileStream stream = new(_path, FileMode.Open);
-                byte[] data             = new byte[stream.Length];
-                GameInfo.data           = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
-                _gameInfoExt.data       = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
-                GameInfo.size           = (nuint)data.Length;
-                _gameInfoExt.size       = (nuint)data.Length;
+                byte[] data = new byte[stream.Length];
+
                 _ = stream.Read(data, 0, (int)stream.Length);
-                Marshal.Copy(data, 0, GameInfo.data, data.Length);
-                Marshal.Copy(data, 0, _gameInfoExt.data, data.Length);
+
+                _allocatedData = Marshal.AllocHGlobal(data.Length);
+                Marshal.Copy(data, 0, _allocatedData, data.Length);
+                _dataLength = (nuint)data.Length;
+
+                GameInfo.data = _allocatedData;
+                GameInfo.size = _dataLength;
+
                 return true;
             }
             catch (Exception)

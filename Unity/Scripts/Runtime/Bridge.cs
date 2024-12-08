@@ -609,14 +609,32 @@ namespace SK.Libretro.Unity
                 return;
 
             _manualResetEvent.Reset();
+
             using CancellationTokenSource tokenSource = new();
+
             MainThreadDispatcher.Enqueue(() =>
             {
-                action();
-                _manualResetEvent.Set();
-                tokenSource.Cancel();
+                try
+                {
+                    action();
+                }
+                catch
+                {
+                    tokenSource.Cancel();
+                }
+                finally
+                {
+                    _manualResetEvent.Set();
+                }
             });
-            _manualResetEvent.Wait(tokenSource.Token);
+
+            try
+            {
+                _manualResetEvent.Wait(tokenSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
 
         private (ILogProcessor, IGraphicsProcessor, IAudioProcessor, IInputProcessor, ILedProcessor) GetProcessors()
@@ -631,13 +649,19 @@ namespace SK.Libretro.Unity
             _manualResetEvent.Reset();
             MainThreadDispatcher.Enqueue(() =>
             {
-                audio = GetAudioProcessor(_instanceComponent.transform);
-                input = GetInputProcessor(_instanceComponent.Settings.LeftStickBehaviour);
-                led   = GetLedProcessor();
-                _manualResetEvent.Set();
-                getComponentsTokenSource.Cancel();
+                try
+                {
+                    audio = GetAudioProcessor(_instanceComponent.transform);
+                    input = GetInputProcessor(_instanceComponent.Settings.LeftStickBehaviour);
+                    led   = GetLedProcessor();
+                }
+                finally
+                {
+                    _manualResetEvent.Set();
+                }
             });
             _manualResetEvent.Wait(getComponentsTokenSource.Token);
+            getComponentsTokenSource.Dispose();
             return (log, graphics, audio, input, led);
         }
 

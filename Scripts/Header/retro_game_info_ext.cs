@@ -36,7 +36,7 @@ namespace SK.Libretro.Header
         public IntPtr meta;         // const char*
         public IntPtr data;         // const void*
         public nuint size;
-        [MarshalAs(UnmanagedType.U1)] public bool file_in_archive;
-        [MarshalAs(UnmanagedType.U1)] public bool persistent_data;
+        [MarshalAs(UnmanagedType.I1)] public bool file_in_archive;
+        [MarshalAs(UnmanagedType.I1)] public bool persistent_data;
     }
 }

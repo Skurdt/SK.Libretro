@@ -36,7 +36,6 @@ namespace SK.Libretro
         private readonly Wrapper _wrapper;
         //private readonly Deque<byte[]> _rewindStates;
         private ulong _quirks;
-        private ulong _stateSize;
         private string _coreDirectory;
         private string _gameDirectory;
         private int _currentStateSlot;
@@ -49,10 +48,6 @@ namespace SK.Libretro
 
         public void Init()
         {
-            ulong size = _wrapper.Core.SerializeSize();
-            if (size > 0)
-                _stateSize = size;
-
             _coreDirectory = FileSystem.GetOrCreateDirectory($"{Wrapper.StatesDirectory}/{_wrapper.Core.Name}");
             _gameDirectory = !string.IsNullOrWhiteSpace(_wrapper.Game.Name)
                            ? $"{_coreDirectory}/{_wrapper.Game.Name}"
@@ -135,7 +130,7 @@ namespace SK.Libretro
                     return false;
 
                 nuint stateSize = _wrapper.Core.SerializeSize();
-                if (stateSize == 0 || stateSize != _stateSize)
+                if (stateSize == 0)
                     return false;
 
                 byte[] data = File.ReadAllBytes(savePath);
@@ -288,9 +283,6 @@ namespace SK.Libretro
                     data = Array.Empty<byte>();
                     return false;
                 }
-
-                if (stateSize != _stateSize)
-                    _stateSize = stateSize;
 
                 data = new byte[stateSize];
                 handle = GCHandle.Alloc(data, GCHandleType.Pinned);

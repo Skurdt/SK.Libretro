@@ -27,7 +27,7 @@ namespace SK.Libretro.Header
 {
     // typedef bool (RETRO_CALLCONV *retro_camera_start_t) (void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.U1)]
+    [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_camera_start_t();
     // typedef void (RETRO_CALLCONV *retro_camera_stop_t) (void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
