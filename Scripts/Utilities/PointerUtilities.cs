@@ -105,12 +105,12 @@ namespace SK.Libretro
 
         public static IntPtr Alloc<T>() => Marshal.AllocHGlobal(Marshal.SizeOf<T>());
 
-        public static void Free(IDictionary<string, IntPtr> ptrs)
+        public static void Free(IList<IntPtr> ptrs)
         {
-            foreach (string key in ptrs.Keys)
+            for (int i = 0; i < ptrs.Count; i++)
             {
-                IntPtr value = ptrs[key];
-                Free(ref value);
+                IntPtr ptr = ptrs[i];
+                Free(ref ptr);
             }
 
             ptrs.Clear();

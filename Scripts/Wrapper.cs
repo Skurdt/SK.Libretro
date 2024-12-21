@@ -23,7 +23,6 @@
 using SK.Libretro.Header;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace SK.Libretro
 {
@@ -76,7 +75,7 @@ namespace SK.Libretro
         private static string _systemDirectory;
         private static string _coreAssetsDirectory;
 
-        private readonly Dictionary<string, IntPtr> _unsafeStrings = new();
+        private readonly List<IntPtr> _unsafeStrings = new();
 
         private long _frameTimeLast = 0;
         //private uint _totalFrameCount = 0;
@@ -251,11 +250,8 @@ namespace SK.Libretro
 
         public IntPtr GetUnsafeString(string source)
         {
-            if (_unsafeStrings.TryGetValue(source, out IntPtr ptr))
-                return ptr;
-
-            ptr = source.AsAllocatedPtr();
-            _unsafeStrings.Add(source, ptr);
+            IntPtr ptr = source.AsAllocatedPtr();
+            _unsafeStrings.Add(ptr);
             return ptr;
         }
 
