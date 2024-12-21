@@ -231,9 +231,6 @@ namespace SK.Libretro
 
         public void FreeGameInfo()
         {
-            PointerUtilities.Free(ref GameInfo.path);
-            PointerUtilities.Free(ref GameInfo.data);
-            PointerUtilities.Free(ref GameInfo.meta);
             GameInfo = default;
 
             PointerUtilities.Free(ref _gameInfoExtPtr);
