@@ -40,9 +40,15 @@ namespace SK.Libretro
 
         public static ushort ReadUInt16(this IntPtr ptr) => Convert.ToUInt16(ptr.IsNotNull() ? Marshal.ReadInt16(ptr) : 0);
 
+        public static ushort ReadUInt16(this IntPtr ptr, int offset) => Convert.ToUInt16(ptr.IsNotNull() ? Marshal.ReadInt16(ptr, offset) : 0);
+
         public static int ReadInt32(this IntPtr ptr) => ptr.IsNotNull() ? Marshal.ReadInt32(ptr) : 0;
 
+        public static int ReadInt32(this IntPtr ptr, int offset) => ptr.IsNotNull() ? Marshal.ReadInt32(ptr, offset) : 0;
+
         public static uint ReadUInt32(this IntPtr ptr) => ptr.IsNotNull() ? Convert.ToUInt32(Marshal.ReadInt32(ptr)) : 0;
+
+        public static uint ReadUInt32(this IntPtr ptr, int offset) => ptr.IsNotNull() ? Convert.ToUInt32(Marshal.ReadInt32(ptr, offset)) : 0;
 
         public static ulong ReadUInt64(this IntPtr ptr) => ptr.IsNotNull() ? Convert.ToUInt64(Marshal.ReadInt64(ptr)) : 0;
 
@@ -70,6 +76,12 @@ namespace SK.Libretro
                 Marshal.WriteInt64(ptr, Convert.ToInt64(value));
         }
 
+        public static void Write(this IntPtr ptr, IntPtr value)
+        {
+            if (ptr.IsNotNull())
+                Marshal.WriteIntPtr(ptr, value);
+        }
+
         public static T ToStructure<T>(this IntPtr ptr) => Marshal.PtrToStructure<T>(ptr);
 
         public static T GetDelegate<T>(this IntPtr ptr) where T : Delegate => ptr.IsNotNull() ? Marshal.GetDelegateForFunctionPointer<T>(ptr) : default;
@@ -89,12 +101,16 @@ namespace SK.Libretro
             SetToNull(ref ptr);
         }
 
-        public static void Free(IList<IntPtr> ptrs)
+        public static IntPtr Alloc(int size) => Marshal.AllocHGlobal(size);
+
+        public static IntPtr Alloc<T>() => Marshal.AllocHGlobal(Marshal.SizeOf<T>());
+
+        public static void Free(IDictionary<string, IntPtr> ptrs)
         {
-            for (int i = 0; i < ptrs.Count; ++i)
+            foreach (string key in ptrs.Keys)
             {
-                IntPtr ptr = ptrs[i];
-                Free(ref ptr);
+                IntPtr value = ptrs[key];
+                Free(ref value);
             }
 
             ptrs.Clear();

@@ -64,7 +64,7 @@ namespace SK.Libretro
             }
 
             outVariable.value = Wrapper.Instance.GetUnsafeString(coreOption.CurrentValue);
-            Marshal.StructureToPtr(outVariable, data, true);
+            Marshal.StructureToPtr(outVariable, data, false);
             return true;
         }
 

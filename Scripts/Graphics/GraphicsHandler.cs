@@ -166,7 +166,7 @@ namespace SK.Libretro
 
             hwRenderCallback.get_current_framebuffer = _hardwareRenderProxy.GetCurrentFrameBuffer.GetFunctionPointer();
             hwRenderCallback.get_proc_address        = _hardwareRenderProxy.GetProcAddress.GetFunctionPointer();
-            Marshal.StructureToPtr(hwRenderCallback, data, true);
+            Marshal.StructureToPtr(hwRenderCallback, data, false);
             return true;
         }
 

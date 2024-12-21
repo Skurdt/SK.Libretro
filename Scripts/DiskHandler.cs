@@ -62,34 +62,34 @@ namespace SK.Libretro
 
             foreach (string extension in Wrapper.Instance.Core.SystemInfo.ValidExtensions)
             {
-                string filePath = $"{path}.{extension}";
-                if (!FileSystem.FileExists(filePath))
-                    continue;
-
-                Wrapper.Instance.Game.GameInfo.path = filePath.AsAllocatedPtr();
                 try
                 {
+                    string filePath = $"{path}.{extension}";
+                    if (!FileSystem.FileExists(filePath))
+                        continue;
+
+                    Game game = Wrapper.Instance.Game;
+                    game.GameInfo.path = Wrapper.Instance.GetUnsafeString(filePath);
                     using FileStream stream = new(filePath, FileMode.Open);
                     byte[] data = new byte[stream.Length];
-                    Wrapper.Instance.Game.GameInfo.size = (nuint)data.Length;
-                    Wrapper.Instance.Game.GameInfo.data = Marshal.AllocHGlobal(data.Length * Marshal.SizeOf<byte>());
+                    game.GameInfo.size = (nuint)data.Length;
+                    game.GameInfo.data = PointerUtilities.Alloc(data.Length * Marshal.SizeOf<byte>());
                     _ = stream.Read(data, 0, (int)stream.Length);
-                    Marshal.Copy(data, 0, Wrapper.Instance.Game.GameInfo.data, data.Length);
+                    Marshal.Copy(data, 0, game.GameInfo.data, data.Length);
+                    if (!_replace_image_index(index, ref game.GameInfo))
+                    {
+                        game.FreeGameInfo();
+                        return false;
+                    }
+
+                    game.FreeGameInfo();
+
+                    return _set_image_index(index) && _set_eject_state(false);
                 }
                 catch (Exception)
                 {
                     return false;
                 }
-
-                if (!_replace_image_index(index, ref Wrapper.Instance.Game.GameInfo))
-                {
-                    Wrapper.Instance.Game.FreeGameInfo();
-                    return false;
-                }
-
-                Wrapper.Instance.Game.FreeGameInfo();
-
-                return _set_image_index(index) && _set_eject_state(false);
             }
 
             return false;

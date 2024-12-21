@@ -64,7 +64,7 @@ namespace SK.Libretro.Unity
         {
             float low  = effect is retro_rumble_effect.RETRO_RUMBLE_WEAK   ? strength / (float)ushort.MaxValue : 0f;
             float high = effect is retro_rumble_effect.RETRO_RUMBLE_STRONG ? strength / (float)ushort.MaxValue : 0f;
-            Gamepad.current.SetMotorSpeeds(low, high);
+            Gamepad.current?.SetMotorSpeeds(low, high);
             return true;
         }
     }

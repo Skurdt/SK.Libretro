@@ -110,7 +110,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: 3d136013-1adf-4a01-ad86-7e5f4e85dd81
-    m_ActionName: All/JoypadDirections[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d]
+    m_ActionName: 'All/JoypadDirections[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -126,7 +126,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: 9c24f261-5878-4731-84f6-c78c63030707
-    m_ActionName: All/JoypadStartButton[/Keyboard/enter]
+    m_ActionName: 'All/JoypadStartButton[/Keyboard/enter]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -142,7 +142,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: f36bdbe8-984d-4ee1-828f-09864532efd2
-    m_ActionName: All/JoypadSelectButton[/Keyboard/rightShift]
+    m_ActionName: 'All/JoypadSelectButton[/Keyboard/rightShift]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -158,7 +158,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: e53ba5ed-7472-4b78-84c0-1fb5090f8c02
-    m_ActionName: All/JoypadAButton[/Keyboard/numpad2]
+    m_ActionName: 'All/JoypadAButton[/Keyboard/numpad2]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -174,7 +174,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: 43910c93-05e7-444e-a9a2-e9672dc24851
-    m_ActionName: All/JoypadBButton[/Keyboard/numpad1]
+    m_ActionName: 'All/JoypadBButton[/Keyboard/numpad1]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -190,7 +190,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: e4753e14-08e3-4a66-8300-14400a4ac68f
-    m_ActionName: All/JoypadXButton[/Keyboard/numpad4]
+    m_ActionName: 'All/JoypadXButton[/Keyboard/numpad4]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -206,7 +206,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: b06fcc7f-56a6-474b-8210-8542c0a84670
-    m_ActionName: All/JoypadYButton[/Keyboard/numpad3]
+    m_ActionName: 'All/JoypadYButton[/Keyboard/numpad3]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -222,7 +222,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: 7b0cf759-77c7-4989-9771-c92f0d252cbe
-    m_ActionName: All/JoypadLButton[/Keyboard/numpad5]
+    m_ActionName: 'All/JoypadLButton[/Keyboard/numpad5]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -238,7 +238,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: 818c3450-ed6f-43c4-b028-bd2e462d9531
-    m_ActionName: All/JoypadRButton[/Keyboard/numpad6]
+    m_ActionName: 'All/JoypadRButton[/Keyboard/numpad6]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -254,7 +254,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: 056ab63b-501f-43c2-b9ef-6f18ba200cbc
-    m_ActionName: All/JoypadL2Button[/Keyboard/z]
+    m_ActionName: 'All/JoypadL2Button[/Keyboard/z]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -270,7 +270,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: 53f451b1-0b6c-4fb3-aa44-e9adb960fde3
-    m_ActionName: All/JoypadR2Button[/Keyboard/v]
+    m_ActionName: 'All/JoypadR2Button[/Keyboard/v]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -286,7 +286,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: e24819fc-988c-4580-b3f3-5cf81d5bc5f6
-    m_ActionName: All/JoypadL3Button[/Keyboard/x]
+    m_ActionName: 'All/JoypadL3Button[/Keyboard/x]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -302,7 +302,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: c370147f-9b2e-4df5-94d7-ee55bbf96f12
-    m_ActionName: All/JoypadR3Button[/Keyboard/c]
+    m_ActionName: 'All/JoypadR3Button[/Keyboard/c]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -318,7 +318,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: d1bb5935-abc8-408f-8be9-e7c13106d47f
-    m_ActionName: All/MousePositionDelta[/Mouse/delta]
+    m_ActionName: 'All/MousePositionDelta[/Mouse/delta]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -334,7 +334,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: fb5fe1ab-4f43-4283-aa33-979f65f561f8
-    m_ActionName: All/MouseLeftButton[/Mouse/leftButton]
+    m_ActionName: 'All/MouseLeftButton[/Mouse/leftButton]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -350,7 +350,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: 0f8e30f0-b439-4f01-b0d1-a44602b472a9
-    m_ActionName: All/MouseRightButton[/Mouse/rightButton]
+    m_ActionName: 'All/MouseRightButton[/Mouse/rightButton]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -366,7 +366,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: d083c22f-6003-497b-b429-a6768fdd427c
-    m_ActionName: All/MouseMiddleButton[/Mouse/middleButton]
+    m_ActionName: 'All/MouseMiddleButton[/Mouse/middleButton]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -382,7 +382,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: 717e1b43-c43a-483a-b741-74bcebf873c7
-    m_ActionName: All/MouseForwardButton[/Mouse/forwardButton]
+    m_ActionName: 'All/MouseForwardButton[/Mouse/forwardButton]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -398,7 +398,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: 2dd72a4a-66e3-4798-a075-6bb2dc2960bc
-    m_ActionName: All/MouseBackButton[/Mouse/backButton]
+    m_ActionName: 'All/MouseBackButton[/Mouse/backButton]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -414,7 +414,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: d4393c8f-ae26-43d5-a210-aada0d924e9c
-    m_ActionName: All/MouseWheelDelta[/Mouse/scroll]
+    m_ActionName: 'All/MouseWheelDelta[/Mouse/scroll]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -430,7 +430,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: 37eaa882-3108-46cb-9d25-c58cbc04245c
-    m_ActionName: RetroPad/AnalogLeft[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d]
+    m_ActionName: 'RetroPad/AnalogLeft[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d]'
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
@@ -446,54 +446,54 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
     m_ActionId: 13b7bb8d-03e0-4bab-90ed-96c8fba076ff
-    m_ActionName: RetroPad/AnalogRight[/Keyboard/i,/Keyboard/k,/Keyboard/j,/Keyboard/l]
+    m_ActionName: 'RetroPad/AnalogRight[/Keyboard/i,/Keyboard/k,/Keyboard/j,/Keyboard/l]'
   - m_PersistentCalls:
       m_Calls: []
     m_ActionId: bc140f6d-c2ac-4e47-bca9-ad46748bcfde
-    m_ActionName: RetroPad/LightgunTrigger[/Mouse/leftButton]
+    m_ActionName: 'RetroPad/LightgunTrigger[/Mouse/leftButton]'
   - m_PersistentCalls:
       m_Calls: []
     m_ActionId: eac3b4ee-8d56-4893-ba75-5cda41228de3
-    m_ActionName: RetroPad/LightgunReload[/Mouse/rightButton]
+    m_ActionName: 'RetroPad/LightgunReload[/Mouse/rightButton]'
   - m_PersistentCalls:
       m_Calls: []
     m_ActionId: 0467163e-355e-4a82-84e3-4855efd6d92b
-    m_ActionName: RetroPad/LightgunA[/Mouse/forwardButton]
+    m_ActionName: 'RetroPad/LightgunA[/Mouse/forwardButton]'
   - m_PersistentCalls:
       m_Calls: []
     m_ActionId: 7303ab29-d32f-45f0-89c7-7f17d1f7b1ea
-    m_ActionName: RetroPad/LightgunB[/Mouse/backButton]
+    m_ActionName: 'RetroPad/LightgunB[/Mouse/backButton]'
   - m_PersistentCalls:
       m_Calls: []
     m_ActionId: fff3d153-08ee-454d-a52b-5a6cd3b76b7b
-    m_ActionName: RetroPad/LightgunStart[/Keyboard/enter]
+    m_ActionName: 'RetroPad/LightgunStart[/Keyboard/enter]'
   - m_PersistentCalls:
       m_Calls: []
     m_ActionId: 10f049bf-4f20-4a2c-8b1d-37570583ff8b
-    m_ActionName: RetroPad/LightgunSelect[/Keyboard/rightShift]
+    m_ActionName: 'RetroPad/LightgunSelect[/Keyboard/rightShift]'
   - m_PersistentCalls:
       m_Calls: []
     m_ActionId: e111be7a-5b8f-47db-a495-6311ea7dd4ee
-    m_ActionName: RetroPad/LightgunC[/Mouse/middleButton]
+    m_ActionName: 'RetroPad/LightgunC[/Mouse/middleButton]'
   - m_PersistentCalls:
       m_Calls: []
     m_ActionId: dd466b88-1632-4dc5-a4cb-a1d0b3b0903b
-    m_ActionName: RetroPad/LightgunDpadUp[/Keyboard/w]
+    m_ActionName: 'RetroPad/LightgunDpadUp[/Keyboard/w]'
   - m_PersistentCalls:
       m_Calls: []
     m_ActionId: 32f32150-5c72-43af-ad7f-24b8bada2936
-    m_ActionName: RetroPad/LightgunDpadDown[/Keyboard/s]
+    m_ActionName: 'RetroPad/LightgunDpadDown[/Keyboard/s]'
   - m_PersistentCalls:
       m_Calls: []
     m_ActionId: 002905db-5ec3-4424-9e01-b5a787fd1aa0
-    m_ActionName: RetroPad/LightgunDpadLeft[/Keyboard/a]
+    m_ActionName: 'RetroPad/LightgunDpadLeft[/Keyboard/a]'
   - m_PersistentCalls:
       m_Calls: []
     m_ActionId: d313664d-baef-43df-ab01-2001f9cf7cc8
-    m_ActionName: RetroPad/LightgunDpadRight[/Keyboard/d]
+    m_ActionName: 'RetroPad/LightgunDpadRight[/Keyboard/d]'
   m_NeverAutoSwitchControlSchemes: 1
-  m_DefaultControlScheme: 
-  m_DefaultActionMap: 
+  m_DefaultControlScheme: Keyboard&Mouse
+  m_DefaultActionMap: Emulation
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
 --- !u!114 &6080708275882547366

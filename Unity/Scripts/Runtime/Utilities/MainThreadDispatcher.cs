@@ -20,52 +20,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using System;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using UnityEngine;
-
 namespace SK.Libretro.Unity
 {
-    internal sealed class MainThreadDispatcher : MonoBehaviour
-    {
-        private static readonly ConcurrentQueue<Func<ValueTask>> _executionQueue = new();
-        private static MainThreadDispatcher _instance;
-        private static readonly object _lock = new();
+    //internal sealed class MainThreadDispatcher : MonoBehaviour
+    //{
+    //    private static readonly ConcurrentQueue<Func<ValueTask>> _executionQueue = new();
+    //    private static MainThreadDispatcher _instance;
+    //    private static readonly object _lock = new();
 
-        public static void Construct()
-        {
-            if (_instance)
-                return;
+    //    public static void Construct()
+    //    {
+    //        if (_instance)
+    //            return;
 
-            lock (_lock)
-            {
-                if (_instance)
-                    return;
+    //        lock (_lock)
+    //        {
+    //            if (_instance)
+    //                return;
 
-                _instance = FindFirstObjectByType<MainThreadDispatcher>();
-                if (!_instance)
-                {
-                    GameObject obj = new("MainThreadDispatcher");
-                    _instance = obj.AddComponent<MainThreadDispatcher>();
-                    DontDestroyOnLoad(obj);
-                }
-            }
-        }
+    //            _instance = FindFirstObjectByType<MainThreadDispatcher>();
+    //            if (!_instance)
+    //            {
+    //                GameObject obj = new("MainThreadDispatcher");
+    //                _instance = obj.AddComponent<MainThreadDispatcher>();
+    //                DontDestroyOnLoad(obj);
+    //            }
+    //        }
+    //    }
 
-        private async void Update()
-        {
-            while (_executionQueue.Count > 0)
-                if (_executionQueue.TryDequeue(out Func<ValueTask> action))
-                    await action();
-        }
+    //    private async void Update()
+    //    {
+    //        while (_executionQueue.Count > 0)
+    //            if (_executionQueue.TryDequeue(out Func<ValueTask> action))
+    //                await action();
+    //    }
 
-        public static void Enqueue(Func<ValueTask> action) => _executionQueue.Enqueue(action);
+    //    public static void Enqueue(Func<ValueTask> action) => _executionQueue.Enqueue(action);
 
-        public static void Enqueue(Action action) => Enqueue(() =>
-        {
-            action();
-            return new ValueTask();
-        });
-    }
+    //    public static void Enqueue(Action action) => Enqueue(() =>
+    //    {
+    //        action();
+    //        return new ValueTask();
+    //    });
+    //}
 }

@@ -22,7 +22,7 @@
 
 namespace SK.Libretro.Header
 {
-    public enum RETRO_DEVICE
+    public enum RETRO_DEVICE : uint
     {
         NONE     = 0,
         JOYPAD   = 1,

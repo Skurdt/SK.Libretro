@@ -27,7 +27,11 @@ namespace SK.Libretro.Unity
     [DisallowMultipleComponent]
     public abstract class LedProcessorBase : MonoBehaviour, ILedProcessor
     {
-        public void SetState(int led, int state) => MainThreadDispatcher.Enqueue(() => OnSetState(led, state));
+        public async void SetState(int led, int state)
+        {
+            await Awaitable.MainThreadAsync();
+            OnSetState(led, state);
+        }
 
         protected abstract void OnSetState(int led, int state);
     }

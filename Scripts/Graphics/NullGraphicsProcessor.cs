@@ -21,6 +21,7 @@
  * SOFTWARE. */
 
 using System;
+using System.Threading.Tasks;
 
 namespace SK.Libretro
 {
@@ -28,7 +29,7 @@ namespace SK.Libretro
     {
         public IntPtr NativeWindow { get; }
 
-        public IntPtr GetCurrentSoftwareFramebuffer(int width, int height) => IntPtr.Zero;
+        public ValueTask<IntPtr> GetCurrentSoftwareFramebuffer(int width, int height) => new(IntPtr.Zero);
         public void ProcessFrameSoftwareFramebuffer(IntPtr data, int pitch, int height) { }
         public void ProcessFrame0RGB1555(IntPtr data, int width, int height, int pitch) { }
         public void ProcessFrameXRGB8888(IntPtr data, int width, int height, int pitch) { }

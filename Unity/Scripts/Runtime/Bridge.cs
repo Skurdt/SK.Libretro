@@ -380,8 +380,6 @@ namespace SK.Libretro.Unity
             _manualResetEvent  = new(false);
             _bridgeCommands    = new();
             _fastForwardFactor = DEFAULT_FASTFORWARD_FACTOR;
-
-            MainThreadDispatcher.Construct();
         }
 
         public void StartContent(LibretroInstance instanceComponent,
@@ -423,7 +421,7 @@ namespace SK.Libretro.Unity
             _thread.Start();
         }
 
-        private void LibretroThread()
+        private async void LibretroThread()
         {
             try
             {
@@ -440,7 +438,7 @@ namespace SK.Libretro.Unity
                     _                                            => Platform.None
                 };
 
-                (ILogProcessor logProcessor, IGraphicsProcessor graphicsProcessor, IAudioProcessor audioProcessor, IInputProcessor inputProcessor, ILedProcessor ledProcessor) = GetProcessors();
+                (ILogProcessor logProcessor, IGraphicsProcessor graphicsProcessor, IAudioProcessor audioProcessor, IInputProcessor inputProcessor, ILedProcessor ledProcessor) = await GetProcessors();
 
                 WrapperSettings wrapperSettings = new(platform)
                 {
@@ -618,53 +616,21 @@ namespace SK.Libretro.Unity
                 InstanceComponent.Renderer.material = OriginalMaterial;
         }
 
-        private void InvokeInstanceEvent(Action action)
+        private async void InvokeInstanceEvent(Action action)
         {
-            if (action is null)
-                return;
-
-            _manualResetEvent.Reset();
-            using CancellationTokenSource tokenSource = new();
-            MainThreadDispatcher.Enqueue(() =>
-            {
-                try
-                {
-                    action();
-                }
-                finally
-                {
-                    _manualResetEvent.Set();
-                }
-            });
-            _manualResetEvent.Wait(tokenSource.Token);
-            tokenSource.Dispose();
+            await Awaitable.MainThreadAsync();
+            action?.Invoke();
         }
 
-        private (ILogProcessor, IGraphicsProcessor, IAudioProcessor, IInputProcessor, ILedProcessor) GetProcessors()
+        private async Awaitable<(ILogProcessor, IGraphicsProcessor, IAudioProcessor, IInputProcessor, ILedProcessor)> GetProcessors()
         {
+            await Awaitable.MainThreadAsync();
+
             ILogProcessor log           = GetLogProcessor();
             IGraphicsProcessor graphics = GetGraphicsProcessor();
-            IAudioProcessor audio       = default;
-            IInputProcessor input       = default;
-            ILedProcessor led           = default;
-
-            _manualResetEvent.Reset();
-            using CancellationTokenSource getComponentsTokenSource = new();
-            MainThreadDispatcher.Enqueue(() =>
-            {
-                try
-                {
-                    audio = GetAudioProcessor(InstanceComponent.transform);
-                    input = GetInputProcessor(InstanceComponent.Settings.LeftStickBehaviour);
-                    led   = GetLedProcessor();
-                }
-                finally
-                {
-                    _manualResetEvent.Set();
-                }
-            });
-            _manualResetEvent.Wait(getComponentsTokenSource.Token);
-            getComponentsTokenSource.Dispose();
+            IAudioProcessor audio       = GetAudioProcessor(InstanceComponent.transform);
+            IInputProcessor input       = GetInputProcessor(InstanceComponent.Settings.LeftStickBehaviour);
+            ILedProcessor led           = GetLedProcessor();
             return (log, graphics, audio, input, led);
         }
 
@@ -705,8 +671,10 @@ namespace SK.Libretro.Unity
 
         private static ILedProcessor GetLedProcessor() => Object.FindFirstObjectByType<LedProcessorBase>(FindObjectsInactive.Exclude);
 
-        private void TakeScreenshot(string screenshotPath) => MainThreadDispatcher.Enqueue(async () =>
+        private async void TakeScreenshot(string screenshotPath)
         {
+            await Awaitable.MainThreadAsync();
+
             if (!_texture || !Running)
                 return;
 
@@ -720,19 +688,20 @@ namespace SK.Libretro.Unity
 
             screenshotPath = screenshotPath.Replace(".state", ".png");
             File.WriteAllBytes(screenshotPath, bytes);
-        });
+        }
 
-        private void StopThread() => MainThreadDispatcher.Enqueue(() =>
+        private async void StopThread()
         {
+            await Awaitable.MainThreadAsync();
+
             if (_thread is not null)
                 if (!_thread.Join(2000))
                 {
                     //System.Diagnostics.Process.GetCurrentProcess().Kill();
                 }
             _thread = null;
-            _manualResetEvent.Dispose();
             RestoreMaterial();
-        });
+        }
 
         private static string GetAndroidPrivateAppDataPath()
         {

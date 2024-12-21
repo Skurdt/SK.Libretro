@@ -59,7 +59,7 @@ namespace SK.Libretro
 
             string path = FileSystem.GetOrCreateDirectory($"{Wrapper.SavesDirectory}/{Wrapper.Instance.Core.Name}");
             IntPtr stringPtr = Wrapper.Instance.GetUnsafeString(path);
-            Marshal.StructureToPtr(stringPtr, data, true);
+            data.Write(stringPtr);
             return true;
         }
 

@@ -23,9 +23,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Unity.Burst;
-using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
+using System.Threading.Tasks;
 using Unity.Jobs;
 using UnityEngine;
 
@@ -54,67 +52,61 @@ namespace SK.Libretro.Unity
             Debug.LogWarning($"NativeWindow: {NativeWindow}");
         }
 
-        public void Dispose() => MainThreadDispatcher.Enqueue(() =>
+        public async void Dispose()
         {
+            await Awaitable.MainThreadAsync();
+
             if (!_jobHandle.IsCompleted)
                 _jobHandle.Complete();
 
             if (Application.isPlaying && _texture)
                 UnityEngine.Object.Destroy(_texture);
-        });
+        }
 
-        public void SetFilterMode(FilterMode filterMode) => MainThreadDispatcher.Enqueue(() =>
+        public async void SetFilterMode(FilterMode filterMode)
         {
+            await Awaitable.MainThreadAsync();
+
             _filterMode = filterMode;
 
             if (_texture)
                 _texture.filterMode = filterMode;
-        });
+        }
 
-        public IntPtr GetCurrentSoftwareFramebuffer(int width, int height)
+        public async ValueTask<IntPtr> GetCurrentSoftwareFramebuffer(int width, int height)
         {
-            IntPtr result = IntPtr.Zero;
+            await Awaitable.MainThreadAsync();
 
-            _manualResetEvent.Reset();
-            using CancellationTokenSource tokenSource = new();
-            MainThreadDispatcher.Enqueue(() =>
-            {
-                try
-                {
-                    CreateTexture(width, height, TextureFormat.RGB565);
-                    if (!_texture)
-                        throw new NullReferenceException("Texture not created");
+            CreateTexture(width, height, TextureFormat.RGB565);
+            if (!_texture)
+                throw new NullReferenceException("Texture not created");
 
-                    GCHandle handle = GCHandle.Alloc(_texture.GetRawTextureData(), GCHandleType.Pinned);
-                    result = handle.AddrOfPinnedObject();
-                    handle.Free();
-                }
-                finally
-                {
-                    _manualResetEvent.Set();
-                }
-            });
-            _manualResetEvent.Wait(tokenSource.Token);
-            tokenSource.Dispose();
+            GCHandle handle = GCHandle.Alloc(_texture.GetRawTextureData(), GCHandleType.Pinned);
+            IntPtr result = handle.AddrOfPinnedObject();
+            handle.Free();
 
             return result;
         }
 
-        public unsafe void ProcessFrameSoftwareFramebuffer(IntPtr data, int pitch, int height) => MainThreadDispatcher.Enqueue(() =>
+        public async void ProcessFrameSoftwareFramebuffer(IntPtr data, int pitch, int height)
         {
+            await Awaitable.MainThreadAsync();
+
             _texture.LoadRawTextureData(data, pitch * height * sizeof(short));
             _texture.Apply();
-        });
+        }
 
-        public unsafe void ProcessFrame0RGB1555(IntPtr data, int width, int height, int pitch) => MainThreadDispatcher.Enqueue(() =>
+        public async void ProcessFrame0RGB1555(IntPtr data, int width, int height, int pitch)
         {
+            await Awaitable.MainThreadAsync();
+
             CreateTexture(width, height);
             if (!_texture)
                 return;
 
             _jobHandle = new Frame0RGB1555Job
             {
-                SourceData  = (ushort*)data,
+                SourceData  = data,
                 Width       = width,
                 Height      = height,
                 PitchPixels = pitch / sizeof(ushort),
@@ -122,17 +114,19 @@ namespace SK.Libretro.Unity
             }.Schedule(width * height, 64);
             _jobHandle.Complete();
             _texture.Apply();
-        });
+        }
 
-        public unsafe void ProcessFrameXRGB8888(IntPtr data, int width, int height, int pitch) => MainThreadDispatcher.Enqueue(() =>
+        public async void ProcessFrameXRGB8888(IntPtr data, int width, int height, int pitch)
         {
+            await Awaitable.MainThreadAsync();
+
             CreateTexture(width, height);
             if (!_texture)
                 return;
 
             _jobHandle = new FrameXRGB8888Job
             {
-                SourceData  = (uint*)data,
+                SourceData  = data,
                 Width       = width,
                 Height      = height,
                 PitchPixels = pitch / sizeof(uint),
@@ -140,17 +134,19 @@ namespace SK.Libretro.Unity
             }.Schedule(width * height, 64);
             _jobHandle.Complete();
             _texture.Apply();
-        });
+        }
 
-        public unsafe void ProcessFrameXRGB8888VFlip(IntPtr data, int width, int height, int pitch) => MainThreadDispatcher.Enqueue(() =>
+        public async void ProcessFrameXRGB8888VFlip(IntPtr data, int width, int height, int pitch)
         {
+            await Awaitable.MainThreadAsync();
+
             CreateTexture(width, height);
             if (!_texture)
                 return;
 
             _jobHandle = new FrameXRGB8888VFlipJob
             {
-                SourceData  = (uint*)data,
+                SourceData  = data,
                 Width       = width,
                 Height      = height,
                 PitchPixels = pitch / sizeof(uint),
@@ -158,25 +154,27 @@ namespace SK.Libretro.Unity
             }.Schedule(width * height, 64);
             _jobHandle.Complete();
             _texture.Apply();
-        });
+        }
 
-        public unsafe void ProcessFrameRGB565(IntPtr data, int width, int height, int pitch) => MainThreadDispatcher.Enqueue(() =>
+        public async void ProcessFrameRGB565(IntPtr data, int width, int height, int pitch)
         {
+            await Awaitable.MainThreadAsync();
+
             CreateTexture(width, height);
             if (!_texture)
                 return;
 
             _jobHandle = new FrameRGB565Job
             {
-                SourceData  = (ushort*)data,
-                Width       = width,
-                Height      = height,
+                SourceData = data,
+                Width = width,
+                Height = height,
                 PitchPixels = pitch / sizeof(ushort),
                 TextureData = _texture.GetRawTextureData<uint>()
             }.Schedule(width * height, 64);
             _jobHandle.Complete();
             _texture.Apply();
-        });
+        }
 
         private void CreateTexture(int width, int height, TextureFormat textureFormat = TextureFormat.BGRA32)
         {

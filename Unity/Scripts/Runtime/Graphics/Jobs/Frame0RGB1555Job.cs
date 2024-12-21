@@ -20,6 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using System;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -28,21 +29,21 @@ using Unity.Jobs;
 namespace SK.Libretro.Unity
 {
     [BurstCompile]
-    public unsafe struct Frame0RGB1555Job : IJobParallelFor
+    public struct Frame0RGB1555Job : IJobParallelFor
     {
-        [ReadOnly, NativeDisableUnsafePtrRestriction] public ushort* SourceData;
+        [ReadOnly, NativeDisableUnsafePtrRestriction] public IntPtr SourceData;
         public int Width;
         public int Height;
         public int PitchPixels;
         [WriteOnly] public NativeArray<uint> TextureData;
 
-        public void Execute(int index)
+        public unsafe void Execute(int index)
         {
             int x = index % Width;
             int y = (index - x) / Width;
             y = Height - 1 - y;
             int offset = y * PitchPixels;
-            TextureData[index] = GraphicsUtilities.ARGB1555toBGRA32(SourceData[offset + x]);
+            TextureData[index] = GraphicsUtilities.ARGB1555toBGRA32(((ushort*)SourceData)[offset + x]);
         }
     }
 }

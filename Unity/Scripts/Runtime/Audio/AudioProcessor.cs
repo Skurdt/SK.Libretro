@@ -50,8 +50,10 @@ namespace SK.Libretro.Unity
 
         private void OnDestroy() => Dispose();
 
-        public void Init(int sampleRate) => MainThreadDispatcher.Enqueue(() =>
+        public async void Init(int sampleRate)
         {
+            await Awaitable.MainThreadAsync();
+
             if (_audioSource)
                 _audioSource.Stop();
 
@@ -62,23 +64,28 @@ namespace SK.Libretro.Unity
                 _audioSource = GetComponent<AudioSource>();
             _audioSource.playOnAwake = false;
 
-            InitBuffer(_outputSampleRate, 2, 4.0f);
+            InitBuffer(_outputSampleRate, 2, 3.0f);
 
             _audioSource.Play();
-        });
+        }
 
-        public void Dispose() => MainThreadDispatcher.Enqueue(() =>
+        public async void Dispose()
         {
+            await Awaitable.MainThreadAsync();
+
             if (_audioSource)
                 _audioSource.Stop();
 
             if (_circularBuffer.IsCreated)
                 _circularBuffer.Dispose();
-        });
+        }
 
         public void ProcessSample(short left, short right)
         {
             if (!_circularBuffer.IsCreated)
+                return;
+
+            if (_circularBuffer.Length >= _circularBuffer.Capacity)
                 return;
 
             float ratio                 = (float)_outputSampleRate / _inputSampleRate;
@@ -120,6 +127,10 @@ namespace SK.Libretro.Unity
                 destinationSamplesCount = destinationSamplesCount,
                 tempBuffer              = tempBuffer
             }.Schedule(destinationSamplesCount, 64).Complete();
+
+            // check if there is enough space in the circular buffer
+            if (_circularBuffer.Length + destinationSamplesCount > _circularBuffer.Capacity)
+                return;
 
             for (int i = 0; i < destinationSamplesCount; i++)
                 _circularBuffer.Enqueue(tempBuffer[i]);

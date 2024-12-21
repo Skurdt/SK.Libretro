@@ -76,10 +76,10 @@ namespace SK.Libretro
         private static string _systemDirectory;
         private static string _coreAssetsDirectory;
 
-        private readonly List<IntPtr> _unsafeStrings = new();
-        private long _frameTimeLast                  = 0;
+        private readonly Dictionary<string, IntPtr> _unsafeStrings = new();
 
-        //private uint _totalFrameCount                = 0;
+        private long _frameTimeLast = 0;
+        //private uint _totalFrameCount = 0;
 
         private Wrapper()
         {
@@ -202,7 +202,7 @@ namespace SK.Libretro
                 return false;
 
             IntPtr stringPtr = GetUnsafeString(_systemDirectory);
-            Marshal.WriteIntPtr(data, stringPtr);
+            data.Write(stringPtr);
             return true;
         }
 
@@ -213,7 +213,7 @@ namespace SK.Libretro
 
             string path = FileSystem.GetOrCreateDirectory(Core.Path);
             IntPtr stringPtr = GetUnsafeString(path);
-            Marshal.WriteIntPtr(data, stringPtr);
+            data.Write(stringPtr);
             return true;
         }
 
@@ -224,7 +224,7 @@ namespace SK.Libretro
 
             string path = FileSystem.GetOrCreateDirectory($"{_coreAssetsDirectory}/{Core.Name}");
             IntPtr stringPtr = GetUnsafeString(path);
-            Marshal.WriteIntPtr(data, stringPtr);
+            data.Write(stringPtr);
             return true;
         }
 
@@ -234,7 +234,7 @@ namespace SK.Libretro
                 return false;
 
             IntPtr stringPtr = GetUnsafeString(Settings.UserName);
-            Marshal.WriteIntPtr(data, stringPtr);
+            data.Write(stringPtr);
             return true;
         }
 
@@ -251,8 +251,11 @@ namespace SK.Libretro
 
         public IntPtr GetUnsafeString(string source)
         {
-            IntPtr ptr = source.AsAllocatedPtr();
-            _unsafeStrings.Add(ptr);
+            if (_unsafeStrings.TryGetValue(source, out IntPtr ptr))
+                return ptr;
+
+            ptr = source.AsAllocatedPtr();
+            _unsafeStrings.Add(source, ptr);
             return ptr;
         }
 

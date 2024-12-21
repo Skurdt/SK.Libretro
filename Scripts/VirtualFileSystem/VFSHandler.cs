@@ -109,11 +109,11 @@ namespace SK.Libretro
                 //closedir        = _closeDir.GetFunctionPointer()
             };
 
-            _interfacePtr = Marshal.AllocHGlobal(Marshal.SizeOf<retro_vfs_interface>());
-            Marshal.StructureToPtr(_interface, _interfacePtr, true);
+            _interfacePtr = PointerUtilities.Alloc<retro_vfs_interface>();
+            Marshal.StructureToPtr(_interface, _interfacePtr, false);
             interfaceInfo.iface = _interfacePtr;
 
-            Marshal.StructureToPtr(interfaceInfo, data, true);
+            data.Write(_interfacePtr);
             return true;
         }
 
