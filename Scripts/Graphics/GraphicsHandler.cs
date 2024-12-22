@@ -146,6 +146,9 @@ namespace SK.Libretro
 
         public bool SetHwRender(IntPtr data)
         {
+            if (Wrapper.Instance.Settings.Platform == Platform.Android)
+                return false;
+
             if (data.IsNull() || _hardwareRenderProxy is not null)
                 return false;
 
@@ -153,9 +156,7 @@ namespace SK.Libretro
             _hardwareRenderProxy = hwRenderCallback.context_type switch
             {
                 retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL
-                or retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE => Wrapper.Instance.Settings.Platform == Platform.Android
-                                                                       ? new OpenGLRenderProxyAndroid(hwRenderCallback, _processor.NativeWindow)
-                                                                       : new OpenGLRenderProxySDL(hwRenderCallback),
+                or retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE => new OpenGLRenderProxySDL(hwRenderCallback),
 
                 retro_hw_context_type.RETRO_HW_CONTEXT_NONE
                 or _ => default

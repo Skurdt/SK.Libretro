@@ -27,8 +27,6 @@ namespace SK.Libretro
 {
     public interface IGraphicsProcessor : IDisposable
     {
-        IntPtr NativeWindow { get; }
-
         ValueTask<IntPtr> GetCurrentSoftwareFramebuffer(int width, int height);
         void ProcessFrameSoftwareFramebuffer(IntPtr data, int pitch, int height);
         void ProcessFrame0RGB1555(IntPtr data, int width, int height, int pitch);

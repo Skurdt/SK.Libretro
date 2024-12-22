@@ -1,6 +1,6 @@
 {
   "name": "com.sk.libretro",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "displayName": "SK.Libretro",
   "description": "Libretro support in Unity",
   "unity": "6000.0",
