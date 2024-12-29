@@ -27,7 +27,7 @@ using UnityEngine.InputSystem;
 
 namespace SK.Libretro.Unity
 {
-    internal sealed class LightgunHandler : InputHandlerBase
+    internal sealed class LightgunHandler : LibretroInputActions.ILightgunActions
     {
         public short Buttons => (short)_buttons;
         public short X       { get; private set; }
@@ -39,9 +39,7 @@ namespace SK.Libretro.Unity
 
         private uint _buttons;
 
-        public LightgunHandler(InputActionAsset inputActionAsset, LibretroInstance libretroInstance)
-        : base(inputActionAsset)
-            => _libretroInstance = libretroInstance;
+        public LightgunHandler(LibretroInstance libretroInstance) => _libretroInstance = libretroInstance;
 
         public short IsButtonDown(RETRO_DEVICE_ID_LIGHTGUN button) => _buttons.IsBitSetAsShort((uint)button);
 
@@ -74,19 +72,70 @@ namespace SK.Libretro.Unity
             Y = (short)(-math.remap(0f, 1f, -1f, 1f, _raycastHits[0].textureCoord.y) * 0x7fff);
         }
 
-        protected override void AddActions(InputActionMap actionMap)
+        public void OnLightgunTrigger(InputAction.CallbackContext context)
         {
-            _actions.Add(actionMap.FindAction("LightgunTrigger"), (ctx => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.TRIGGER), false));
-            _actions.Add(actionMap.FindAction("LightgunReload"), (ctx => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.RELOAD), false));
-            _actions.Add(actionMap.FindAction("LightgunA"), (ctx => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.AUX_A), false));
-            _actions.Add(actionMap.FindAction("LightgunB"), (ctx => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.AUX_B), false));
-            _actions.Add(actionMap.FindAction("LightgunStart"), (ctx => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.START), false));
-            _actions.Add(actionMap.FindAction("LightgunSelect"), (ctx => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.SELECT), false));
-            _actions.Add(actionMap.FindAction("LightgunC"), (ctx => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.AUX_C), false));
-            _actions.Add(actionMap.FindAction("LightgunDPadUp"), (ctx => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_UP), false));
-            _actions.Add(actionMap.FindAction("LightgunDPadDown"), (ctx => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_DOWN), false));
-            _actions.Add(actionMap.FindAction("LightgunDPadLeft"), (ctx => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_LEFT), false));
-            _actions.Add(actionMap.FindAction("LightgunDPadRight"), (ctx => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_RIGHT), false));
+            if (context.started || context.canceled)
+                _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.TRIGGER);
+        }
+
+        public void OnLightgunReload(InputAction.CallbackContext context)
+        {
+            if (context.started || context.canceled)
+                _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.RELOAD);
+        }
+
+        public void OnLightgunA(InputAction.CallbackContext context)
+        {
+            if (context.started || context.canceled)
+                _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.AUX_A);
+        }
+
+        public void OnLightgunB(InputAction.CallbackContext context)
+        {
+            if (context.started || context.canceled)
+                _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.AUX_B);
+        }
+
+        public void OnLightgunStart(InputAction.CallbackContext context)
+        {
+            if (context.started || context.canceled)
+                _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.START);
+        }
+
+        public void OnLightgunSelect(InputAction.CallbackContext context)
+        {
+            if (context.started || context.canceled)
+                _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.SELECT);
+        }
+
+        public void OnLightgunC(InputAction.CallbackContext context)
+        {
+            if (context.started || context.canceled)
+                _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.AUX_C);
+        }
+
+        public void OnLightgunDPadUp(InputAction.CallbackContext context)
+        {
+            if (context.started || context.canceled)
+                _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_UP);
+        }
+
+        public void OnLightgunDPadDown(InputAction.CallbackContext context)
+        {
+            if (context.started || context.canceled)
+                _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_DOWN);
+        }
+
+        public void OnLightgunDPadLeft(InputAction.CallbackContext context)
+        {
+            if (context.started || context.canceled)
+                _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_LEFT);
+        }
+
+        public void OnLightgunDPadRight(InputAction.CallbackContext context)
+        {
+            if (context.started || context.canceled)
+                _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_RIGHT);
         }
     }
 }

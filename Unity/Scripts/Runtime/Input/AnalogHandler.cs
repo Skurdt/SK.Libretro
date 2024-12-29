@@ -27,7 +27,7 @@ using UnityEngine.InputSystem;
 
 namespace SK.Libretro.Unity
 {
-    internal sealed class AnalogHandler : InputHandlerBase
+    internal sealed class AnalogHandler : LibretroInputActions.IAnalogActions
     {
         public LeftStickBehaviour LeftStickBehaviour { get; set; }
 
@@ -38,45 +38,60 @@ namespace SK.Libretro.Unity
 
         private readonly JoypadHandler _joypad;
 
-        public AnalogHandler(InputActionAsset inputActionAsset, JoypadHandler joypad, LeftStickBehaviour leftStickBehaviour)
-        : base(inputActionAsset)
+        public AnalogHandler(JoypadHandler joypad, LeftStickBehaviour leftStickBehaviour)
         {
             _joypad            = joypad;
             LeftStickBehaviour = leftStickBehaviour;
         }
 
-        protected override void AddActions(InputActionMap actionMap)
+        public void OnAnalogLeft(InputAction.CallbackContext context)
         {
-            _actions.Add(actionMap.FindAction("AnalogLeft"), (ctx =>
+            if (!context.canceled)
             {
-                switch (LeftStickBehaviour)
-                {
-                    case LeftStickBehaviour.AnalogOnly:
-                        (LeftX, LeftY) = ctx.ReadValue<Vector2>().ToShort(0x7fff);
-                        break;
-                    case LeftStickBehaviour.DigitalOnly:
-                    {
-                        (LeftX, LeftY) = (0, 0);
-                        (short leftX, short leftY) = ctx.ReadValue<Vector2>().ToShort(0x7fff);
-                        _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.UP, leftY > 0);
-                        _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.DOWN, leftY < 0);
-                        _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.LEFT, leftX < 0);
-                        _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.RIGHT, leftX > 0);
-                    }
-                    break;
-                    case LeftStickBehaviour.AnalogAndDigital:
-                        (LeftX, LeftY) = ctx.ReadValue<Vector2>().ToShort(0x7fff);
-                        _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.UP, LeftY > 0);
-                        _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.DOWN, LeftY < 0);
-                        _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.LEFT, LeftX < 0);
-                        _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.RIGHT, LeftX > 0);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }, true));
+                (LeftX, LeftY) = (0, 0);
+                return;
+            }
 
-            _actions.Add(actionMap.FindAction("AnalogRight"), (ctx => (RightX, RightY) = ctx.ReadValue<Vector2>().ToShort(0x7fff), true));
+            if (!context.performed)
+                return;
+
+            switch (LeftStickBehaviour)
+            {
+                case LeftStickBehaviour.AnalogOnly:
+                    (LeftX, LeftY) = context.ReadValue<Vector2>().ToShort(0x7fff);
+                    break;
+                case LeftStickBehaviour.DigitalOnly:
+                {
+                    (LeftX, LeftY) = (0, 0);
+                    (short leftX, short leftY) = context.ReadValue<Vector2>().ToShort(0x7fff);
+                    _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.UP, leftY > 0);
+                    _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.DOWN, leftY < 0);
+                    _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.LEFT, leftX < 0);
+                    _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.RIGHT, leftX > 0);
+                }
+                break;
+                case LeftStickBehaviour.AnalogAndDigital:
+                    (LeftX, LeftY) = context.ReadValue<Vector2>().ToShort(0x7fff);
+                    _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.UP, LeftY > 0);
+                    _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.DOWN, LeftY < 0);
+                    _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.LEFT, LeftX < 0);
+                    _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.RIGHT, LeftX > 0);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public void OnAnalogRight(InputAction.CallbackContext context)
+        {
+            if (!context.canceled)
+            {
+                (RightX, RightY) = (0, 0);
+                return;
+            }
+
+            if (context.performed)
+                (RightX, RightY) = context.ReadValue<Vector2>().ToShort(0x7fff);
         }
     }
 }

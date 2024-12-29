@@ -2,324 +2,9 @@
     "name": "LibretroInputActions",
     "maps": [
         {
-            "name": "Emulation",
+            "name": "Analog",
             "id": "639a1fe9-28e1-41ea-a98f-20b729bf505d",
             "actions": [
-                {
-                    "name": "JoypadDPadUp",
-                    "type": "Button",
-                    "id": "3d136013-1adf-4a01-ad86-7e5f4e85dd81",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "JoypadDPadDown",
-                    "type": "Button",
-                    "id": "7760eb09-40c3-407b-a78f-b921cfb12220",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "JoypadDPadLeft",
-                    "type": "Button",
-                    "id": "0038abb7-866b-4663-ba18-2ba0d91d8278",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "JoypadDPadRight",
-                    "type": "Button",
-                    "id": "5be0e20d-0a38-4110-b69d-2c12222af05d",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "JoypadStart",
-                    "type": "Button",
-                    "id": "9c24f261-5878-4731-84f6-c78c63030707",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "JoypadSelect",
-                    "type": "Button",
-                    "id": "f36bdbe8-984d-4ee1-828f-09864532efd2",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "JoypadA",
-                    "type": "Button",
-                    "id": "e53ba5ed-7472-4b78-84c0-1fb5090f8c02",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "JoypadB",
-                    "type": "Button",
-                    "id": "43910c93-05e7-444e-a9a2-e9672dc24851",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "JoypadX",
-                    "type": "Button",
-                    "id": "e4753e14-08e3-4a66-8300-14400a4ac68f",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "JoypadY",
-                    "type": "Button",
-                    "id": "b06fcc7f-56a6-474b-8210-8542c0a84670",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "JoypadL1",
-                    "type": "Button",
-                    "id": "7b0cf759-77c7-4989-9771-c92f0d252cbe",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "JoypadL2",
-                    "type": "Button",
-                    "id": "056ab63b-501f-43c2-b9ef-6f18ba200cbc",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "JoypadL3",
-                    "type": "Button",
-                    "id": "e24819fc-988c-4580-b3f3-5cf81d5bc5f6",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "JoypadR1",
-                    "type": "Button",
-                    "id": "818c3450-ed6f-43c4-b028-bd2e462d9531",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "JoypadR2",
-                    "type": "Button",
-                    "id": "53f451b1-0b6c-4fb3-aa44-e9adb960fde3",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "JoypadR3",
-                    "type": "Button",
-                    "id": "c370147f-9b2e-4df5-94d7-ee55bbf96f12",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "MousePositionDelta",
-                    "type": "Value",
-                    "id": "ccfbe2da-a435-452f-b188-0a5bd5178462",
-                    "expectedControlType": "Vector2",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
-                },
-                {
-                    "name": "MouseWheelDelta",
-                    "type": "Value",
-                    "id": "7980a76c-8c81-4b30-90a4-3abfb6c75170",
-                    "expectedControlType": "Vector2",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
-                },
-                {
-                    "name": "MouseLeftButton",
-                    "type": "Button",
-                    "id": "2d9e7f03-d35b-41a2-bb99-adb1980ce879",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "MouseRightButton",
-                    "type": "Button",
-                    "id": "c3411ef4-bbe9-4bc9-b963-78a01fa1ccf7",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "MouseMiddleButton",
-                    "type": "Button",
-                    "id": "ed79ff46-e674-4425-b418-ec92a32f5a7e",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "MouseForwardButton",
-                    "type": "Button",
-                    "id": "b54a3b94-ffd0-4c44-9d92-17abaf9c0418",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "MouseBackButton",
-                    "type": "Button",
-                    "id": "f090886e-fc2c-409a-a714-9edba34f5423",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "KeyboardKey",
-                    "type": "Button",
-                    "id": "b2977c2a-0e3d-4afd-b772-6c6b4b2c8a6b",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "LightgunTrigger",
-                    "type": "Button",
-                    "id": "25889e9e-36a8-4601-a1ee-83a536da4e51",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "LightgunReload",
-                    "type": "Button",
-                    "id": "8cbe6884-2f8b-44cb-b5b6-766fcb065b6f",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "LightgunA",
-                    "type": "Button",
-                    "id": "feda8144-6770-4a7b-b8e1-753e08575665",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "LightgunB",
-                    "type": "Button",
-                    "id": "953bd7ee-be1f-4068-8f35-d381a74768cc",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "LightgunStart",
-                    "type": "Button",
-                    "id": "988b58dc-3d65-43e9-974f-c96537f3bca3",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "LightgunSelect",
-                    "type": "Button",
-                    "id": "3ecc79ed-d965-45e3-bfd5-fdca89db6a94",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "LightgunC",
-                    "type": "Button",
-                    "id": "61280c6b-31d2-43c3-9788-9b4c35a0fb70",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "LightgunDPadUp",
-                    "type": "Button",
-                    "id": "333b712e-bccd-49aa-916c-3aad811bac1d",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "LightgunDPadDown",
-                    "type": "Button",
-                    "id": "c1ca05bb-f744-4ca3-b60d-a0ce6805c669",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "LightgunDPadLeft",
-                    "type": "Button",
-                    "id": "01b7cdff-8b5e-4e68-8434-158162891564",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "LightgunDPadRight",
-                    "type": "Button",
-                    "id": "b2afad6c-e1a1-4ad4-99b4-3ee2ee82d064",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
                 {
                     "name": "AnalogLeft",
                     "type": "Value",
@@ -340,347 +25,6 @@
                 }
             ],
             "bindings": [
-                {
-                    "name": "",
-                    "id": "2c219cb1-24e1-4536-b0b7-a043e6996c4e",
-                    "path": "<Keyboard>/enter",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "JoypadStart",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "05314db2-fc53-4007-908e-4cefbcaded21",
-                    "path": "<Gamepad>/start",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "JoypadStart",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "9038026f-a11d-4b46-8642-914319aecbc9",
-                    "path": "<Keyboard>/rightShift",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "JoypadSelect",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "1a8b16ce-e843-4273-8290-27d71cd99c61",
-                    "path": "<Gamepad>/select",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "JoypadSelect",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "76e05051-e233-44a1-9eb1-124f5865a557",
-                    "path": "<Keyboard>/numpad2",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "JoypadA",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "e3ccd30f-77fc-4578-a8df-c0913f9a0453",
-                    "path": "<Gamepad>/buttonSouth",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "JoypadA",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "01677fe7-9cca-4fda-9a37-4935abe727da",
-                    "path": "<XRController>{RightHand}/{PrimaryButton}",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Quest",
-                    "action": "JoypadA",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "96354b97-ed6e-4294-ad85-4cf0aa8b7f0f",
-                    "path": "<Keyboard>/numpad1",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "JoypadB",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "61173740-6cfb-488d-a57d-dcddd1a8a2e5",
-                    "path": "<Gamepad>/buttonEast",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "JoypadB",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "f66a0b6c-d7c8-4573-958c-1608c910c7ee",
-                    "path": "<XRController>{RightHand}/{SecondaryButton}",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Quest",
-                    "action": "JoypadB",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "2e8cf6e5-d265-48c0-b522-6ef65b9841ab",
-                    "path": "<Keyboard>/c",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "JoypadR3",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "27e6739e-e46c-40a1-b371-c209c58baaed",
-                    "path": "<Gamepad>/rightStickPress",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "JoypadR3",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "0b987a8b-e697-4c21-8b4c-21979d195213",
-                    "path": "<Mouse>/delta",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "MousePositionDelta",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "66d566f5-2923-403d-a518-524c97c82e89",
-                    "path": "<Mouse>/scroll",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "MouseWheelDelta",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "ea9a0cbf-cd69-465f-889e-d022e20b92d2",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "MouseLeftButton",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "2a7240ce-9277-484e-937e-429fbfdb487a",
-                    "path": "<Mouse>/rightButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "MouseRightButton",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "fc5f81d7-e52b-4d38-989e-e5d17f024200",
-                    "path": "<Mouse>/middleButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "MouseMiddleButton",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "25f702d8-0c0b-4b21-a19d-11eee2ec16e5",
-                    "path": "<Mouse>/forwardButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "MouseForwardButton",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "f4ffb68a-8ea4-4cf9-a881-d748604d33d1",
-                    "path": "<Mouse>/backButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "MouseBackButton",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "3d3ee168-c4f3-4fe3-9f03-d562a1098dc8",
-                    "path": "<Keyboard>/anyKey",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "KeyboardKey",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "242632b0-3966-48e9-9b7e-000edaebc610",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "LightgunTrigger",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "43bdc5c9-98d6-488a-8734-b82ac9c46e87",
-                    "path": "<Mouse>/rightButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "LightgunReload",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "ca0e27ea-b5f6-47b9-962d-2ffb1d7c7359",
-                    "path": "<Mouse>/forwardButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "LightgunA",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "51be2fa9-e8aa-4490-a87d-b4445b74d5cd",
-                    "path": "<Mouse>/backButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "LightgunB",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "1b43ecf4-af33-4ff5-9a12-65613789981f",
-                    "path": "<Keyboard>/enter",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "LightgunStart",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "e79ae897-70ab-4321-8665-5307fee01d8f",
-                    "path": "<Keyboard>/rightShift",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "LightgunSelect",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "41a93730-d830-4d96-965c-23ef0512af49",
-                    "path": "<Mouse>/middleButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "LightgunC",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "082abc66-e79c-4528-81b2-fbc88e738a75",
-                    "path": "<Keyboard>/w",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "LightgunDPadUp",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "9a0d257a-6619-49be-a2e7-7acfa36dce66",
-                    "path": "<Keyboard>/s",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "LightgunDPadDown",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "997da68e-6eb6-4169-9b10-e5d054714397",
-                    "path": "<Keyboard>/a",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "LightgunDPadLeft",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "a91a45c4-4723-4cf4-8204-7e3d76a96fb1",
-                    "path": "<Keyboard>/d",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "LightgunDPadRight",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
                 {
                     "name": "WASD",
                     "id": "6de0fe59-4468-4eb5-9a55-25837dfe2afa",
@@ -834,10 +178,294 @@
                     "action": "AnalogRight",
                     "isComposite": false,
                     "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Joypad",
+            "id": "02a123b2-5ff3-465c-81e5-5e9aa95a4bbc",
+            "actions": [
+                {
+                    "name": "JoypadDPadUp",
+                    "type": "Button",
+                    "id": "6b508597-03b3-4b52-a7e8-152d0fe592e1",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "JoypadDPadDown",
+                    "type": "Button",
+                    "id": "351e922a-189f-4a08-beb7-549d6c9ca3dc",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "JoypadDPadLeft",
+                    "type": "Button",
+                    "id": "e45e8c21-7373-42b5-945e-c275b51d2e3d",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "JoypadDPadRight",
+                    "type": "Button",
+                    "id": "72a099aa-87d2-49da-9abd-630e402ce32d",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "JoypadStart",
+                    "type": "Button",
+                    "id": "0e9cf1ec-cc93-4259-8a9a-d5a80fd3f782",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "JoypadSelect",
+                    "type": "Button",
+                    "id": "fd9fe054-84aa-4bea-9920-35414de0a532",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "JoypadA",
+                    "type": "Button",
+                    "id": "2af78571-514e-46e5-8483-a8a8af08e8d6",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "JoypadB",
+                    "type": "Button",
+                    "id": "99e31b1b-ac8e-4610-9c89-c29f459016bb",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "JoypadX",
+                    "type": "Button",
+                    "id": "daf5dcd3-fa6c-4842-81cd-4d1c9db87cb2",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "JoypadY",
+                    "type": "Button",
+                    "id": "36bb6b22-cda7-4655-91bf-dba143ddcc2e",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "JoypadL1",
+                    "type": "Button",
+                    "id": "02173eb5-ed46-4b73-9760-575ae58abbd3",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "JoypadL2",
+                    "type": "Button",
+                    "id": "fc06be35-276e-48ff-a6ab-41f4edad7b66",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "JoypadL3",
+                    "type": "Button",
+                    "id": "da5ab40a-f429-4346-8c65-3075a4f38358",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "JoypadR1",
+                    "type": "Button",
+                    "id": "85a8a3e9-9956-496d-b4f9-eb8816d4c855",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "JoypadR2",
+                    "type": "Button",
+                    "id": "2c302acc-4c5d-4ee9-95e5-e42211be49c1",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "JoypadR3",
+                    "type": "Button",
+                    "id": "9bf18c8e-3f22-4dac-8758-85b053ed627a",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "b30e6373-a0f2-4262-9805-0553efae9c89",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "JoypadStart",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "d818302f-e70c-439a-93f3-29729ffc2709",
+                    "id": "4ec4240e-7b88-4e11-a453-f5a77368aab8",
+                    "path": "<Gamepad>/start",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "JoypadStart",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "227a8618-97d4-4c6e-9e56-62d4958dd7ad",
+                    "path": "<Keyboard>/rightShift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "JoypadSelect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e3ae9114-5dcc-4fe7-9885-7f309b45d732",
+                    "path": "<Gamepad>/select",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "JoypadSelect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "eae12c89-8d96-4c17-b405-b6efaa794b0d",
+                    "path": "<Keyboard>/numpad2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "JoypadA",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a4df0a4b-b0db-4da5-8ea0-fd69e5a2b170",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "JoypadA",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0452f4c1-3d05-4462-b583-414fe720d775",
+                    "path": "<XRController>{RightHand}/{PrimaryButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Quest",
+                    "action": "JoypadA",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "520058f1-f8ab-46b6-bdf6-78d68c2686c4",
+                    "path": "<Keyboard>/numpad1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "JoypadB",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "768932d0-326f-42c1-8966-bedde23e11ed",
+                    "path": "<Gamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "JoypadB",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "eae79e73-df6f-4a59-b244-5d897450a0de",
+                    "path": "<XRController>{RightHand}/{SecondaryButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Quest",
+                    "action": "JoypadB",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "14bc8992-ed2c-4e1d-a209-5b37eaa862a7",
+                    "path": "<Keyboard>/c",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "JoypadR3",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1fdb8fce-b677-44ea-9e89-e12bd3647e23",
+                    "path": "<Gamepad>/rightStickPress",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "JoypadR3",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9a0a800e-fe8a-434a-babf-36bf20bb0c75",
                     "path": "<Keyboard>/v",
                     "interactions": "",
                     "processors": "",
@@ -848,7 +476,7 @@
                 },
                 {
                     "name": "",
-                    "id": "bff5f60b-7033-4c2b-b8cb-7e960accda4c",
+                    "id": "c1e89de1-16a7-456b-a0c1-088024234127",
                     "path": "<Gamepad>/rightTrigger",
                     "interactions": "",
                     "processors": "",
@@ -859,7 +487,7 @@
                 },
                 {
                     "name": "",
-                    "id": "a5bc3b7e-58b2-4333-a557-4bcaff47c53e",
+                    "id": "45d59990-4000-41aa-9453-b2cad1fcbb75",
                     "path": "<Keyboard>/z",
                     "interactions": "",
                     "processors": "",
@@ -870,7 +498,7 @@
                 },
                 {
                     "name": "",
-                    "id": "7d902525-a63f-45ba-b8b1-ec4e35f59b2f",
+                    "id": "f64be3cd-3459-4871-b540-b28cc9cc64e3",
                     "path": "<Gamepad>/leftTrigger",
                     "interactions": "",
                     "processors": "",
@@ -881,7 +509,7 @@
                 },
                 {
                     "name": "",
-                    "id": "86528e80-6a72-441b-9a7e-0f59f081e5d4",
+                    "id": "530a5392-4a41-48bb-ab42-7ab52fdca101",
                     "path": "<Keyboard>/numpad5",
                     "interactions": "",
                     "processors": "",
@@ -892,7 +520,7 @@
                 },
                 {
                     "name": "",
-                    "id": "457ca745-3ab0-479b-b09a-174382947b59",
+                    "id": "79723b92-9988-4e01-847b-bf87a25b14b2",
                     "path": "<Gamepad>/leftShoulder",
                     "interactions": "",
                     "processors": "",
@@ -903,7 +531,7 @@
                 },
                 {
                     "name": "",
-                    "id": "e7173dc3-17d0-49f2-917b-a1713f08362d",
+                    "id": "3b885091-71a1-4282-b66c-403ebfd18816",
                     "path": "<Keyboard>/numpad3",
                     "interactions": "",
                     "processors": "",
@@ -914,7 +542,7 @@
                 },
                 {
                     "name": "",
-                    "id": "1f2fe01b-53ad-4bc4-95d6-f91356467e79",
+                    "id": "f48e3075-0182-4928-b0a6-f0fac569fb3d",
                     "path": "<Gamepad>/buttonNorth",
                     "interactions": "",
                     "processors": "",
@@ -925,7 +553,7 @@
                 },
                 {
                     "name": "",
-                    "id": "b04b3254-45f7-42ff-91e7-3ee94dd070f1",
+                    "id": "f509da8e-45f9-43c3-9a1b-3541e8cfc910",
                     "path": "<Keyboard>/numpad4",
                     "interactions": "",
                     "processors": "",
@@ -936,7 +564,7 @@
                 },
                 {
                     "name": "",
-                    "id": "8d1cea9a-b937-4dab-af57-6f7703f0f3e5",
+                    "id": "20c4d7cb-1d81-4ba8-b6c8-02eb5ef2c2c8",
                     "path": "<Gamepad>/buttonWest",
                     "interactions": "",
                     "processors": "",
@@ -947,7 +575,7 @@
                 },
                 {
                     "name": "",
-                    "id": "0d80c12b-1749-473c-9c2c-c60fa0590331",
+                    "id": "ea791b41-a38a-44df-bc63-7d003d10661a",
                     "path": "<Keyboard>/x",
                     "interactions": "",
                     "processors": "",
@@ -958,7 +586,7 @@
                 },
                 {
                     "name": "",
-                    "id": "eebd950f-62b4-42d1-bc9c-ecf76e78bb42",
+                    "id": "7e418545-81b5-4d1c-a732-ccb549e5b259",
                     "path": "<Gamepad>/leftStickPress",
                     "interactions": "",
                     "processors": "",
@@ -969,7 +597,7 @@
                 },
                 {
                     "name": "",
-                    "id": "77e966b4-1ecd-432d-a7a8-0d1c9de4abfb",
+                    "id": "5cffdae1-c596-4797-8f7a-97744e959a7a",
                     "path": "<Keyboard>/numpad6",
                     "interactions": "",
                     "processors": "",
@@ -980,7 +608,7 @@
                 },
                 {
                     "name": "",
-                    "id": "82af4109-f72d-433e-82b4-7031442c1b89",
+                    "id": "ca973b64-a0d7-42ed-b7cd-a2a317673510",
                     "path": "<Gamepad>/rightShoulder",
                     "interactions": "",
                     "processors": "",
@@ -991,7 +619,7 @@
                 },
                 {
                     "name": "",
-                    "id": "1fb74aca-a35e-4887-be90-a798484f9d10",
+                    "id": "6318b768-fc90-40e7-aa11-db121da39130",
                     "path": "<Keyboard>/t",
                     "interactions": "",
                     "processors": "",
@@ -1002,7 +630,7 @@
                 },
                 {
                     "name": "",
-                    "id": "5e4bfa4c-2f5b-47c1-be23-f7165b0e3428",
+                    "id": "22ee6c4b-41f0-4749-8181-e9918e53fcc8",
                     "path": "<Gamepad>/dpad/up",
                     "interactions": "",
                     "processors": "",
@@ -1013,7 +641,7 @@
                 },
                 {
                     "name": "",
-                    "id": "4a17f978-8bdb-4d31-bc39-d5fd572e77ef",
+                    "id": "b0ad64b1-5f7a-451a-8cc5-330e776cf822",
                     "path": "<Keyboard>/g",
                     "interactions": "",
                     "processors": "",
@@ -1024,7 +652,7 @@
                 },
                 {
                     "name": "",
-                    "id": "230461db-1d18-44ea-9a15-1d547cf4240f",
+                    "id": "56c39b68-6416-4bb1-8f89-e0f7167fcd36",
                     "path": "<Gamepad>/dpad/down",
                     "interactions": "",
                     "processors": "",
@@ -1035,7 +663,7 @@
                 },
                 {
                     "name": "",
-                    "id": "97dd8eff-ba4f-4ba1-934b-0bf2cef3c74a",
+                    "id": "f3d8e268-c26a-471a-82b5-24a36dd33e00",
                     "path": "<Keyboard>/f",
                     "interactions": "",
                     "processors": "",
@@ -1046,7 +674,7 @@
                 },
                 {
                     "name": "",
-                    "id": "652d77f2-235f-4679-9261-07daced0c825",
+                    "id": "6fa4ba32-b76d-466d-81ad-06c2497620df",
                     "path": "<Gamepad>/dpad/left",
                     "interactions": "",
                     "processors": "",
@@ -1057,7 +685,7 @@
                 },
                 {
                     "name": "",
-                    "id": "fb860a80-924c-4f55-8e39-40adf38973e3",
+                    "id": "55ff0182-7ff6-491f-a953-65a2b70810f3",
                     "path": "<Keyboard>/h",
                     "interactions": "",
                     "processors": "",
@@ -1068,7 +696,7 @@
                 },
                 {
                     "name": "",
-                    "id": "61cd0271-1bdf-4f41-86c2-7edba6738adc",
+                    "id": "f8166c25-0e41-4a92-83e7-3db214da4d18",
                     "path": "<Gamepad>/dpad/right",
                     "interactions": "",
                     "processors": "",
@@ -1079,7 +707,7 @@
                 },
                 {
                     "name": "",
-                    "id": "e79cc9a2-d3cc-437b-9093-7658b1226494",
+                    "id": "144f70c3-f29f-48b1-ab36-b6dd74a99ebe",
                     "path": "<XRController>{LeftHand}/{PrimaryButton}",
                     "interactions": "",
                     "processors": "",
@@ -1090,12 +718,422 @@
                 },
                 {
                     "name": "",
-                    "id": "28250ed9-0631-4689-a264-98118a514cb3",
+                    "id": "bf88d73e-67aa-4a7b-a463-63ee6b738792",
                     "path": "<XRController>{LeftHand}/{SecondaryButton}",
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
                     "action": "JoypadSelect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Mouse",
+            "id": "3d318775-3fcb-4c97-838a-05af1b09ad09",
+            "actions": [
+                {
+                    "name": "MousePositionDelta",
+                    "type": "Value",
+                    "id": "9c9e4080-f4e9-4c80-a964-c8bf67ad08a7",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "MouseWheelDelta",
+                    "type": "Value",
+                    "id": "93e0d92c-3473-4ac4-9ea3-3bfa0f2dda26",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "MouseLeftButton",
+                    "type": "Button",
+                    "id": "777e08bd-1386-4cf1-87a0-9dc63d32a856",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "MouseRightButton",
+                    "type": "Button",
+                    "id": "5eb02909-c2c4-421d-b129-8c59b9e6ef35",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "MouseMiddleButton",
+                    "type": "Button",
+                    "id": "5c2898bb-f8bc-40cf-af40-45bcda1d92b4",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "MouseForwardButton",
+                    "type": "Button",
+                    "id": "9c2390b8-01dc-425b-aa43-2c63e02b0098",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "MouseBackButton",
+                    "type": "Button",
+                    "id": "227fd3ad-3b12-4f49-8b4e-b736990fbfef",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "0656da91-9c15-4508-a6eb-3a73d3917246",
+                    "path": "<Mouse>/delta",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "MousePositionDelta",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "96e68876-1f6f-4821-a94f-a0c3ca593252",
+                    "path": "<Mouse>/scroll",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "MouseWheelDelta",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4685467a-7e72-46cb-9e00-1f01e3cc3d46",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "MouseLeftButton",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "830b5cad-4895-44ed-891c-1ed92286e631",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "MouseRightButton",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c07a4fdd-40f0-480a-9e98-a56bfddad181",
+                    "path": "<Mouse>/middleButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "MouseMiddleButton",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9a706344-e79a-4109-965f-a5e28ddd1f68",
+                    "path": "<Mouse>/forwardButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "MouseForwardButton",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "11933f09-8048-47a9-a336-91959ecdaea9",
+                    "path": "<Mouse>/backButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "MouseBackButton",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Keyboard",
+            "id": "ebc9561a-2286-4e75-ac42-f2f91f8330a4",
+            "actions": [
+                {
+                    "name": "KeyboardKey",
+                    "type": "Button",
+                    "id": "1725545d-552a-4759-bf7e-95bc6f205fb2",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "16e05e6c-3d6a-45c6-b195-de64d2d02a6a",
+                    "path": "<Keyboard>/anyKey",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "KeyboardKey",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Pointer",
+            "id": "78ac98be-c79f-4812-8557-f04c8a5f4c65",
+            "actions": [],
+            "bindings": []
+        },
+        {
+            "name": "Lightgun",
+            "id": "9c6bd460-42dc-4c6a-96b1-c2e9a5aff822",
+            "actions": [
+                {
+                    "name": "LightgunTrigger",
+                    "type": "Button",
+                    "id": "c7429b7a-42d9-4162-89a8-691ac1a81bbe",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "LightgunReload",
+                    "type": "Button",
+                    "id": "e807daa4-7781-4125-85d1-ed6ebd14ad15",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "LightgunA",
+                    "type": "Button",
+                    "id": "8586fb2c-cc9f-4d2c-85b9-247a6ea96bd9",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "LightgunB",
+                    "type": "Button",
+                    "id": "a70b23e4-a817-434a-b698-3e06061a45b1",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "LightgunStart",
+                    "type": "Button",
+                    "id": "74b4cd99-208b-4fe3-a3d5-f0d342efe8c9",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "LightgunSelect",
+                    "type": "Button",
+                    "id": "34ef0e4c-433f-4b0f-b04e-6125e558bfad",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "LightgunC",
+                    "type": "Button",
+                    "id": "83ef0e1b-c81d-49d4-a5af-7b0cc2747650",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "LightgunDPadUp",
+                    "type": "Button",
+                    "id": "e7e6e48d-b337-4ed4-b2e4-3053decb9ee2",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "LightgunDPadDown",
+                    "type": "Button",
+                    "id": "7aa361df-d80f-449d-9762-aea7c7c9dc50",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "LightgunDPadLeft",
+                    "type": "Button",
+                    "id": "687f2144-dd6d-46f7-a678-3ddcd4dc3393",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "LightgunDPadRight",
+                    "type": "Button",
+                    "id": "4b184c23-228a-4daf-acae-a0533e57e5f3",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "146e7a60-6abd-4faf-8598-e1e16a71ad66",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "LightgunTrigger",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c9b51325-95fc-4864-a444-df3aca0b7505",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "LightgunReload",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c75bfccf-b98c-44db-8785-2b41261a2d9f",
+                    "path": "<Mouse>/forwardButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "LightgunA",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a660ed78-0a91-4f4b-83f3-d29262d86da7",
+                    "path": "<Mouse>/backButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "LightgunB",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d1be3e64-f34a-4612-859e-0af812166980",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "LightgunStart",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7b893684-363a-4641-80e1-bbb41fcc6322",
+                    "path": "<Keyboard>/rightShift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "LightgunSelect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e64f20e0-b055-4529-8f0d-2376fc7ec583",
+                    "path": "<Mouse>/middleButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "LightgunC",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "090f4561-6744-4c76-87b2-231470e58aab",
+                    "path": "<Keyboard>/w",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "LightgunDPadUp",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9f6358ad-dbe2-4349-8e32-9144bc23802a",
+                    "path": "<Keyboard>/s",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "LightgunDPadDown",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "82508d6c-2f8e-4a1b-ab58-065d2b764e5d",
+                    "path": "<Keyboard>/a",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "LightgunDPadLeft",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5b95bce8-29a0-484c-9f09-db8c1ebd9296",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "LightgunDPadRight",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

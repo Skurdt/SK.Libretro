@@ -25,27 +25,20 @@ using UnityEngine.InputSystem;
 
 namespace SK.Libretro.Unity
 {
-    internal sealed class KeyboardHandler : InputHandlerBase
+    internal sealed class KeyboardHandler : LibretroInputActions.IKeyboardActions
     {
         //private const uint NUM_KEYBOARD_KEYS = 320;
 
         private uint _keys;
 
-        public KeyboardHandler(InputActionAsset inputActionAsset)
-        : base(inputActionAsset)
-        {
-        }
-
         public short IsKeyDown(retro_key key) => _keys.IsBitSetAsShort((uint)key);
+
+        public void OnKeyboardKey(InputAction.CallbackContext context) { }
 
         public void Update()
         {
             //for (uint i = 0; i < NUM_KEYBOARD_KEYS; ++i)
             //    _keys.SetBit(i, Input.GetKey((KeyCode)i));
-        }
-
-        protected override void AddActions(InputActionMap actionMap)
-        {
         }
     }
 }

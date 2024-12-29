@@ -20,24 +20,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using UnityEngine.InputSystem;
-
 namespace SK.Libretro.Unity
 {
-    internal sealed class PointerHandler : InputHandlerBase
+    internal sealed class PointerHandler : LibretroInputActions.IPointerActions
     {
         public short X       { get; private set; }
         public short Y       { get; private set; }
         public short Pressed { get; private set; }
         public short Count   { get; private set; }
-
-        public PointerHandler(InputActionAsset inputActionAsset)
-        : base(inputActionAsset)
-        {
-        }
-
-        protected override void AddActions(InputActionMap actionMap)
-        {
-        }
     }
 }
