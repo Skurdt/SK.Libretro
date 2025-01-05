@@ -37,16 +37,11 @@ namespace SK.Libretro.Unity
         private const int RANGE_Y = 0x7fff;
 
         private readonly LibretroInstance _libretroInstance;
-        private readonly int _layerMask;
         private readonly RaycastHit[] _raycastHits = new RaycastHit[1];
 
         private uint _buttons;
 
-        public LightgunHandler(LibretroInstance libretroInstance)
-        {
-            _libretroInstance = libretroInstance;
-            _layerMask        = 1 << _libretroInstance.LightgunRaycastLayer;
-        }
+        public LightgunHandler(LibretroInstance libretroInstance) => _libretroInstance = libretroInstance;
 
         public short IsButtonDown(RETRO_DEVICE_ID_LIGHTGUN button) => _buttons.IsBitSetAsShort((uint)button);
 
@@ -60,7 +55,7 @@ namespace SK.Libretro.Unity
             }
 
             Ray ray = _libretroInstance.LightgunRay;
-            int hitCount = Physics.RaycastNonAlloc(ray, _raycastHits, math.INFINITY, _layerMask);
+            int hitCount = Physics.RaycastNonAlloc(ray, _raycastHits, math.INFINITY, 1 << _libretroInstance.LightgunRaycastLayer);
             if (hitCount <= 0)
             {
                 X = Y = -0x8000;
