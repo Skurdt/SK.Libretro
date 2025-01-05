@@ -10,5 +10,4 @@ Libretro wrapper written in C# with support for the Unity game engine
 [![Alt text](https://img.youtube.com/vi/YOrZ2_0IcLI/0.jpg)](https://youtu.be/YOrZ2_0IcLI)
 
 - Installation:
-Add UniTask to your project: https://github.com/Cysharp/UniTask?tab=readme-ov-file#upm-package
 Add this package to your project: Window->Package Manager->'+'Icon->Add package from git URL...->https://github.com/Skurdt/SK.Libretro.git->Add
