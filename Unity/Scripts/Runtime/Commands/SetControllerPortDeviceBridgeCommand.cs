@@ -20,16 +20,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using SK.Libretro.Header;
-
 namespace SK.Libretro.Unity
 {
     internal readonly struct SetControllerPortDeviceBridgeCommand : IBridgeCommand
     {
         private readonly uint _port;
-        private readonly RETRO_DEVICE _device;
+        private readonly uint _device;
 
-        public SetControllerPortDeviceBridgeCommand(uint port, RETRO_DEVICE device)
+        public SetControllerPortDeviceBridgeCommand(uint port, uint device)
         {
             _port   = port;
             _device = device;

@@ -35,15 +35,20 @@ namespace SK.Libretro.Unity
         public bool InScreen { get; private set; }
 
         private readonly LibretroInstance _libretroInstance;
+        private readonly int _layerMask;
         private readonly RaycastHit[] _raycastHits = new RaycastHit[1];
 
         private uint _buttons;
 
-        public LightgunHandler(LibretroInstance libretroInstance) => _libretroInstance = libretroInstance;
+        public LightgunHandler(LibretroInstance libretroInstance)
+        {
+            _libretroInstance = libretroInstance;
+            _layerMask        = LayerMask.GetMask(LayerMask.LayerToName(_libretroInstance.LightgunRaycastLayer));
+        }
 
         public short IsButtonDown(RETRO_DEVICE_ID_LIGHTGUN button) => _buttons.IsBitSetAsShort((uint)button);
 
-        public void Update(Vector2 aimPosition)
+        public void Update()
         {
             if (!_libretroInstance)
             {
@@ -52,8 +57,8 @@ namespace SK.Libretro.Unity
                 return;
             }
 
-            Ray ray = _libretroInstance.Camera.ScreenPointToRay(aimPosition);
-            int hitCount = Physics.RaycastNonAlloc(ray, _raycastHits, float.PositiveInfinity, LayerMask.GetMask(LayerMask.LayerToName(_libretroInstance.LightgunRaycastLayer)));
+            Ray ray = _libretroInstance.LightgunRay;
+            int hitCount = Physics.RaycastNonAlloc(ray, _raycastHits, math.INFINITY, _layerMask);
             if (hitCount <= 0)
             {
                 X = Y = -0x8000;

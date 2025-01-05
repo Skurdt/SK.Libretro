@@ -1161,11 +1161,33 @@
                 },
                 {
                     "name": "",
+                    "id": "03470878-2ae1-477b-90ac-386e66eb1213",
+                    "path": "<XRController>{RightHand}/{TriggerButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Quest",
+                    "action": "LightgunTrigger",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "c9b51325-95fc-4864-a444-df3aca0b7505",
                     "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
+                    "action": "LightgunReload",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a6fa6324-b65e-4d2f-9eda-1150bb697260",
+                    "path": "<XRController>{RightHand}/{GripButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Quest",
                     "action": "LightgunReload",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -1183,11 +1205,33 @@
                 },
                 {
                     "name": "",
+                    "id": "c5f3adc2-7697-431e-a1e8-64acce5b7412",
+                    "path": "<XRController>{RightHand}/{PrimaryButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Quest",
+                    "action": "LightgunA",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "a660ed78-0a91-4f4b-83f3-d29262d86da7",
                     "path": "<Mouse>/backButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
+                    "action": "LightgunB",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "37db7df6-caf2-4839-9702-a62437618ef4",
+                    "path": "<XRController>{RightHand}/{SecondaryButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Quest",
                     "action": "LightgunB",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -1205,11 +1249,33 @@
                 },
                 {
                     "name": "",
+                    "id": "363bd580-cb3f-41a8-a555-076184d90d6c",
+                    "path": "<XRController>{LeftHand}/{PrimaryButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Quest",
+                    "action": "LightgunStart",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "7b893684-363a-4641-80e1-bbb41fcc6322",
                     "path": "<Keyboard>/rightShift",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
+                    "action": "LightgunSelect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6341c489-c3d0-4cdd-a063-0b188933432e",
+                    "path": "<XRController>{LeftHand}/{SecondaryButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Quest",
                     "action": "LightgunSelect",
                     "isComposite": false,
                     "isPartOfComposite": false

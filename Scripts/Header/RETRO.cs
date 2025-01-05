@@ -111,7 +111,7 @@ namespace SK.Libretro.Header
 
     // API void retro_set_controller_port_device(unsigned port, unsigned device);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate void retro_set_controller_port_device_t(uint port, RETRO_DEVICE device);
+    internal delegate void retro_set_controller_port_device_t(uint port, uint device);
 
     // API void retro_reset(void);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

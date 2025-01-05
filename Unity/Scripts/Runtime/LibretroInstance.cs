@@ -24,14 +24,16 @@ using SK.Libretro.Header;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace SK.Libretro.Unity
 {
     [DisallowMultipleComponent]
     public sealed class LibretroInstance : MonoBehaviour
     {
-        [field: SerializeField] public Camera Camera { get; set; }
+        [field: SerializeField] public Camera Camera { get; private set; }
         [field: SerializeField, Layer] public int LightgunRaycastLayer { get; set; }
+        [field: SerializeField] public GameObject LightgunSource { get; set; }
         [field: SerializeField] public Renderer Renderer { get; set; }
         [field: SerializeField] public Collider Collider { get; set; }
         [field: SerializeField] public Transform Viewer { get; set; }
@@ -77,14 +79,37 @@ namespace SK.Libretro.Unity
 
         public byte[] VideoMemory => Bridge.Instance.VideoMemory;
 
-        private readonly Dictionary<int, RETRO_DEVICE> _inputDevices = new() {
-            { 0, RETRO_DEVICE.JOYPAD },
-            { 1, RETRO_DEVICE.JOYPAD },
-            { 2, RETRO_DEVICE.JOYPAD },
-            { 3, RETRO_DEVICE.JOYPAD }
+        public Ray LightgunRay { get; private set; }
+
+        private readonly Dictionary<int, uint> _inputDevices = new() {
+            { 0, (uint)RETRO_DEVICE.JOYPAD },
+            { 1, (uint)RETRO_DEVICE.JOYPAD },
+            { 2, (uint)RETRO_DEVICE.JOYPAD },
+            { 3, (uint)RETRO_DEVICE.JOYPAD }
         };
 
         private void OnDisable() => StopContent();
+
+        private void Update()
+        {
+            if (!Camera)
+            {
+                LightgunRay = default;
+                return;
+            }
+
+            if (!LightgunSource || !LightgunSource.activeSelf)
+            {
+                LightgunRay = Mouse.current is not null
+                            ? Camera.ScreenPointToRay(Mouse.current.position.value)
+                            : default;
+                return;
+            }
+
+            Vector3 controllerPosition = LightgunSource.transform.position;
+            Vector3 controllerDirection = LightgunSource.transform.forward;
+            LightgunRay = new(controllerPosition, controllerDirection);
+        }
 
         public void Initialize(string coreName, string gamesDirectory, params string[] gameNames)
         {
@@ -128,9 +153,9 @@ namespace SK.Libretro.Unity
 
         public void RemovePlayer(int index) => Bridge.Instance.RemovePlayer(index);
 
-        public RETRO_DEVICE GetControllerPortDevice(int port) => _inputDevices.ContainsKey(port) ? _inputDevices[port] : RETRO_DEVICE.JOYPAD;
+        public uint GetControllerPortDevice(int port) => _inputDevices.ContainsKey(port) ? _inputDevices[port] : (uint)RETRO_DEVICE.JOYPAD;
 
-        public void SetControllerPortDevice(uint port, RETRO_DEVICE id)
+        public void SetControllerPortDevice(uint port, uint id)
         {
             _inputDevices[(int)port] = id;
             Bridge.Instance.SetControllerPortDevice(port, id);

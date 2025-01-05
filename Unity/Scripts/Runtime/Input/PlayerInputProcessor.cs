@@ -74,9 +74,7 @@ namespace SK.Libretro.Unity
         private void Update()
         {
             KeyboardHandler.Update();
-
-            if (Mouse.current is not null)
-                LightgunHandler.Update(Mouse.current.position.ReadValue());
+            LightgunHandler.Update();
         }
 
         public bool SetRumbleState(retro_rumble_effect effect, ushort strength)

@@ -299,7 +299,7 @@ namespace SK.Libretro
                 {
                     retro_controller_description controllerDescription = controllerInfo.types.ToStructure<retro_controller_description>();
                     if (controllerDescription.desc.IsNotNull())
-                        DeviceMap.Add(index, new() { Description = controllerDescription.desc.AsString(), Device = (RETRO_DEVICE)controllerDescription.id });
+                        DeviceMap.Add(index, new() { Description = controllerDescription.desc.AsString(), Device = controllerDescription.id });
                     
                     controllerInfo.types += Marshal.SizeOf(controllerDescription);
                     controllerInfo.types.ToStructure(controllerDescription);

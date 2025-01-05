@@ -144,7 +144,7 @@ namespace SK.Libretro
 
         public void GetSystemAVInfo(out retro_system_av_info info) => _retro_get_system_av_info(out info);
 
-        public void SetControllerPortDevice(uint port, RETRO_DEVICE device) => _retro_set_controller_port_device(port, device);
+        public void SetControllerPortDevice(uint port, uint device) => _retro_set_controller_port_device(port, device);
 
         public void Reset() => _retro_reset();
 

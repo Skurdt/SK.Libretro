@@ -20,7 +20,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using SK.Libretro.Header;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
@@ -602,7 +601,7 @@ namespace SK.Libretro.Unity
         public void SaveOptions(bool global) =>
             _bridgeCommands.Enqueue(new SaveOptionsBridgeCommand(global));
 
-        public void SetControllerPortDevice(uint port, RETRO_DEVICE device) =>
+        public void SetControllerPortDevice(uint port, uint device) =>
             _bridgeCommands.Enqueue(new SetControllerPortDeviceBridgeCommand(port, device));
 
         private void SetTexture(Texture texture)

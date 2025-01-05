@@ -33,6 +33,7 @@ namespace SK.Libretro.Unity
         public LeftStickBehaviour LeftStickBehaviour { get; set; }
 
         private readonly Dictionary<int, PlayerInputProcessor> _controls = new();
+        private readonly List<InputDevice> _inputDevices = new();
 
         private PlayerInputManager _playerInputManager;
 
@@ -40,6 +41,13 @@ namespace SK.Libretro.Unity
 
         private void OnEnable()
         {
+            // Get all input devices
+            _inputDevices.AddRange(InputSystem.devices);
+            foreach (InputDevice device in _inputDevices)
+            {
+                Debug.Log($"Device: {device}");
+            }
+
             _playerInputManager.onPlayerJoined += OnPlayerJoined;
             _playerInputManager.onPlayerLeft   += OnPlayerLeft;
         }
@@ -48,6 +56,8 @@ namespace SK.Libretro.Unity
         {
             _playerInputManager.onPlayerJoined -= OnPlayerJoined;
             _playerInputManager.onPlayerLeft   -= OnPlayerLeft;
+
+            _inputDevices.Clear();
         }
 
         public void Dispose()
@@ -64,7 +74,7 @@ namespace SK.Libretro.Unity
             
             await Awaitable.MainThreadAsync();
 
-            PlayerInput playerInput = _playerInputManager.JoinPlayer(index);
+            PlayerInput playerInput = _playerInputManager.JoinPlayer(playerIndex: index, pairWithDevice: _inputDevices[0]);
             if (!playerInput.TryGetComponent(out PlayerInputProcessor processor))
                 return;
 

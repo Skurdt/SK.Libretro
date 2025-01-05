@@ -20,13 +20,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using SK.Libretro.Header;
-
 namespace SK.Libretro
 {
     public sealed class Controller
     {
         public string Description;
-        public RETRO_DEVICE Device;
+        public uint Device;
     }
 }
