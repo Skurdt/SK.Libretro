@@ -400,7 +400,7 @@
                 {
                     "name": "",
                     "id": "0452f4c1-3d05-4462-b583-414fe720d775",
-                    "path": "<XRController>{RightHand}/{PrimaryButton}",
+                    "path": "<XRController>{RightHand}/{GripButton}",
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
@@ -433,7 +433,7 @@
                 {
                     "name": "",
                     "id": "eae79e73-df6f-4a59-b244-5d897450a0de",
-                    "path": "<XRController>{RightHand}/{SecondaryButton}",
+                    "path": "<XRController>{RightHand}/{TriggerButton}",
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
@@ -531,6 +531,17 @@
                 },
                 {
                     "name": "",
+                    "id": "da384e77-b870-416b-aa78-b82a49cc8845",
+                    "path": "<XRController>{LeftHand}/{Primary2DAxisClick}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Quest",
+                    "action": "JoypadL1",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "3b885091-71a1-4282-b66c-403ebfd18816",
                     "path": "<Keyboard>/numpad3",
                     "interactions": "",
@@ -553,6 +564,17 @@
                 },
                 {
                     "name": "",
+                    "id": "3d636801-567c-4abb-bb7d-2b3ea9d0a100",
+                    "path": "<XRController>{LeftHand}/{TriggerButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Quest",
+                    "action": "JoypadY",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "f509da8e-45f9-43c3-9a1b-3541e8cfc910",
                     "path": "<Keyboard>/numpad4",
                     "interactions": "",
@@ -569,6 +591,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
+                    "action": "JoypadX",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "abc73b43-02fc-411e-b057-0c12cf31bc98",
+                    "path": "<XRController>{LeftHand}/{GripButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Quest",
                     "action": "JoypadX",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -619,6 +652,17 @@
                 },
                 {
                     "name": "",
+                    "id": "b6f6a09c-fad3-4533-b61f-c5929b6d242b",
+                    "path": "<XRController>{RightHand}/{Primary2DAxisClick}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Quest",
+                    "action": "JoypadR1",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "6318b768-fc90-40e7-aa11-db121da39130",
                     "path": "<Keyboard>/t",
                     "interactions": "",
@@ -635,6 +679,28 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
+                    "action": "JoypadDPadUp",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0d2dcecf-739c-4a5f-a89e-2d9a8c85a617",
+                    "path": "<QuestTouchPlusController>/thumbstick/up",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Quest",
+                    "action": "JoypadDPadUp",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "86c83a96-4450-4425-bcd1-f1b444f538e8",
+                    "path": "<OculusTouchController>/thumbstick/up",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Quest",
                     "action": "JoypadDPadUp",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -663,6 +729,28 @@
                 },
                 {
                     "name": "",
+                    "id": "6c39dc79-e9a2-42b1-87de-0d237cff326e",
+                    "path": "<QuestTouchPlusController>/thumbstick/down",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Quest",
+                    "action": "JoypadDPadDown",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2e0e3b1b-e947-4f4a-8ff4-ecaf797871fe",
+                    "path": "<OculusTouchController>/thumbstick/down",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Quest",
+                    "action": "JoypadDPadDown",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "f3d8e268-c26a-471a-82b5-24a36dd33e00",
                     "path": "<Keyboard>/f",
                     "interactions": "",
@@ -685,6 +773,28 @@
                 },
                 {
                     "name": "",
+                    "id": "4432cf58-fef5-479b-9085-b3c861b392eb",
+                    "path": "<QuestTouchPlusController>/thumbstick/left",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Quest",
+                    "action": "JoypadDPadLeft",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "98b7399c-bf46-4d24-95c0-2fbc15e7b120",
+                    "path": "<OculusTouchController>/thumbstick/left",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Quest",
+                    "action": "JoypadDPadLeft",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "55ff0182-7ff6-491f-a953-65a2b70810f3",
                     "path": "<Keyboard>/h",
                     "interactions": "",
@@ -701,6 +811,28 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
+                    "action": "JoypadDPadRight",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "86f9365e-22c1-49ad-b0f7-5cd2a4c6e4b4",
+                    "path": "<QuestTouchPlusController>/thumbstick/right",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Quest",
+                    "action": "JoypadDPadRight",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ec0fd49c-0f5a-4d0c-92f4-b64f633956ea",
+                    "path": "<OculusTouchController>/thumbstick/right",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Quest",
                     "action": "JoypadDPadRight",
                     "isComposite": false,
                     "isPartOfComposite": false

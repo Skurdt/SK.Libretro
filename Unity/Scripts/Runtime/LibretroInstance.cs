@@ -22,6 +22,7 @@
 
 using SK.Libretro.Header;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SK.Libretro.Unity
@@ -76,6 +77,13 @@ namespace SK.Libretro.Unity
 
         public byte[] VideoMemory => Bridge.Instance.VideoMemory;
 
+        private readonly Dictionary<int, RETRO_DEVICE> _inputDevices = new() {
+            { 0, RETRO_DEVICE.JOYPAD },
+            { 1, RETRO_DEVICE.JOYPAD },
+            { 2, RETRO_DEVICE.JOYPAD },
+            { 3, RETRO_DEVICE.JOYPAD }
+        };
+
         private void OnDisable() => StopContent();
 
         public void Initialize(string coreName, string gamesDirectory, params string[] gameNames)
@@ -116,7 +124,17 @@ namespace SK.Libretro.Unity
 
         public void StopContent() => Bridge.Instance.StopContent();
 
-        public void SetControllerPortDevice(uint port, RETRO_DEVICE id) => Bridge.Instance.SetControllerPortDevice(port, id);
+        public void AddPlayer(int index) => Bridge.Instance.AddPlayer(index);
+
+        public void RemovePlayer(int index) => Bridge.Instance.RemovePlayer(index);
+
+        public RETRO_DEVICE GetControllerPortDevice(int port) => _inputDevices.ContainsKey(port) ? _inputDevices[port] : RETRO_DEVICE.JOYPAD;
+
+        public void SetControllerPortDevice(uint port, RETRO_DEVICE id)
+        {
+            _inputDevices[(int)port] = id;
+            Bridge.Instance.SetControllerPortDevice(port, id);
+        }
 
         public void SetStateSlot(int slot) => Bridge.Instance.SetStateSlot(slot);
 

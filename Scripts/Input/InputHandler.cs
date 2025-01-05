@@ -27,7 +27,7 @@ using System.Runtime.InteropServices;
 
 namespace SK.Libretro
 {
-    internal sealed class InputHandler
+    internal sealed class InputHandler : IDisposable
     {
         private const int MAX_USERS_SUPPORTED = 2;
 
@@ -136,6 +136,12 @@ namespace SK.Libretro
         private retro_keyboard_event_t _keyboardEvent;
 
         public InputHandler(IInputProcessor processor) => _processor = processor ?? new NullInputProcessor();
+
+        public void Dispose() => _processor.Dispose();
+
+        public void AddPlayer(int port) => _processor.AddPlayer(port);
+
+        public void RemovePlayer(int port) => _processor.RemovePlayer(port);
 
         public void SetCoreCallbacks(retro_set_input_poll_t setInputPoll, retro_set_input_state_t setInputState)
         {
@@ -317,6 +323,7 @@ namespace SK.Libretro
                 return 0;
 
             device &= (RETRO_DEVICE)RETRO.DEVICE_MASK;
+
             return device switch
             {
                 RETRO_DEVICE.JOYPAD   => Wrapper.Instance.InputHandler.ProcessJoypadDevice(port, (RETRO_DEVICE_ID_JOYPAD)id),

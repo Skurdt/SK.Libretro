@@ -21,12 +21,16 @@
  * SOFTWARE. */
 
 using SK.Libretro.Header;
+using System;
 
 namespace SK.Libretro
 {
-    public interface IInputProcessor
+    public interface IInputProcessor : IDisposable
     {
         LeftStickBehaviour LeftStickBehaviour { get; set; }
+
+        void AddPlayer(int port);
+        void RemovePlayer(int port);
 
         short JoypadButton(int port, RETRO_DEVICE_ID_JOYPAD button);
         short JoypadButtons(int port);

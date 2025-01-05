@@ -50,6 +50,44 @@ namespace SK.Libretro.Unity
             _playerInputManager.onPlayerLeft   -= OnPlayerLeft;
         }
 
+        public void Dispose()
+        {
+            foreach (int index in _controls.Keys)
+                RemovePlayer(index);
+            _controls.Clear();
+        }
+
+        public async void AddPlayer(int index)
+        {
+            if (_controls.ContainsKey(index))
+                return;
+            
+            await Awaitable.MainThreadAsync();
+
+            PlayerInput playerInput = _playerInputManager.JoinPlayer(index);
+            if (!playerInput.TryGetComponent(out PlayerInputProcessor processor))
+                return;
+
+            _controls.Add(playerInput.playerIndex, processor);
+            processor.Init(LeftStickBehaviour);
+            Debug.Log($"Player #{playerInput.playerIndex} joined ({playerInput.currentControlScheme}).");
+        }
+
+        public async void RemovePlayer(int index)
+        {
+            if (!_controls.TryGetValue(index, out PlayerInputProcessor processor))
+                return;
+
+            await Awaitable.MainThreadAsync();
+
+            if (!processor.TryGetComponent(out PlayerInput playerInput))
+                return;
+
+            Destroy(playerInput.gameObject);
+            _ = _controls.Remove(index);
+            Debug.Log($"Player #{playerInput.playerIndex} left ({playerInput.currentControlScheme}).");
+        }
+
         public short JoypadButton(int port, RETRO_DEVICE_ID_JOYPAD button) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.JoypadHandler.IsButtonDown(button) : (short)0;
         public short JoypadButtons(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.JoypadHandler.Buttons: (short)0;
 
@@ -81,17 +119,6 @@ namespace SK.Libretro.Unity
         {
             playerInput.onDeviceLost     += OnDeviceLost;
             playerInput.onDeviceRegained += OnDeviceRegained;
-
-            if (_controls.ContainsKey(playerInput.playerIndex))
-                return;
-
-            if (!playerInput.TryGetComponent(out PlayerInputProcessor processor))
-                return;
-
-            processor.Init(LeftStickBehaviour);
-
-            _controls.Add(playerInput.playerIndex, processor);
-            Debug.Log($"Player #{playerInput.playerIndex} joined ({playerInput.currentControlScheme}).");
         }
 
         private void OnPlayerLeft(PlayerInput playerInput)
