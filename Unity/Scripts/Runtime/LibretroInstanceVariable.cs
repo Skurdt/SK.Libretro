@@ -85,10 +85,10 @@ namespace SK.Libretro.Unity
                 Current.StopContent();
         }
 
-        public void AddPlayer(int index)
+        public void AddPlayer(int port, int device)
         {
             if (Current)
-                Current.AddPlayer(index);
+                Current.AddPlayer(port, device);
         }
 
         public void RemovePlayer(int index)

@@ -24,8 +24,8 @@ namespace SK.Libretro.Unity
 {
     internal readonly struct RemovePlayerBridgeCommand : IBridgeCommand
     {
-        private readonly int _index;
-        public RemovePlayerBridgeCommand(int index) => _index = index;
-        public void Execute() => Wrapper.Instance.InputHandler.RemovePlayer(_index);
+        private readonly int _port;
+        public RemovePlayerBridgeCommand(int port) => _port = port;
+        public void Execute() => Wrapper.Instance.InputHandler.RemovePlayer(_port);
     }
 }

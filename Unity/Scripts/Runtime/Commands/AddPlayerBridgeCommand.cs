@@ -24,8 +24,15 @@ namespace SK.Libretro.Unity
 {
     internal readonly struct AddPlayerBridgeCommand : IBridgeCommand
     {
-        private readonly int _index;
-        public AddPlayerBridgeCommand(int index) => _index = index;
-        public void Execute() => Wrapper.Instance.InputHandler.AddPlayer(_index);
+        private readonly int _port;
+        private readonly int _device;
+
+        public AddPlayerBridgeCommand(int port, int device)
+        {
+            _port   = port;
+            _device = device;
+        }
+
+        public void Execute() => Wrapper.Instance.InputHandler.AddPlayer(_port, _device);
     }
 }

@@ -139,7 +139,7 @@ namespace SK.Libretro
 
         public void Dispose() => _processor.Dispose();
 
-        public void AddPlayer(int port) => _processor.AddPlayer(port);
+        public void AddPlayer(int port, int device) => _processor.AddPlayer(port, device);
 
         public void RemovePlayer(int port) => _processor.RemovePlayer(port);
 

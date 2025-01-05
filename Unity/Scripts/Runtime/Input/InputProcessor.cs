@@ -41,12 +41,7 @@ namespace SK.Libretro.Unity
 
         private void OnEnable()
         {
-            // Get all input devices
             _inputDevices.AddRange(InputSystem.devices);
-            foreach (InputDevice device in _inputDevices)
-            {
-                Debug.Log($"Device: {device}");
-            }
 
             _playerInputManager.onPlayerJoined += OnPlayerJoined;
             _playerInputManager.onPlayerLeft   += OnPlayerLeft;
@@ -67,14 +62,17 @@ namespace SK.Libretro.Unity
             _controls.Clear();
         }
 
-        public async void AddPlayer(int index)
+        public async void AddPlayer(int index, int device)
         {
             if (_controls.ContainsKey(index))
                 return;
             
+            if (device < 0 || device >= _inputDevices.Count)
+                return;
+
             await Awaitable.MainThreadAsync();
 
-            PlayerInput playerInput = _playerInputManager.JoinPlayer(playerIndex: index, pairWithDevice: _inputDevices[0]);
+            PlayerInput playerInput = _playerInputManager.JoinPlayer(playerIndex: index, pairWithDevice: _inputDevices[device]);
             if (!playerInput.TryGetComponent(out PlayerInputProcessor processor))
                 return;
 

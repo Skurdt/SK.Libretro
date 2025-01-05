@@ -34,7 +34,6 @@ namespace SK.Libretro.Unity.Editor
         private SerializedProperty _raycastSourceProperty;
         private SerializedProperty _rendererProperty;
         private SerializedProperty _colliderProperty;
-        private SerializedProperty _viewerProperty;
         private SerializedProperty _settingsProperty;
         private SerializedProperty _coreNameProperty;
         private SerializedProperty _gameDirectoryProperty;
@@ -42,12 +41,11 @@ namespace SK.Libretro.Unity.Editor
 
         private void OnEnable()
         {
-            _cameraProperty        = serializedObject.FindProperty($"<{nameof(LibretroInstance.Camera)}>k__BackingField");
+            _cameraProperty        = serializedObject.FindProperty("_camera");
             _raycastLayerProperty  = serializedObject.FindProperty($"<{nameof(LibretroInstance.LightgunRaycastLayer)}>k__BackingField");
-            _raycastSourceProperty = serializedObject.FindProperty($"<{nameof(LibretroInstance.LightgunSource)}>k__BackingField");
+            _raycastSourceProperty = serializedObject.FindProperty("_lightgunRaycastSource");
             _rendererProperty      = serializedObject.FindProperty($"<{nameof(LibretroInstance.Renderer)}>k__BackingField");
             _colliderProperty      = serializedObject.FindProperty($"<{nameof(LibretroInstance.Collider)}>k__BackingField");
-            _viewerProperty        = serializedObject.FindProperty($"<{nameof(LibretroInstance.Viewer)}>k__BackingField");
             _settingsProperty      = serializedObject.FindProperty($"<{nameof(LibretroInstance.Settings)}>k__BackingField");
             _coreNameProperty      = serializedObject.FindProperty($"<{nameof(LibretroInstance.CoreName)}>k__BackingField");
             _gameDirectoryProperty = serializedObject.FindProperty($"<{nameof(LibretroInstance.GamesDirectory)}>k__BackingField");
@@ -63,7 +61,6 @@ namespace SK.Libretro.Unity.Editor
             _ = EditorGUILayout.PropertyField(_raycastSourceProperty);
             _ = EditorGUILayout.PropertyField(_rendererProperty);
             _ = EditorGUILayout.PropertyField(_colliderProperty);
-            _ = EditorGUILayout.PropertyField(_viewerProperty);
 
             GUILayout.Space(8f);
             _ = EditorGUILayout.PropertyField(_settingsProperty);

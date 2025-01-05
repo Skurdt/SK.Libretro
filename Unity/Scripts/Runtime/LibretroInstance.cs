@@ -31,19 +31,19 @@ namespace SK.Libretro.Unity
     [DisallowMultipleComponent]
     public sealed class LibretroInstance : MonoBehaviour
     {
-        [field: SerializeField] public Camera Camera { get; private set; }
-        [field: SerializeField, Layer] public int LightgunRaycastLayer { get; set; }
-        [field: SerializeField] public GameObject LightgunSource { get; set; }
-        [field: SerializeField] public Renderer Renderer { get; set; }
-        [field: SerializeField] public Collider Collider { get; set; }
-        [field: SerializeField] public Transform Viewer { get; set; }
-        [field: SerializeField] public InstanceSettings Settings { get; private set; }
-        [field: SerializeField] public string CoreName { get; private set; }
-        [field: SerializeField] public string GamesDirectory { get; private set; }
-        [field: SerializeField] public string[] GameNames { get; private set; }
+        [field: SerializeField, Layer] public int LightgunRaycastLayer { get; private set; }
+        [field: SerializeField] public Renderer Renderer               { get; private set; }
+        [field: SerializeField] public Collider Collider               { get; private set; }
+        [field: SerializeField] public InstanceSettings Settings       { get; private set; }
+        [field: SerializeField] public string CoreName                 { get; private set; }
+        [field: SerializeField] public string GamesDirectory           { get; private set; }
+        [field: SerializeField] public string[] GameNames              { get; private set; }
 
-        public event Action OnInstanceStarted;
-        public event Action OnInstanceStopped;
+        [SerializeField] private Camera _camera;
+        [SerializeField] private GameObject _lightgunRaycastSource;
+
+        public Action OnInstanceStarted { get; set; }
+        public Action OnInstanceStopped { get; set; }
 
         public bool Running => Bridge.Instance.Running;
 
@@ -71,14 +71,6 @@ namespace SK.Libretro.Unity
 
         public (Options, Options) Options => Bridge.Instance.Options;
 
-        public byte[] SaveMemory => Bridge.Instance.SaveMemory;
-
-        public byte[] RtcMemory => Bridge.Instance.RtcMemory;
-
-        public byte[] SystemMemory => Bridge.Instance.SystemMemory;
-
-        public byte[] VideoMemory => Bridge.Instance.VideoMemory;
-
         public Ray LightgunRay { get; private set; }
 
         private readonly Dictionary<int, uint> _inputDevices = new() {
@@ -92,22 +84,22 @@ namespace SK.Libretro.Unity
 
         private void Update()
         {
-            if (!Camera)
+            if (!_camera)
             {
                 LightgunRay = default;
                 return;
             }
 
-            if (!LightgunSource || !LightgunSource.activeSelf)
+            if (!_lightgunRaycastSource || !_lightgunRaycastSource.activeSelf)
             {
                 LightgunRay = Mouse.current is not null
-                            ? Camera.ScreenPointToRay(Mouse.current.position.value)
+                            ? _camera.ScreenPointToRay(Mouse.current.position.value)
                             : default;
                 return;
             }
 
-            Vector3 controllerPosition = LightgunSource.transform.position;
-            Vector3 controllerDirection = LightgunSource.transform.forward;
+            Vector3 controllerPosition = _lightgunRaycastSource.transform.position;
+            Vector3 controllerDirection = _lightgunRaycastSource.transform.forward;
             LightgunRay = new(controllerPosition, controllerDirection);
         }
 
@@ -138,7 +130,7 @@ namespace SK.Libretro.Unity
             if (!Collider)
                 Collider = GetComponent<Collider>();
 
-            Bridge.Instance.StartContent(this, CoreName, GamesDirectory, GameNames, OnInstanceStarted, OnInstanceStopped);
+            Bridge.Instance.StartContent(this);
         }
 
         public void PauseContent() => Bridge.Instance.PauseContent();
@@ -149,11 +141,11 @@ namespace SK.Libretro.Unity
 
         public void StopContent() => Bridge.Instance.StopContent();
 
-        public void AddPlayer(int index) => Bridge.Instance.AddPlayer(index);
+        public void AddPlayer(int port, int device) => Bridge.Instance.AddPlayer(port, device);
 
-        public void RemovePlayer(int index) => Bridge.Instance.RemovePlayer(index);
+        public void RemovePlayer(int port) => Bridge.Instance.RemovePlayer(port);
 
-        public uint GetControllerPortDevice(int port) => _inputDevices.ContainsKey(port) ? _inputDevices[port] : (uint)RETRO_DEVICE.JOYPAD;
+        public uint GetControllerPortDevice(int port) => _inputDevices.TryGetValue(port, out uint device) ? device : (uint)RETRO_DEVICE.JOYPAD;
 
         public void SetControllerPortDevice(uint port, uint id)
         {
@@ -174,5 +166,13 @@ namespace SK.Libretro.Unity
         public void LoadSRAM() => Bridge.Instance.LoadSRAM();
 
         public void SaveOptions(bool global) => Bridge.Instance.SaveOptions(global);
+
+        public ReadOnlySpan<byte> GetSaveMemory() => Bridge.Instance.GetSaveMemory();
+
+        public ReadOnlySpan<byte> GetRtcMemory() => Bridge.Instance.GetRtcMemory();
+
+        public ReadOnlySpan<byte> GetSystemMemory() => Bridge.Instance.GetSystemMemory();
+
+        public ReadOnlySpan<byte> GetVideoMemory() => Bridge.Instance.GetVideoMemory();
     }
 }

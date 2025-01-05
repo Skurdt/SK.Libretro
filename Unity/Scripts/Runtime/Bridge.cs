@@ -131,171 +131,6 @@ namespace SK.Libretro.Unity
             }
         }
 
-        private string CoreName
-        {
-            get
-            {
-                lock (_lock)
-                    return _coreName;
-            }
-
-            set
-            {
-                lock (_lock)
-                    _coreName = value;
-            }
-        }
-
-        private string GamesDirectory
-        {
-            get
-            {
-                lock (_lock)
-                    return _gamesDirectory;
-            }
-
-            set
-            {
-                lock (_lock)
-                    _gamesDirectory = value;
-            }
-        }
-
-        private string[] GameNames
-        {
-            get
-            {
-                lock (_lock)
-                    return _gameNames;
-            }
-
-            set
-            {
-                lock (_lock)
-                    _gameNames = value;
-            }
-        }
-
-        public bool ReadSaveMemory
-        {
-            get
-            {
-                lock (_lock)
-                    return _readSaveMemory;
-            }
-
-            set
-            {
-                lock (_lock)
-                    _readSaveMemory = value;
-            }
-        }
-
-        public bool ReadRtcMemory
-        {
-            get
-            {
-                lock (_lock)
-                    return _readRtcMemory;
-            }
-
-            set
-            {
-                lock (_lock)
-                    _readRtcMemory = value;
-            }
-        }
-
-        public bool ReadSystemMemory
-        {
-            get
-            {
-                lock (_lock)
-                    return _readSystemMemory;
-            }
-
-            set
-            {
-                lock (_lock)
-                    _readSystemMemory = value;
-            }
-        }
-
-        public bool ReadVideoMemory
-        {
-            get
-            {
-                lock (_lock)
-                    return _readVideoMemory;
-            }
-
-            set
-            {
-                lock (_lock)
-                    _readVideoMemory = value;
-            }
-        }
-
-        public byte[] SaveMemory
-        {
-            get
-            {
-                lock (_lock)
-                    return _saveMemory;
-            }
-
-            private set
-            {
-                lock (_lock)
-                    _saveMemory = value;
-            }
-        }
-
-        public byte[] RtcMemory
-        {
-            get
-            {
-                lock (_lock)
-                    return _rtcMemory;
-            }
-
-            private set
-            {
-                lock (_lock)
-                    _rtcMemory = value;
-            }
-        }
-
-        public byte[] SystemMemory
-        {
-            get
-            {
-                lock (_lock)
-                    return _systemMemory;
-            }
-
-            private set
-            {
-                lock (_lock)
-                    _systemMemory = value;
-            }
-        }
-
-        public byte[] VideoMemory
-        {
-            get
-            {
-                lock (_lock)
-                    return _videoMemory;
-            }
-
-            private set
-            {
-                lock (_lock)
-                    _videoMemory = value;
-            }
-        }
-
         public (Options, Options) Options
         {
             get
@@ -330,16 +165,16 @@ namespace SK.Libretro.Unity
 
         private const int DEFAULT_FASTFORWARD_FACTOR = 8;
 
-        private LibretroInstance InstanceComponent { get; set; }
-        private int ShaderTextureId                { get; set; }
-        private Material OriginalMaterial          { get; set; }
-
         private static readonly object _lock = new();
 
         private readonly string _mainDirectory;
         private readonly string _tempDirectory;
         private readonly ManualResetEventSlim _manualResetEvent;
         private readonly ConcurrentQueue<IBridgeCommand> _bridgeCommands;
+
+        private LibretroInstance _instanceComponent;
+        private int _shaderTextureId;
+        private Material _originalMaterial;
 
         private string _coreName;
         private string _gamesDirectory;
@@ -353,14 +188,6 @@ namespace SK.Libretro.Unity
         private bool _fastForward;
         private bool _rewind;
         private bool _inputEnabled;
-        private bool _readSaveMemory;
-        private bool _readRtcMemory;
-        private bool _readSystemMemory;
-        private bool _readVideoMemory;
-        private byte[] _saveMemory;
-        private byte[] _rtcMemory;
-        private byte[] _systemMemory;
-        private byte[] _videoMemory;
         private (Options, Options) _options;
         private bool _diskHandlerEnabled;
 
@@ -381,14 +208,9 @@ namespace SK.Libretro.Unity
             _fastForwardFactor = DEFAULT_FASTFORWARD_FACTOR;
         }
 
-        public void StartContent(LibretroInstance instanceComponent,
-                                 string coreName,
-                                 string gamesDirectory,
-                                 string[] gameNames,
-                                 Action instanceStartedCallback,
-                                 Action instanceStoppedCallback)
+        public void StartContent(LibretroInstance instanceComponent)
         {
-            if (string.IsNullOrWhiteSpace(coreName))
+            if (string.IsNullOrWhiteSpace(instanceComponent.CoreName))
             {
                 Debug.LogError("Core is not set");
                 return;
@@ -396,23 +218,19 @@ namespace SK.Libretro.Unity
 
             StopContent();
 
-            InstanceComponent = instanceComponent;
-            ShaderTextureId   = Shader.PropertyToID(InstanceComponent.Settings.ShaderTextureName);
-            OriginalMaterial  = instanceComponent.Renderer ? new(instanceComponent.Renderer.material) : null;
-            ReadSaveMemory    = instanceComponent.Settings.ReadSaveMemory;
-            ReadRtcMemory     = instanceComponent.Settings.ReadRtcMemory;
-            ReadSystemMemory  = instanceComponent.Settings.ReadSystemMemory;
-            ReadVideoMemory   = instanceComponent.Settings.ReadVideoMemory;
+            _instanceComponent = instanceComponent;
+            _shaderTextureId   = Shader.PropertyToID(_instanceComponent.Settings.ShaderTextureName);
+            _originalMaterial  = instanceComponent.Renderer ? new(instanceComponent.Renderer.material) : null;
 
-            CoreName                 = coreName;
-            GamesDirectory           = gamesDirectory;
-            GameNames                = gameNames;
-            _instanceStartedCallback = instanceStartedCallback;
-            _instanceStoppedCallback = instanceStoppedCallback;
+            _coreName                = instanceComponent.CoreName;
+            _gamesDirectory          = instanceComponent.GamesDirectory;
+            _gameNames               = instanceComponent.GameNames;
+            _instanceStartedCallback = instanceComponent.OnInstanceStarted;
+            _instanceStoppedCallback = instanceComponent.OnInstanceStopped;
 
-            _thread = new Thread(LibretroThread)
+            _thread = new(LibretroThread)
             {
-                Name         = $"LibretroThread_{CoreName}_{(GameNames.Length > 0 ? GameNames[0] : "nogame")}",
+                Name         = $"LibretroThread_{_coreName}_{(_gameNames.Length > 0 ? _gameNames[0] : "nogame")}",
                 IsBackground = true,
                 Priority     = System.Threading.ThreadPriority.Lowest
             };
@@ -451,7 +269,7 @@ namespace SK.Libretro.Unity
                     LedProcessor      = ledProcessor
                 };
 
-                if (!Wrapper.Instance.StartContent(wrapperSettings, CoreName, GamesDirectory, GameNames))
+                if (!Wrapper.Instance.StartContent(wrapperSettings, _coreName, _gamesDirectory, _gameNames))
                 {
                     Debug.LogError("Failed to start core/game combination");
                     return;
@@ -477,11 +295,6 @@ namespace SK.Libretro.Unity
                 Running = true;
                 while (Running)
                 {
-                    lock (_lock)
-                        while (_bridgeCommands.Count > 0)
-                            if (_bridgeCommands.TryDequeue(out IBridgeCommand command))
-                                command.Execute();
-
                     if (Paused)
                         _manualResetEvent.Wait();
 
@@ -501,16 +314,12 @@ namespace SK.Libretro.Unity
                     if ((accumulator += dt) >= targetFrameTime)
                     {
                         Wrapper.Instance.RunFrame();
-                        if (ReadSaveMemory)
-                            SaveMemory = Wrapper.Instance.MemoryHandler.GetSaveMemory().ToArray();
-                        if (ReadRtcMemory)
-                            RtcMemory = Wrapper.Instance.MemoryHandler.GetRtcMemory().ToArray();
-                        if (ReadSystemMemory)
-                            SystemMemory = Wrapper.Instance.MemoryHandler.GetSystemMemory().ToArray();
-                        if (ReadVideoMemory)
-                            VideoMemory = Wrapper.Instance.MemoryHandler.GetVideoMemory().ToArray();
                         accumulator = 0.0;
                     }
+
+                    lock (_lock)
+                        while (_bridgeCommands.TryDequeue(out IBridgeCommand command))
+                            command.Execute();
                 }
 
                 InvokeInstanceEvent(_instanceStoppedCallback);
@@ -526,6 +335,30 @@ namespace SK.Libretro.Unity
             {
                 Debug.LogException(e);
             }
+        }
+
+        public ReadOnlySpan<byte> GetSaveMemory()
+        {
+            lock (_lock)
+                return Wrapper.Instance.MemoryHandler.GetSaveMemory();
+        }
+
+        public ReadOnlySpan<byte> GetRtcMemory()
+        {
+            lock (_lock)
+                return Wrapper.Instance.MemoryHandler.GetRtcMemory();
+        }
+
+        public ReadOnlySpan<byte> GetSystemMemory()
+        {
+            lock (_lock)
+                return Wrapper.Instance.MemoryHandler.GetSystemMemory();
+        }
+
+        public ReadOnlySpan<byte> GetVideoMemory()
+        {
+            lock (_lock)
+                return Wrapper.Instance.MemoryHandler.GetVideoMemory();
         }
 
         public void PauseContent()
@@ -573,50 +406,52 @@ namespace SK.Libretro.Unity
             Running = false;
         }
 
-        public void AddPlayer(int index) => _bridgeCommands.Enqueue(new AddPlayerBridgeCommand(index));
+        public void AddPlayer(int port, int device)
+            => _bridgeCommands.Enqueue(new AddPlayerBridgeCommand(port, device));
 
-        public void RemovePlayer(int index) => _bridgeCommands.Enqueue(new RemovePlayerBridgeCommand(index));
+        public void RemovePlayer(int port)
+            => _bridgeCommands.Enqueue(new RemovePlayerBridgeCommand(port));
 
-        public void SetStateSlot(int slot) =>
-            _bridgeCommands.Enqueue(new SetStateSlotBridgeCommand(slot));
+        public void SetStateSlot(int slot)
+            => _bridgeCommands.Enqueue(new SetStateSlotBridgeCommand(slot));
 
-        public void SaveStateWithScreenshot() =>
-            _bridgeCommands.Enqueue(new SaveStateWithScreenshotBridgeCommand(TakeScreenshot));
+        public void SaveStateWithScreenshot()
+            => _bridgeCommands.Enqueue(new SaveStateWithScreenshotBridgeCommand(TakeScreenshot));
 
-        public void SaveStateWithoutScreenshot() =>
-            _bridgeCommands.Enqueue(new SaveStateWithoutScreenshotBridgeCommand());
+        public void SaveStateWithoutScreenshot()
+            => _bridgeCommands.Enqueue(new SaveStateWithoutScreenshotBridgeCommand());
 
-        public void LoadState() =>
-            _bridgeCommands.Enqueue(new LoadStateBridgeCommand());
+        public void LoadState()
+            => _bridgeCommands.Enqueue(new LoadStateBridgeCommand());
 
-        public void SetDiskIndex(int index) =>
-            _bridgeCommands.Enqueue(new SetDiskIndexBridgeCommand(GamesDirectory, GameNames, index));
+        public void SetDiskIndex(int index)
+            => _bridgeCommands.Enqueue(new SetDiskIndexBridgeCommand(_gamesDirectory, _gameNames, index));
 
-        public void SaveSRAM() =>
-            _bridgeCommands.Enqueue(new SaveSRAMBridgeCommand());
+        public void SaveSRAM()
+            => _bridgeCommands.Enqueue(new SaveSRAMBridgeCommand());
 
-        public void LoadSRAM() =>
-            _bridgeCommands.Enqueue(new LoadSRAMBridgeCommand());
+        public void LoadSRAM()
+            => _bridgeCommands.Enqueue(new LoadSRAMBridgeCommand());
 
-        public void SaveOptions(bool global) =>
-            _bridgeCommands.Enqueue(new SaveOptionsBridgeCommand(global));
+        public void SaveOptions(bool global)
+            => _bridgeCommands.Enqueue(new SaveOptionsBridgeCommand(global));
 
-        public void SetControllerPortDevice(uint port, uint device) =>
-            _bridgeCommands.Enqueue(new SetControllerPortDeviceBridgeCommand(port, device));
+        public void SetControllerPortDevice(uint port, uint device)
+            => _bridgeCommands.Enqueue(new SetControllerPortDeviceBridgeCommand(port, device));
 
         private void SetTexture(Texture texture)
         {
-            if (!Application.isPlaying || !texture || !InstanceComponent.Renderer)
+            if (!Application.isPlaying || !texture || !_instanceComponent.Renderer)
                 return;
 
             _texture = texture as Texture2D;
-            InstanceComponent.Renderer.material.SetTexture(ShaderTextureId, _texture);
+            _instanceComponent.Renderer.material.SetTexture(_shaderTextureId, _texture);
         }
 
         private void RestoreMaterial()
         {
-            if (InstanceComponent.Renderer && OriginalMaterial)
-                InstanceComponent.Renderer.material = OriginalMaterial;
+            if (_instanceComponent.Renderer && _originalMaterial)
+                _instanceComponent.Renderer.material = _originalMaterial;
         }
 
         private async void InvokeInstanceEvent(Action action)
@@ -631,8 +466,8 @@ namespace SK.Libretro.Unity
 
             ILogProcessor log           = GetLogProcessor();
             IGraphicsProcessor graphics = GetGraphicsProcessor();
-            IAudioProcessor audio       = GetAudioProcessor(InstanceComponent.transform);
-            IInputProcessor input       = GetInputProcessor(InstanceComponent.Settings.LeftStickBehaviour);
+            IAudioProcessor audio       = GetAudioProcessor(_instanceComponent.transform);
+            IInputProcessor input       = GetInputProcessor(_instanceComponent.Settings.LeftStickBehaviour);
             ILedProcessor led           = GetLedProcessor();
             return (log, graphics, audio, input, led);
         }

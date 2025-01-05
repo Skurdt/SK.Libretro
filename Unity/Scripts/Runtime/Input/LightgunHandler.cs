@@ -29,10 +29,12 @@ namespace SK.Libretro.Unity
 {
     internal sealed class LightgunHandler : LibretroInputActions.ILightgunActions
     {
-        public short Buttons => (short)_buttons;
         public short X       { get; private set; }
         public short Y       { get; private set; }
         public bool InScreen { get; private set; }
+
+        private const int RANGE_X = 0x7aa8;
+        private const int RANGE_Y = 0x7fff;
 
         private readonly LibretroInstance _libretroInstance;
         private readonly int _layerMask;
@@ -43,7 +45,7 @@ namespace SK.Libretro.Unity
         public LightgunHandler(LibretroInstance libretroInstance)
         {
             _libretroInstance = libretroInstance;
-            _layerMask        = LayerMask.GetMask(LayerMask.LayerToName(_libretroInstance.LightgunRaycastLayer));
+            _layerMask        = 1 << _libretroInstance.LightgunRaycastLayer;
         }
 
         public short IsButtonDown(RETRO_DEVICE_ID_LIGHTGUN button) => _buttons.IsBitSetAsShort((uint)button);
@@ -73,8 +75,8 @@ namespace SK.Libretro.Unity
                 return;
             }
 
-            X = (short)(math.remap(0f, 1f, -1f, 1f, _raycastHits[0].textureCoord.x) * 0x7fff);
-            Y = (short)(-math.remap(0f, 1f, -1f, 1f, _raycastHits[0].textureCoord.y) * 0x7fff);
+            X = (short)(math.remap(0f, 1f, -1f, 1f, _raycastHits[0].textureCoord.x) * RANGE_X);
+            Y = (short)(-math.remap(0f, 1f, -1f, 1f, _raycastHits[0].textureCoord.y) * RANGE_Y);
         }
 
         public void OnLightgunTrigger(InputAction.CallbackContext context)

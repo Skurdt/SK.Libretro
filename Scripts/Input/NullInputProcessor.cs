@@ -30,7 +30,7 @@ namespace SK.Libretro
 
         public void Dispose() { }
 
-        public void AddPlayer(int port) { }
+        public void AddPlayer(int port, int device) { }
         public void RemovePlayer(int port) { }
 
         public short JoypadButton(int port, RETRO_DEVICE_ID_JOYPAD button) => 0;

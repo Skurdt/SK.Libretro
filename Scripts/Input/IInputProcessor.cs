@@ -29,7 +29,7 @@ namespace SK.Libretro
     {
         LeftStickBehaviour LeftStickBehaviour { get; set; }
 
-        void AddPlayer(int port);
+        void AddPlayer(int port, int device);
         void RemovePlayer(int port);
 
         short JoypadButton(int port, RETRO_DEVICE_ID_JOYPAD button);
