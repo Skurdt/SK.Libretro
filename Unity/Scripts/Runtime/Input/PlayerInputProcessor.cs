@@ -32,43 +32,35 @@ namespace SK.Libretro.Unity
         [SerializeField] private LibretroInstanceVariable _libretroInstanceVariable;
 
         public JoypadHandler JoypadHandler     { get; private set; }
+        public AnalogHandler AnalogHandler     { get; private set; }
         public MouseHandler MouseHandler       { get; private set; }
         public KeyboardHandler KeyboardHandler { get; private set; }
         public LightgunHandler LightgunHandler { get; private set; }
-        public AnalogHandler AnalogHandler     { get; private set; }
         public PointerHandler PointerHandler   { get; private set; }
 
-        private LibretroInputActions _inputActions;
+        private PlayerInput _playerInput;
 
         public void Init(LeftStickBehaviour leftStickBehaviour)
         {
-            JoypadHandler   = new();
-            MouseHandler    = new();
-            KeyboardHandler = new();
-            LightgunHandler = new(_libretroInstanceVariable.Current);
-            AnalogHandler   = new(JoypadHandler, leftStickBehaviour);
-            PointerHandler  = new();
+            _playerInput = GetComponent<PlayerInput>();
 
-            _inputActions = new();
-            _inputActions.Joypad.SetCallbacks(JoypadHandler);
-            _inputActions.Mouse.SetCallbacks(MouseHandler);
-            _inputActions.Keyboard.SetCallbacks(KeyboardHandler);
-            _inputActions.Lightgun.SetCallbacks(LightgunHandler);
-            _inputActions.Analog.SetCallbacks(AnalogHandler);
-            _inputActions.Pointer.SetCallbacks(PointerHandler);
-            _inputActions.Enable();
+            JoypadHandler   = new(_playerInput.actions.FindActionMap("Joypad"));
+            AnalogHandler   = new(_playerInput.actions.FindActionMap("Analog"), JoypadHandler, leftStickBehaviour);
+            MouseHandler    = new(_playerInput.actions.FindActionMap("Mouse"));
+            KeyboardHandler = new(_playerInput.actions.FindActionMap("Keyboard"));
+            LightgunHandler = new(_playerInput.actions.FindActionMap("Lightgun"), _libretroInstanceVariable.Current);
+            PointerHandler  = new(_playerInput.actions.FindActionMap("Pointer"));
         }
 
         private void OnDestroy()
         {
-            _inputActions.Disable();
-            _inputActions.Joypad.RemoveCallbacks(JoypadHandler);
-            _inputActions.Mouse.RemoveCallbacks(MouseHandler);
-            _inputActions.Keyboard.RemoveCallbacks(KeyboardHandler);
-            _inputActions.Lightgun.RemoveCallbacks(LightgunHandler);
-            _inputActions.Analog.RemoveCallbacks(AnalogHandler);
-            _inputActions.Pointer.RemoveCallbacks(PointerHandler);
-            _inputActions.Dispose();
+            _playerInput.actions.Disable();
+            JoypadHandler.Dispose();
+            AnalogHandler.Dispose();
+            MouseHandler.Dispose();
+            KeyboardHandler.Dispose();
+            LightgunHandler.Dispose();
+            PointerHandler.Dispose();
         }
 
         private void Update()

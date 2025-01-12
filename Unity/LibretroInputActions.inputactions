@@ -6,7 +6,7 @@
             "id": "639a1fe9-28e1-41ea-a98f-20b729bf505d",
             "actions": [
                 {
-                    "name": "AnalogLeft",
+                    "name": "StickLeft",
                     "type": "Value",
                     "id": "aaed2d22-18ab-499b-938e-128babfb1990",
                     "expectedControlType": "Vector2",
@@ -15,7 +15,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "AnalogRight",
+                    "name": "StickRight",
                     "type": "Value",
                     "id": "33e61395-ed75-410b-8436-109b9a22c0d4",
                     "expectedControlType": "Vector2",
@@ -32,7 +32,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "AnalogLeft",
+                    "action": "StickLeft",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -43,7 +43,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "AnalogLeft",
+                    "action": "StickLeft",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -54,7 +54,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "AnalogLeft",
+                    "action": "StickLeft",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -65,7 +65,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "AnalogLeft",
+                    "action": "StickLeft",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -76,7 +76,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "AnalogLeft",
+                    "action": "StickLeft",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -87,7 +87,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "AnalogLeft",
+                    "action": "StickLeft",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -98,7 +98,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
-                    "action": "AnalogLeft",
+                    "action": "StickLeft",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -109,7 +109,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "AnalogRight",
+                    "action": "StickRight",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -120,7 +120,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "AnalogRight",
+                    "action": "StickRight",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -131,7 +131,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "AnalogRight",
+                    "action": "StickRight",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -142,7 +142,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "AnalogRight",
+                    "action": "StickRight",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -153,7 +153,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "AnalogRight",
+                    "action": "StickRight",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -164,7 +164,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "AnalogRight",
+                    "action": "StickRight",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -175,7 +175,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
-                    "action": "AnalogRight",
+                    "action": "StickRight",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -186,7 +186,7 @@
             "id": "02a123b2-5ff3-465c-81e5-5e9aa95a4bbc",
             "actions": [
                 {
-                    "name": "JoypadDPadUp",
+                    "name": "DPadUp",
                     "type": "Button",
                     "id": "6b508597-03b3-4b52-a7e8-152d0fe592e1",
                     "expectedControlType": "",
@@ -195,7 +195,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "JoypadDPadDown",
+                    "name": "DPadDown",
                     "type": "Button",
                     "id": "351e922a-189f-4a08-beb7-549d6c9ca3dc",
                     "expectedControlType": "",
@@ -204,7 +204,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "JoypadDPadLeft",
+                    "name": "DPadLeft",
                     "type": "Button",
                     "id": "e45e8c21-7373-42b5-945e-c275b51d2e3d",
                     "expectedControlType": "",
@@ -213,7 +213,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "JoypadDPadRight",
+                    "name": "DPadRight",
                     "type": "Button",
                     "id": "72a099aa-87d2-49da-9abd-630e402ce32d",
                     "expectedControlType": "",
@@ -222,7 +222,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "JoypadStart",
+                    "name": "ButtonStart",
                     "type": "Button",
                     "id": "0e9cf1ec-cc93-4259-8a9a-d5a80fd3f782",
                     "expectedControlType": "",
@@ -231,7 +231,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "JoypadSelect",
+                    "name": "ButtonSelect",
                     "type": "Button",
                     "id": "fd9fe054-84aa-4bea-9920-35414de0a532",
                     "expectedControlType": "",
@@ -240,7 +240,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "JoypadA",
+                    "name": "ButtonA",
                     "type": "Button",
                     "id": "2af78571-514e-46e5-8483-a8a8af08e8d6",
                     "expectedControlType": "",
@@ -249,7 +249,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "JoypadB",
+                    "name": "ButtonB",
                     "type": "Button",
                     "id": "99e31b1b-ac8e-4610-9c89-c29f459016bb",
                     "expectedControlType": "",
@@ -258,7 +258,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "JoypadX",
+                    "name": "ButtonX",
                     "type": "Button",
                     "id": "daf5dcd3-fa6c-4842-81cd-4d1c9db87cb2",
                     "expectedControlType": "",
@@ -267,7 +267,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "JoypadY",
+                    "name": "ButtonY",
                     "type": "Button",
                     "id": "36bb6b22-cda7-4655-91bf-dba143ddcc2e",
                     "expectedControlType": "",
@@ -276,7 +276,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "JoypadL1",
+                    "name": "ButtonL1",
                     "type": "Button",
                     "id": "02173eb5-ed46-4b73-9760-575ae58abbd3",
                     "expectedControlType": "",
@@ -285,7 +285,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "JoypadL2",
+                    "name": "ButtonL2",
                     "type": "Button",
                     "id": "fc06be35-276e-48ff-a6ab-41f4edad7b66",
                     "expectedControlType": "",
@@ -294,7 +294,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "JoypadL3",
+                    "name": "ButtonL3",
                     "type": "Button",
                     "id": "da5ab40a-f429-4346-8c65-3075a4f38358",
                     "expectedControlType": "",
@@ -303,7 +303,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "JoypadR1",
+                    "name": "ButtonR1",
                     "type": "Button",
                     "id": "85a8a3e9-9956-496d-b4f9-eb8816d4c855",
                     "expectedControlType": "",
@@ -312,7 +312,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "JoypadR2",
+                    "name": "ButtonR2",
                     "type": "Button",
                     "id": "2c302acc-4c5d-4ee9-95e5-e42211be49c1",
                     "expectedControlType": "",
@@ -321,7 +321,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "JoypadR3",
+                    "name": "ButtonR3",
                     "type": "Button",
                     "id": "9bf18c8e-3f22-4dac-8758-85b053ed627a",
                     "expectedControlType": "",
@@ -338,7 +338,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JoypadStart",
+                    "action": "ButtonStart",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -349,7 +349,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadStart",
+                    "action": "ButtonStart",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -360,7 +360,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JoypadSelect",
+                    "action": "ButtonSelect",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -371,7 +371,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadSelect",
+                    "action": "ButtonSelect",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -382,7 +382,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JoypadA",
+                    "action": "ButtonA",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -393,7 +393,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadA",
+                    "action": "ButtonA",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -404,7 +404,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
-                    "action": "JoypadA",
+                    "action": "ButtonA",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -415,7 +415,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JoypadB",
+                    "action": "ButtonB",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -426,7 +426,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadB",
+                    "action": "ButtonB",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -437,7 +437,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
-                    "action": "JoypadB",
+                    "action": "ButtonB",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -448,7 +448,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JoypadR3",
+                    "action": "ButtonR3",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -459,7 +459,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadR3",
+                    "action": "ButtonR3",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -470,7 +470,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JoypadR2",
+                    "action": "ButtonR2",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -481,7 +481,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadR2",
+                    "action": "ButtonR2",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -492,7 +492,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JoypadL2",
+                    "action": "ButtonL2",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -503,7 +503,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadL2",
+                    "action": "ButtonL2",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -514,7 +514,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JoypadL1",
+                    "action": "ButtonL1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -525,7 +525,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadL1",
+                    "action": "ButtonL1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -536,7 +536,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
-                    "action": "JoypadL1",
+                    "action": "ButtonL1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -547,7 +547,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JoypadY",
+                    "action": "ButtonY",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -558,7 +558,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadY",
+                    "action": "ButtonY",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -569,7 +569,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
-                    "action": "JoypadY",
+                    "action": "ButtonY",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -580,7 +580,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JoypadX",
+                    "action": "ButtonX",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -591,7 +591,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadX",
+                    "action": "ButtonX",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -602,7 +602,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
-                    "action": "JoypadX",
+                    "action": "ButtonX",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -613,7 +613,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JoypadL3",
+                    "action": "ButtonL3",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -624,7 +624,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadL3",
+                    "action": "ButtonL3",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -635,7 +635,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JoypadR1",
+                    "action": "ButtonR1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -646,7 +646,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadR1",
+                    "action": "ButtonR1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -657,7 +657,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
-                    "action": "JoypadR1",
+                    "action": "ButtonR1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -668,7 +668,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JoypadDPadUp",
+                    "action": "DPadUp",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -679,7 +679,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadDPadUp",
+                    "action": "DPadUp",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -690,7 +690,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Quest",
-                    "action": "JoypadDPadUp",
+                    "action": "DPadUp",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -701,7 +701,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Quest",
-                    "action": "JoypadDPadUp",
+                    "action": "DPadUp",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -712,7 +712,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JoypadDPadDown",
+                    "action": "DPadDown",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -723,7 +723,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadDPadDown",
+                    "action": "DPadDown",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -734,7 +734,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Quest",
-                    "action": "JoypadDPadDown",
+                    "action": "DPadDown",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -745,7 +745,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Quest",
-                    "action": "JoypadDPadDown",
+                    "action": "DPadDown",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -756,7 +756,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JoypadDPadLeft",
+                    "action": "DPadLeft",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -767,7 +767,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadDPadLeft",
+                    "action": "DPadLeft",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -778,7 +778,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Quest",
-                    "action": "JoypadDPadLeft",
+                    "action": "DPadLeft",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -789,7 +789,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Quest",
-                    "action": "JoypadDPadLeft",
+                    "action": "DPadLeft",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -800,7 +800,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JoypadDPadRight",
+                    "action": "DPadRight",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -811,7 +811,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "JoypadDPadRight",
+                    "action": "DPadRight",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -822,7 +822,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Quest",
-                    "action": "JoypadDPadRight",
+                    "action": "DPadRight",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -833,7 +833,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Quest",
-                    "action": "JoypadDPadRight",
+                    "action": "DPadRight",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -844,7 +844,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
-                    "action": "JoypadStart",
+                    "action": "ButtonStart",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -855,7 +855,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
-                    "action": "JoypadSelect",
+                    "action": "ButtonSelect",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -866,7 +866,7 @@
             "id": "3d318775-3fcb-4c97-838a-05af1b09ad09",
             "actions": [
                 {
-                    "name": "MousePositionDelta",
+                    "name": "PositionDelta",
                     "type": "Value",
                     "id": "9c9e4080-f4e9-4c80-a964-c8bf67ad08a7",
                     "expectedControlType": "Vector2",
@@ -875,7 +875,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "MouseWheelDelta",
+                    "name": "WheelDelta",
                     "type": "Value",
                     "id": "93e0d92c-3473-4ac4-9ea3-3bfa0f2dda26",
                     "expectedControlType": "Vector2",
@@ -884,7 +884,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "MouseLeftButton",
+                    "name": "ButtonLeft",
                     "type": "Button",
                     "id": "777e08bd-1386-4cf1-87a0-9dc63d32a856",
                     "expectedControlType": "",
@@ -893,7 +893,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "MouseRightButton",
+                    "name": "ButtonRight",
                     "type": "Button",
                     "id": "5eb02909-c2c4-421d-b129-8c59b9e6ef35",
                     "expectedControlType": "",
@@ -902,7 +902,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "MouseMiddleButton",
+                    "name": "ButtonMiddle",
                     "type": "Button",
                     "id": "5c2898bb-f8bc-40cf-af40-45bcda1d92b4",
                     "expectedControlType": "",
@@ -911,7 +911,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "MouseForwardButton",
+                    "name": "ButtonForward",
                     "type": "Button",
                     "id": "9c2390b8-01dc-425b-aa43-2c63e02b0098",
                     "expectedControlType": "",
@@ -920,7 +920,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "MouseBackButton",
+                    "name": "ButtonBack",
                     "type": "Button",
                     "id": "227fd3ad-3b12-4f49-8b4e-b736990fbfef",
                     "expectedControlType": "",
@@ -937,7 +937,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "MousePositionDelta",
+                    "action": "PositionDelta",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -948,7 +948,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "MouseWheelDelta",
+                    "action": "WheelDelta",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -959,7 +959,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "MouseLeftButton",
+                    "action": "ButtonLeft",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -970,7 +970,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "MouseRightButton",
+                    "action": "ButtonRight",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -981,7 +981,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "MouseMiddleButton",
+                    "action": "ButtonMiddle",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -992,7 +992,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "MouseForwardButton",
+                    "action": "ButtonForward",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1003,7 +1003,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "MouseBackButton",
+                    "action": "ButtonBack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -1014,7 +1014,7 @@
             "id": "ebc9561a-2286-4e75-ac42-f2f91f8330a4",
             "actions": [
                 {
-                    "name": "KeyboardKey",
+                    "name": "Key",
                     "type": "Button",
                     "id": "1725545d-552a-4759-bf7e-95bc6f205fb2",
                     "expectedControlType": "",
@@ -1031,24 +1031,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "KeyboardKey",
+                    "action": "Key",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
             ]
         },
         {
-            "name": "Pointer",
-            "id": "78ac98be-c79f-4812-8557-f04c8a5f4c65",
-            "actions": [],
-            "bindings": []
-        },
-        {
             "name": "Lightgun",
             "id": "9c6bd460-42dc-4c6a-96b1-c2e9a5aff822",
             "actions": [
                 {
-                    "name": "LightgunTrigger",
+                    "name": "ButtonTrigger",
                     "type": "Button",
                     "id": "c7429b7a-42d9-4162-89a8-691ac1a81bbe",
                     "expectedControlType": "",
@@ -1057,7 +1051,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "LightgunReload",
+                    "name": "ButtonReload",
                     "type": "Button",
                     "id": "e807daa4-7781-4125-85d1-ed6ebd14ad15",
                     "expectedControlType": "",
@@ -1066,7 +1060,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "LightgunA",
+                    "name": "ButtonA",
                     "type": "Button",
                     "id": "8586fb2c-cc9f-4d2c-85b9-247a6ea96bd9",
                     "expectedControlType": "",
@@ -1075,7 +1069,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "LightgunB",
+                    "name": "ButtonB",
                     "type": "Button",
                     "id": "a70b23e4-a817-434a-b698-3e06061a45b1",
                     "expectedControlType": "",
@@ -1084,7 +1078,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "LightgunStart",
+                    "name": "ButtonStart",
                     "type": "Button",
                     "id": "74b4cd99-208b-4fe3-a3d5-f0d342efe8c9",
                     "expectedControlType": "",
@@ -1093,7 +1087,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "LightgunSelect",
+                    "name": "ButtonSelect",
                     "type": "Button",
                     "id": "34ef0e4c-433f-4b0f-b04e-6125e558bfad",
                     "expectedControlType": "",
@@ -1102,7 +1096,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "LightgunC",
+                    "name": "ButtonC",
                     "type": "Button",
                     "id": "83ef0e1b-c81d-49d4-a5af-7b0cc2747650",
                     "expectedControlType": "",
@@ -1111,7 +1105,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "LightgunDPadUp",
+                    "name": "DPadUp",
                     "type": "Button",
                     "id": "e7e6e48d-b337-4ed4-b2e4-3053decb9ee2",
                     "expectedControlType": "",
@@ -1120,7 +1114,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "LightgunDPadDown",
+                    "name": "DPadDown",
                     "type": "Button",
                     "id": "7aa361df-d80f-449d-9762-aea7c7c9dc50",
                     "expectedControlType": "",
@@ -1129,7 +1123,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "LightgunDPadLeft",
+                    "name": "DPadLeft",
                     "type": "Button",
                     "id": "687f2144-dd6d-46f7-a678-3ddcd4dc3393",
                     "expectedControlType": "",
@@ -1138,7 +1132,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "LightgunDPadRight",
+                    "name": "DPadRight",
                     "type": "Button",
                     "id": "4b184c23-228a-4daf-acae-a0533e57e5f3",
                     "expectedControlType": "",
@@ -1155,7 +1149,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "LightgunTrigger",
+                    "action": "ButtonTrigger",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1166,7 +1160,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
-                    "action": "LightgunTrigger",
+                    "action": "ButtonTrigger",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1177,7 +1171,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "LightgunReload",
+                    "action": "ButtonReload",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1188,7 +1182,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
-                    "action": "LightgunReload",
+                    "action": "ButtonReload",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1199,7 +1193,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "LightgunA",
+                    "action": "ButtonA",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1210,7 +1204,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
-                    "action": "LightgunA",
+                    "action": "ButtonA",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1221,7 +1215,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "LightgunB",
+                    "action": "ButtonB",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1232,7 +1226,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
-                    "action": "LightgunB",
+                    "action": "ButtonB",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1243,7 +1237,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "LightgunStart",
+                    "action": "ButtonStart",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1254,7 +1248,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
-                    "action": "LightgunStart",
+                    "action": "ButtonStart",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1265,7 +1259,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "LightgunSelect",
+                    "action": "ButtonSelect",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1276,7 +1270,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Quest",
-                    "action": "LightgunSelect",
+                    "action": "ButtonSelect",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1287,7 +1281,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "LightgunC",
+                    "action": "ButtonC",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1298,7 +1292,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "LightgunDPadUp",
+                    "action": "DPadUp",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1309,7 +1303,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "LightgunDPadDown",
+                    "action": "DPadDown",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1320,7 +1314,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "LightgunDPadLeft",
+                    "action": "DPadLeft",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1331,11 +1325,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "LightgunDPadRight",
+                    "action": "DPadRight",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "Pointer",
+            "id": "78ac98be-c79f-4812-8557-f04c8a5f4c65",
+            "actions": [],
+            "bindings": []
         }
     ],
     "controlSchemes": [

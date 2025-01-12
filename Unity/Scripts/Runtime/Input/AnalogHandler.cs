@@ -27,7 +27,7 @@ using UnityEngine.InputSystem;
 
 namespace SK.Libretro.Unity
 {
-    internal sealed class AnalogHandler : LibretroInputActions.IAnalogActions
+    internal sealed class AnalogHandler : IDisposable
     {
         public LeftStickBehaviour LeftStickBehaviour { get; set; }
 
@@ -36,25 +36,27 @@ namespace SK.Libretro.Unity
         public short RightX { get; private set; }
         public short RightY { get; private set; }
 
-        private readonly JoypadHandler _joypad;
+        private readonly InputActionMap _inputActionMap;
+        private readonly JoypadHandler _joypadHandler;
 
-        public AnalogHandler(JoypadHandler joypad, LeftStickBehaviour leftStickBehaviour)
+        public AnalogHandler(InputActionMap inputActionMap, JoypadHandler joypadHandler, LeftStickBehaviour leftStickBehaviour)
         {
-            _joypad            = joypad;
+            _inputActionMap    = inputActionMap;
+            _joypadHandler     = joypadHandler;
             LeftStickBehaviour = leftStickBehaviour;
+
+            _inputActionMap.FindAction("StickLeft").performed  += StickLeftPerformedCallback;
+            _inputActionMap.FindAction("StickLeft").canceled   += StickLeftCanceledCallback;
+            _inputActionMap.FindAction("StickRight").performed += StickRightPerformedCallback;
+            _inputActionMap.FindAction("StickRight").canceled  += StickRightCanceledCallback;
+
+            _inputActionMap.Enable();
         }
 
-        public void OnAnalogLeft(InputAction.CallbackContext context)
+        public void Dispose() => _inputActionMap.Dispose();
+
+        private void StickLeftPerformedCallback(InputAction.CallbackContext context)
         {
-            if (!context.canceled)
-            {
-                (LeftX, LeftY) = (0, 0);
-                return;
-            }
-
-            if (!context.performed)
-                return;
-
             switch (LeftStickBehaviour)
             {
                 case LeftStickBehaviour.AnalogOnly:
@@ -62,36 +64,41 @@ namespace SK.Libretro.Unity
                     break;
                 case LeftStickBehaviour.DigitalOnly:
                 {
-                    (LeftX, LeftY) = (0, 0);
+                    (LeftX, LeftY)             = (0, 0);
                     (short leftX, short leftY) = context.ReadValue<Vector2>().ToShort(0x7fff);
-                    _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.UP, leftY > 0);
-                    _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.DOWN, leftY < 0);
-                    _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.LEFT, leftX < 0);
-                    _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.RIGHT, leftX > 0);
+                    _joypadHandler.SetButtonState(RETRO_DEVICE_ID_JOYPAD.UP, leftY > 0);
+                    _joypadHandler.SetButtonState(RETRO_DEVICE_ID_JOYPAD.DOWN, leftY < 0);
+                    _joypadHandler.SetButtonState(RETRO_DEVICE_ID_JOYPAD.LEFT, leftX < 0);
+                    _joypadHandler.SetButtonState(RETRO_DEVICE_ID_JOYPAD.RIGHT, leftX > 0);
                 }
                 break;
                 case LeftStickBehaviour.AnalogAndDigital:
                     (LeftX, LeftY) = context.ReadValue<Vector2>().ToShort(0x7fff);
-                    _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.UP, LeftY > 0);
-                    _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.DOWN, LeftY < 0);
-                    _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.LEFT, LeftX < 0);
-                    _joypad.SetButtonState(RETRO_DEVICE_ID_JOYPAD.RIGHT, LeftX > 0);
+                    _joypadHandler.SetButtonState(RETRO_DEVICE_ID_JOYPAD.UP, LeftY > 0);
+                    _joypadHandler.SetButtonState(RETRO_DEVICE_ID_JOYPAD.DOWN, LeftY < 0);
+                    _joypadHandler.SetButtonState(RETRO_DEVICE_ID_JOYPAD.LEFT, LeftX < 0);
+                    _joypadHandler.SetButtonState(RETRO_DEVICE_ID_JOYPAD.RIGHT, LeftX > 0);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        public void OnAnalogRight(InputAction.CallbackContext context)
+        private void StickLeftCanceledCallback(InputAction.CallbackContext context)
         {
-            if (!context.canceled)
-            {
-                (RightX, RightY) = (0, 0);
-                return;
-            }
+            (LeftX, LeftY) = (0, 0);
 
-            if (context.performed)
-                (RightX, RightY) = context.ReadValue<Vector2>().ToShort(0x7fff);
+            if (LeftStickBehaviour == LeftStickBehaviour.AnalogOnly)
+                return;
+
+            _joypadHandler.SetButtonState(RETRO_DEVICE_ID_JOYPAD.UP, false);
+            _joypadHandler.SetButtonState(RETRO_DEVICE_ID_JOYPAD.DOWN, false);
+            _joypadHandler.SetButtonState(RETRO_DEVICE_ID_JOYPAD.LEFT, false);
+            _joypadHandler.SetButtonState(RETRO_DEVICE_ID_JOYPAD.RIGHT, false);
         }
+
+        private void StickRightPerformedCallback(InputAction.CallbackContext context) => (RightX, RightY) = context.ReadValue<Vector2>().ToShort(0x7fff);
+        
+        private void StickRightCanceledCallback(InputAction.CallbackContext context) => (RightX, RightY) = (0, 0);
     }
 }

@@ -33,7 +33,6 @@ namespace SK.Libretro.Unity
         public LeftStickBehaviour LeftStickBehaviour { get; set; }
 
         private readonly Dictionary<int, PlayerInputProcessor> _controls = new();
-        private readonly List<InputDevice> _inputDevices = new();
 
         private PlayerInputManager _playerInputManager;
 
@@ -41,8 +40,6 @@ namespace SK.Libretro.Unity
 
         private void OnEnable()
         {
-            _inputDevices.AddRange(InputSystem.devices);
-
             _playerInputManager.onPlayerJoined += OnPlayerJoined;
             _playerInputManager.onPlayerLeft   += OnPlayerLeft;
         }
@@ -51,49 +48,6 @@ namespace SK.Libretro.Unity
         {
             _playerInputManager.onPlayerJoined -= OnPlayerJoined;
             _playerInputManager.onPlayerLeft   -= OnPlayerLeft;
-
-            _inputDevices.Clear();
-        }
-
-        public void Dispose()
-        {
-            foreach (int index in _controls.Keys)
-                RemovePlayer(index);
-            _controls.Clear();
-        }
-
-        public async void AddPlayer(int index, int device)
-        {
-            if (_controls.ContainsKey(index))
-                return;
-            
-            if (device < 0 || device >= _inputDevices.Count)
-                return;
-
-            await Awaitable.MainThreadAsync();
-
-            PlayerInput playerInput = _playerInputManager.JoinPlayer(playerIndex: index, pairWithDevice: _inputDevices[device]);
-            if (!playerInput.TryGetComponent(out PlayerInputProcessor processor))
-                return;
-
-            _controls.Add(playerInput.playerIndex, processor);
-            processor.Init(LeftStickBehaviour);
-            Debug.Log($"Player #{playerInput.playerIndex} joined ({playerInput.currentControlScheme}).");
-        }
-
-        public async void RemovePlayer(int index)
-        {
-            if (!_controls.TryGetValue(index, out PlayerInputProcessor processor))
-                return;
-
-            await Awaitable.MainThreadAsync();
-
-            if (!processor.TryGetComponent(out PlayerInput playerInput))
-                return;
-
-            Destroy(playerInput.gameObject);
-            _ = _controls.Remove(index);
-            Debug.Log($"Player #{playerInput.playerIndex} left ({playerInput.currentControlScheme}).");
         }
 
         public short JoypadButton(int port, RETRO_DEVICE_ID_JOYPAD button) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.JoypadHandler.IsButtonDown(button) : (short)0;
@@ -127,6 +81,17 @@ namespace SK.Libretro.Unity
         {
             playerInput.onDeviceLost     += OnDeviceLost;
             playerInput.onDeviceRegained += OnDeviceRegained;
+
+            if (_controls.ContainsKey(playerInput.playerIndex))
+                return;
+
+            if (!playerInput.TryGetComponent(out PlayerInputProcessor processor))
+                return;
+
+            processor.Init(LeftStickBehaviour);
+
+            _controls.Add(playerInput.playerIndex, processor);
+            Debug.Log($"Player #{playerInput.playerIndex} joined ({playerInput.currentControlScheme}).");
         }
 
         private void OnPlayerLeft(PlayerInput playerInput)

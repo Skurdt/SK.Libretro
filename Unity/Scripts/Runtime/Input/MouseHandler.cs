@@ -21,61 +21,60 @@
  * SOFTWARE. */
 
 using SK.Libretro.Header;
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace SK.Libretro.Unity
 {
-    internal sealed class MouseHandler : LibretroInputActions.IMouseActions
+    internal sealed class MouseHandler : IDisposable
     {
         public short DeltaX { get; private set; }
         public short DeltaY { get; private set; }
         public short Wheel { get; private set; }
 
+        private readonly InputActionMap _inputActionMap;
+
         private uint _buttons;
+
+        public MouseHandler(InputActionMap inputActionMap)
+        {
+            _inputActionMap = inputActionMap;
+
+            _inputActionMap.FindAction("PositionDelta").performed += PositionDeltaCallback;
+            _inputActionMap.FindAction("PositionDelta").canceled  += PositionDeltaCallback;
+            _inputActionMap.FindAction("WheelDelta").performed    += WheelDeltaCallback;
+            _inputActionMap.FindAction("WheelDelta").canceled     += WheelDeltaCallback;
+            _inputActionMap.FindAction("ButtonLeft").started      += ButtonLeftCallback;
+            _inputActionMap.FindAction("ButtonLeft").canceled     += ButtonLeftCallback;
+            _inputActionMap.FindAction("ButtonRight").started     += ButtonRightCallback;
+            _inputActionMap.FindAction("ButtonRight").canceled    += ButtonRightCallback;
+            _inputActionMap.FindAction("ButtonMiddle").started    += ButtonMiddleCallback;
+            _inputActionMap.FindAction("ButtonMiddle").canceled   += ButtonMiddleCallback;
+            _inputActionMap.FindAction("ButtonForward").started   += ButtonForwardCallback;
+            _inputActionMap.FindAction("ButtonForward").canceled  += ButtonForwardCallback;
+            _inputActionMap.FindAction("ButtonBack").started      += ButtonBackCallback;
+            _inputActionMap.FindAction("ButtonBack").canceled     += ButtonBackCallback;
+
+            _inputActionMap.Enable();
+        }
+
+        public void Dispose() => _inputActionMap.Dispose();
 
         public short IsButtonDown(RETRO_DEVICE_ID_MOUSE button) => _buttons.IsBitSetAsShort((uint)button);
 
-        public void OnMousePositionDelta(InputAction.CallbackContext context)
-        {
-            if (context.performed || context.canceled)
-                (DeltaX, DeltaY) = context.ReadValue<Vector2>().ToShort();
-        }
+        private void PositionDeltaCallback(InputAction.CallbackContext context) => (DeltaX, DeltaY) = context.ReadValue<Vector2>().ToShort();
 
-        public void OnMouseWheelDelta(InputAction.CallbackContext context)
-        {
-            if (context.performed || context.canceled)
-                Wheel = context.ReadValue<Vector2>().y.ToShort();
-        }
+        private void WheelDeltaCallback(InputAction.CallbackContext context) => Wheel = context.ReadValue<Vector2>().y.ToShort();
 
-        public void OnMouseLeftButton(InputAction.CallbackContext context)
-        {
-            if (context.started || context.canceled)
-                _buttons.ToggleBit((uint)RETRO_DEVICE_ID_MOUSE.LEFT);
-        }
+        private void ButtonLeftCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_MOUSE.LEFT);
 
-        public void OnMouseRightButton(InputAction.CallbackContext context)
-        {
-            if (context.started || context.canceled)
-                _buttons.ToggleBit((uint)RETRO_DEVICE_ID_MOUSE.RIGHT);
-        }
+        private void ButtonRightCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_MOUSE.RIGHT);
 
-        public void OnMouseMiddleButton(InputAction.CallbackContext context)
-        {
-            if (context.started || context.canceled)
-                _buttons.ToggleBit((uint)RETRO_DEVICE_ID_MOUSE.MIDDLE);
-        }
+        private void ButtonMiddleCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_MOUSE.MIDDLE);
 
-        public void OnMouseForwardButton(InputAction.CallbackContext context)
-        {
-            if (context.started || context.canceled)
-                _buttons.ToggleBit((uint)RETRO_DEVICE_ID_MOUSE.BUTTON_4);
-        }
+        private void ButtonForwardCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_MOUSE.BUTTON_4);
 
-        public void OnMouseBackButton(InputAction.CallbackContext context)
-        {
-            if (context.started || context.canceled)
-                _buttons.ToggleBit((uint)RETRO_DEVICE_ID_MOUSE.BUTTON_5);
-        }
+        private void ButtonBackCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_MOUSE.BUTTON_5);
     }
 }

@@ -108,8 +108,6 @@ namespace SK.Libretro.Unity
             CoreName       = coreName;
             GamesDirectory = gamesDirectory;
             GameNames      = gameNames;
-
-            Settings ??= new();
         }
 
         public void DeInitialize()
@@ -140,10 +138,6 @@ namespace SK.Libretro.Unity
         public void ResetContent() => Bridge.Instance.ResetContent();
 
         public void StopContent() => Bridge.Instance.StopContent();
-
-        public void AddPlayer(int port, int device) => Bridge.Instance.AddPlayer(port, device);
-
-        public void RemovePlayer(int port) => Bridge.Instance.RemovePlayer(port);
 
         public uint GetControllerPortDevice(int port) => _inputDevices.TryGetValue(port, out uint device) ? device : (uint)RETRO_DEVICE.JOYPAD;
 

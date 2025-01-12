@@ -85,18 +85,6 @@ namespace SK.Libretro.Unity
                 Current.StopContent();
         }
 
-        public void AddPlayer(int port, int device)
-        {
-            if (Current)
-                Current.AddPlayer(port, device);
-        }
-
-        public void RemovePlayer(int index)
-        {
-            if (Current)
-                Current.RemovePlayer(index);
-        }
-
         public void SaveState(int stateSlot)
         {
             if (!Current)

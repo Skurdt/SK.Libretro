@@ -163,7 +163,6 @@ namespace SK.Libretro
             Core.Dispose();
 
             GraphicsHandler.Dispose();
-            InputHandler.Dispose();
             AudioHandler.Dispose();
             VFSHandler.Dispose();
 

@@ -20,13 +20,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
+using System;
+using UnityEngine.InputSystem;
+
 namespace SK.Libretro.Unity
 {
-    internal sealed class PointerHandler : LibretroInputActions.IPointerActions
+    internal sealed class PointerHandler : IDisposable
     {
         public short X       { get; private set; }
         public short Y       { get; private set; }
         public short Pressed { get; private set; }
         public short Count   { get; private set; }
+
+        private readonly InputActionMap _inputActionMap;
+
+        public PointerHandler(InputActionMap inputActionMap)
+        {
+            _inputActionMap = inputActionMap;
+
+            _inputActionMap.Enable();
+        }
+
+        public void Dispose() => _inputActionMap.Dispose();
     }
 }

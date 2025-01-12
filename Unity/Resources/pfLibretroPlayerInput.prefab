@@ -492,7 +492,7 @@ MonoBehaviour:
     m_ActionId: d313664d-baef-43df-ab01-2001f9cf7cc8
     m_ActionName: 'RetroPad/LightgunDpadRight[/Keyboard/d]'
   m_NeverAutoSwitchControlSchemes: 1
-  m_DefaultControlScheme: Keyboard&Mouse
+  m_DefaultControlScheme: 
   m_DefaultActionMap: 02a123b2-5ff3-465c-81e5-5e9aa95a4bbc
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}

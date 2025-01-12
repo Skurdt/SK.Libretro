@@ -406,12 +406,6 @@ namespace SK.Libretro.Unity
             Running = false;
         }
 
-        public void AddPlayer(int port, int device)
-            => _bridgeCommands.Enqueue(new AddPlayerBridgeCommand(port, device));
-
-        public void RemovePlayer(int port)
-            => _bridgeCommands.Enqueue(new RemovePlayerBridgeCommand(port));
-
         public void SetStateSlot(int slot)
             => _bridgeCommands.Enqueue(new SetStateSlotBridgeCommand(slot));
 

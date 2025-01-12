@@ -21,19 +21,34 @@
  * SOFTWARE. */
 
 using SK.Libretro.Header;
+using System;
 using UnityEngine.InputSystem;
 
 namespace SK.Libretro.Unity
 {
-    internal sealed class KeyboardHandler : LibretroInputActions.IKeyboardActions
+    internal sealed class KeyboardHandler : IDisposable
     {
         //private const uint NUM_KEYBOARD_KEYS = 320;
 
+        private readonly InputActionMap _inputActionMap;
+
         private uint _keys;
+
+        public KeyboardHandler(InputActionMap inputActionMap)
+        {
+            _inputActionMap = inputActionMap;
+
+            _inputActionMap.FindAction("Key").started  += KeyCallback;
+            _inputActionMap.FindAction("Key").canceled += KeyCallback;
+
+            _inputActionMap.Enable();
+        }
+
+        public void Dispose() => _inputActionMap.Dispose();
 
         public short IsKeyDown(retro_key key) => _keys.IsBitSetAsShort((uint)key);
 
-        public void OnKeyboardKey(InputAction.CallbackContext context) { }
+        private void KeyCallback(InputAction.CallbackContext context) { }
 
         public void Update()
         {
