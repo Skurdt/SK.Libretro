@@ -31,13 +31,13 @@ namespace SK.Libretro.Unity
     [DisallowMultipleComponent]
     public sealed class LibretroInstance : MonoBehaviour
     {
-        [field: SerializeField, Layer] public int LightgunRaycastLayer { get; private set; }
-        [field: SerializeField] public Renderer Renderer               { get; private set; }
-        [field: SerializeField] public Collider Collider               { get; private set; }
-        [field: SerializeField] public InstanceSettings Settings       { get; private set; }
-        [field: SerializeField] public string CoreName                 { get; private set; }
-        [field: SerializeField] public string GamesDirectory           { get; private set; }
-        [field: SerializeField] public string[] GameNames              { get; private set; }
+        [field: SerializeField, Layer] public int LightgunRaycastLayer { get; set; }
+        [field: SerializeField] public Renderer Renderer               { get; set; }
+        [field: SerializeField] public Collider Collider               { get; set; }
+        [field: SerializeField] public InstanceSettings Settings       { get; set; }
+        [field: SerializeField] public string CoreName                 { get; set; }
+        [field: SerializeField] public string GamesDirectory           { get; set; }
+        [field: SerializeField] public string[] GameNames              { get; set; }
 
         [SerializeField] private Camera _camera;
         [SerializeField] private GameObject _lightgunRaycastSource;

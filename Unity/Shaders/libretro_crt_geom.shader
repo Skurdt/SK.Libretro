@@ -4,27 +4,64 @@ Shader "Unlit/libretro_crt_geom"
     {
         [MainTexture] _MainTex ("MainTex", 2D) = "black" {}
 
-        CRTgamma ("Target Gamma", Float) = 2.4
-        monitorgamma ("Monitor Gamma", Float) = 2.2
-        d ("Distance", Float) = 1.5
+        CRTgamma ("Target Gamma", Range (0.1, 5.0)) = 2.4
+        monitorgamma ("Monitor Gamma", Range (0.1, 5.0)) = 2.2
+        d ("Distance", Range (0.1, 3.0)) = 1.5
         [Toggle(ENABLE_CURVATURE)] _Curvature("Curvature", Float) = 1.0
-        R ("Curvature Radius", Float) = 2.0
-        cornersize ("Corner Size", Float) = 0.03
-        cornersmooth ("Corner Smoothness", Float) = 1000.0
-        x_tilt ("Horizontal Tilt", Float) = 0.0
-        y_tilt ("Vertical Tilt", Float) = 0.0
-        overscan_x ("Horiz. Overscan %", Float) = 100.0
-        overscan_y ("Vert. Overscan %", Float) = 100.0
-        DOTMASK ("Dot Mask Toggle", Float) = 0.3
-        SHARPER ("Sharpness", Float) = 1.0
-        scanline_weight ("Scanline Weight", Float) = 0.3
+        R ("Curvature Radius", Range (0.1, 10.0)) = 2.0
+        cornersize ("Corner Size", Range (0.001, 1.0)) = 0.03
+        cornersmooth ("Corner Smoothness", Range (80.0, 2000.0)) = 1000.0
+        x_tilt ("Horizontal Tilt", Range (-0.5, 0.5)) = 0.0
+        y_tilt ("Vertical Tilt", Range (-0.5, 0.5)) = 0.0
+        overscan_x ("Horiz. Overscan %", Range (-125.0, 125.0)) = 100.0
+        overscan_y ("Vert. Overscan %", Range (-125.0, 125.0)) = 100.0
+        DOTMASK ("Dot Mask Toggle", Range (0.0, 1.0)) = 0.3
+        SHARPER ("Sharpness", Range (1.0, 3.0)) = 1.0
+        scanline_weight ("Scanline Weight", Range (0.1, 0.5)) = 0.3
         lum ("Luminance Boost", Float) = 0.0
         [Toggle(ENABLE_INTERLACING)] _Interlacing ("Interlacing", Float) = 1.0
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { "RenderType"="Opaque" "Queue"="Geometry" }
         LOD 100
+
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags { "LightMode" = "ShadowCaster" }
+            ZWrite On
+            ColorMask 0
+
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag_shadow
+
+            #include "UnityCG.cginc"
+
+            struct appdata_shadow
+            {
+                float4 vertex : POSITION;
+            };
+
+            struct v2f_shadow
+            {
+                float4 pos : SV_POSITION;
+            };
+
+            v2f_shadow vert(appdata_shadow v)
+            {
+                v2f_shadow o;
+                o.pos = UnityObjectToClipPos(v.vertex);
+                return o;
+            }
+
+            fixed4 frag_shadow(v2f_shadow i) : SV_Target
+            {
+                return fixed4(0, 0, 0, 1);
+            }
+            ENDHLSL
+        }
 
         Pass
         {
