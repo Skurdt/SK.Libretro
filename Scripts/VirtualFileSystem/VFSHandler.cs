@@ -34,6 +34,7 @@ namespace SK.Libretro
 
         private readonly Dictionary<IntPtr, FileStream> _files = new();
 
+#if ENABLE_IL2CPP
         private static readonly retro_vfs_get_path_t _getPath              = GetPath;
         private static readonly retro_vfs_open_t _open                     = Open;
         private static readonly retro_vfs_close_t _close                   = Close;
@@ -45,7 +46,8 @@ namespace SK.Libretro
         private static readonly retro_vfs_flush_t _flush                   = Flush;
         private static readonly retro_vfs_remove_t _remove                 = Remove;  
         private static readonly retro_vfs_rename_t _rename                 = Rename;  
-        private static readonly retro_vfs_truncate_t _truncate             = Truncate;      
+        private static readonly retro_vfs_truncate_t _truncate             = Truncate;
+
         //private static readonly retro_vfs_stat_t _stat                     = Stat;
         //private static readonly retro_vfs_mkdir_t _mkDir                   = MkDir;
         //private static readonly retro_vfs_opendir_t _openDir               = OpenDir;    
@@ -53,9 +55,57 @@ namespace SK.Libretro
         //private static readonly retro_vfs_dirent_get_name_t _direntGetName = DirentGetName;                  
         //private static readonly retro_vfs_dirent_is_dir_t _direntIsDir     = DirentIsDir;              
         //private static readonly retro_vfs_closedir_t _closeDir             = CloseDir;      
+#else
+        private readonly Wrapper _wrapper;
 
+        private readonly retro_vfs_get_path_t _getPath;
+        private readonly retro_vfs_open_t _open;
+        private readonly retro_vfs_close_t _close;
+        private readonly retro_vfs_size_t _size;
+        private readonly retro_vfs_tell_t _tell;
+        private readonly retro_vfs_seek_t _seek;
+        private readonly retro_vfs_read_t _read;
+        private readonly retro_vfs_write_t _write;
+        private readonly retro_vfs_flush_t _flush;
+        private readonly retro_vfs_remove_t _remove;  
+        private readonly retro_vfs_rename_t _rename;  
+        private readonly retro_vfs_truncate_t _truncate;
+        //private readonly retro_vfs_stat_t _stat;
+        //private readonly retro_vfs_mkdir_t _mkDir;
+        //private readonly retro_vfs_opendir_t _openDir;    
+        //private readonly retro_vfs_readdir_t _readDir;    
+        //private readonly retro_vfs_dirent_get_name_t _direntGetName;                  
+        //private readonly retro_vfs_dirent_is_dir_t _direntIsDir;              
+        //private readonly retro_vfs_closedir_t _closeDir;      
+#endif
         private retro_vfs_interface _interface;
         private IntPtr _interfacePtr;
+
+        public VFSHandler(Wrapper wrapper)
+        {
+#if !ENABLE_IL2CPP
+            _wrapper        = wrapper;
+            _getPath        = GetPath;
+            _open           = Open;
+            _close          = Close;
+            _size           = Size;
+            _tell           = Tell;
+            _seek           = Seek;
+            _read           = Read;
+            _write          = Write;
+            _flush          = Flush;
+            _remove         = Remove;  
+            _rename         = Rename;  
+            _truncate       = Truncate;
+            //_stat           = Stat;
+            //_mkDir          = MkDir;
+            //_openDir        = OpenDir;    
+            //_readDir        = ReadDir;    
+            //_direntGetName  = DirentGetName;                  
+            //_direntIsDir    = DirentIsDir;              
+            //_closeDir       = CloseDir;
+#endif
+        }
 
         public void Dispose()
         {
@@ -117,22 +167,38 @@ namespace SK.Libretro
             return true;
         }
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_vfs_get_path_t))]
         private static string GetPath(ref retro_vfs_file_handle stream)
-            => Wrapper.Instance.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream) ? fileStream.Name : "";
+            => Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper wrapper)
+             ? wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream) ? fileStream.Name : ""
+             : "";
+#else
+        private string GetPath(ref retro_vfs_file_handle stream)
+            => _wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream) ? fileStream.Name : "";
+#endif
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_vfs_open_t))]
         private static IntPtr Open(string path, uint mode, uint hints)
         {
             try
             {
+                if (!Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper _wrapper))
+                    return IntPtr.Zero;
+#else
+        private IntPtr Open(string path, uint mode, uint hints)
+        {
+            try
+            {
+#endif
                 FileMode fileMode = (mode & (uint)RETRO_VFS_FILE_ACCESS.UPDATE_EXISTING) == (uint)RETRO_VFS_FILE_ACCESS.UPDATE_EXISTING
                                   ? FileMode.Append
                                   : (mode & (uint)RETRO_VFS_FILE_ACCESS.READ_WRITE) == (uint)RETRO_VFS_FILE_ACCESS.READ_WRITE ? FileMode.Create : FileMode.Open;
 
                 FileStream stream = File.Open(path, fileMode);
                 IntPtr handle = stream.SafeFileHandle.DangerousGetHandle();
-                Wrapper.Instance.VFSHandler._files.Add(handle, stream);
+                _wrapper.VFSHandler._files.Add(handle, stream);
                 return handle;
             }
             catch
@@ -141,15 +207,24 @@ namespace SK.Libretro
             }
         }
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_vfs_close_t))]
         private static int Close(ref retro_vfs_file_handle stream)
         {
             try
             {
-                if (!Wrapper.Instance.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
+                if (!Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper _wrapper))
+                    return -1;
+#else
+        private int Close(ref retro_vfs_file_handle stream)
+        {
+            try
+            {
+#endif
+                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
                     return -1;
 
-                _ = Wrapper.Instance.VFSHandler._files.Remove(stream.handle);
+                _ = _wrapper.VFSHandler._files.Remove(stream.handle);
                 fileStream.Close();
                 fileStream.Dispose();
                 return 0;
@@ -160,23 +235,44 @@ namespace SK.Libretro
             }
         }
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_vfs_size_t))]
         private static long Size(ref retro_vfs_file_handle stream)
-            => Wrapper.Instance.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream) ? fileStream.Length : -1;
+            => Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper wrapper)
+             ? wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream) ? fileStream.Length : -1
+             : -1;
+#else
+        private long Size(ref retro_vfs_file_handle stream) => _wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream) ? fileStream.Length : -1;
+#endif
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_vfs_tell_t))]
         private static long Tell(ref retro_vfs_file_handle stream)
-            => Wrapper.Instance.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream) ? fileStream.Position : -1;
+            => Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper wrapper)
+             ? wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream) ? fileStream.Position : -1
+             : -1;
+#else
+        private long Tell(ref retro_vfs_file_handle stream) => _wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream) ? fileStream.Position : -1;
+#endif
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_vfs_seek_t))]
         private static long Seek(ref retro_vfs_file_handle stream, long offset, int seek_position)
         {
             try
             {
+                if (!Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper _wrapper))
+                    return -1;
+#else
+        private long Seek(ref retro_vfs_file_handle stream, long offset, int seek_position)
+        {
+            try
+            {
+#endif
                 if (seek_position is < (int)RETRO_VFS_SEEK_POSITION.START or > (int)RETRO_VFS_SEEK_POSITION.END)
                     return -1;
 
-                if (!Wrapper.Instance.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
+                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
                     return -1;
 
                 SeekOrigin seekOrigin = seek_position switch
@@ -195,15 +291,24 @@ namespace SK.Libretro
             }
         }
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_vfs_read_t))]
         private static long Read(ref retro_vfs_file_handle stream, IntPtr s, long len)
         {
             try
             {
+                if (!Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper _wrapper))
+                    return -1;
+#else
+        private long Read(ref retro_vfs_file_handle stream, IntPtr s, long len)
+        {
+            try
+            {
+#endif
                 if (len > int.MaxValue)
                     return -1;
 
-                if (!Wrapper.Instance.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
+                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
                     return -1;
 
                 byte[] data = new byte[len];
@@ -217,15 +322,24 @@ namespace SK.Libretro
             }
         }
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_vfs_write_t))]
         private static long Write(ref retro_vfs_file_handle stream, IntPtr s, long len)
         {
             try
             {
+                if (!Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper _wrapper))
+                    return -1;
+#else
+        private long Write(ref retro_vfs_file_handle stream, IntPtr s, long len)
+        {
+            try
+            {
+#endif
                 if (len > int.MaxValue)
                     return -1;
 
-                if (!Wrapper.Instance.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
+                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
                     return -1;
 
                 byte[] data = new byte[len];
@@ -239,12 +353,21 @@ namespace SK.Libretro
             }
         }
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_vfs_flush_t))]
         private static int Flush(ref retro_vfs_file_handle stream)
         {
             try
             {
-                if (!Wrapper.Instance.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
+                if (!Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper _wrapper))
+                    return -1;
+#else
+        private int Flush(ref retro_vfs_file_handle stream)
+        {
+            try
+            {
+#endif
+                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
                     return -1;
 
                 fileStream.Flush();
@@ -256,8 +379,12 @@ namespace SK.Libretro
             }
         }
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_vfs_remove_t))]
         private static int Remove(string path)
+#else
+        private int Remove(string path)
+#endif
         {
             try
             {
@@ -270,8 +397,12 @@ namespace SK.Libretro
             }
         }
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_vfs_rename_t))]
         private static int Rename(string old_path, string new_path)
+#else
+        private int Rename(string old_path, string new_path)
+#endif
         {
             try
             {
@@ -284,12 +415,21 @@ namespace SK.Libretro
             }
         }
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_vfs_truncate_t))]
         private static long Truncate(ref retro_vfs_file_handle stream, long length)
         {
             try
             {
-                if (!Wrapper.Instance.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
+                if (!Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper _wrapper))
+                    return -1;
+#else
+        private long Truncate(ref retro_vfs_file_handle stream, long length)
+        {
+            try
+            {
+#endif
+                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
                     return -1;
 
                 fileStream.SetLength(length);

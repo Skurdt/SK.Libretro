@@ -26,13 +26,18 @@ namespace SK.Libretro.Unity
 {
     internal readonly struct SaveStateWithScreenshotBridgeCommand : IBridgeCommand
     {
+        private readonly Wrapper _wrapper;
         private readonly Action<string> _takeScreenshotFunc;
 
-        public SaveStateWithScreenshotBridgeCommand(Action<string> takeScreenshotFunc) => _takeScreenshotFunc = takeScreenshotFunc;
+        public SaveStateWithScreenshotBridgeCommand(Wrapper wrapper, Action<string> takeScreenshotFunc)
+        {
+            _wrapper            = wrapper;
+            _takeScreenshotFunc = takeScreenshotFunc;
+        }
 
         public void Execute()
         {
-            if (Wrapper.Instance.SerializationHandler.SaveStateToDisk(out string screenshotPath))
+            if (_wrapper.SerializationHandler.SaveStateToDisk(out string screenshotPath))
                 _takeScreenshotFunc(screenshotPath);
         }
     }

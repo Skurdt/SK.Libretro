@@ -33,6 +33,8 @@ namespace SK.Libretro
 
         public bool Enabled { get; set; }
 
+        private readonly Wrapper _wrapper;
+
         private retro_set_eject_state_t _set_eject_state;
         private retro_get_eject_state_t _get_eject_state;
         private retro_get_image_index_t _get_image_index;
@@ -43,6 +45,8 @@ namespace SK.Libretro
         private retro_set_initial_image_t _set_initial_image;
         private retro_get_image_path_t _get_image_path;
         private retro_get_image_label_t _get_image_label;
+
+        public DiskHandler(Wrapper wrapper) => _wrapper = wrapper;
 
         public bool SetEjectState(bool ejected) => _set_eject_state(ejected);
 
@@ -60,7 +64,7 @@ namespace SK.Libretro
             if (!_set_eject_state(true))
                 return false;
 
-            foreach (string extension in Wrapper.Instance.Core.SystemInfo.ValidExtensions)
+            foreach (string extension in _wrapper.Core.SystemInfo.ValidExtensions)
             {
                 try
                 {
@@ -68,8 +72,8 @@ namespace SK.Libretro
                     if (!FileSystem.FileExists(filePath))
                         continue;
 
-                    Game game = Wrapper.Instance.Game;
-                    game.GameInfo.path = Wrapper.Instance.GetUnsafeString(filePath);
+                    Game game = _wrapper.Game;
+                    game.GameInfo.path = _wrapper.GetUnsafeString(filePath);
                     using FileStream stream = new(filePath, FileMode.Open);
                     byte[] data = new byte[stream.Length];
                     game.GameInfo.size = (nuint)data.Length;

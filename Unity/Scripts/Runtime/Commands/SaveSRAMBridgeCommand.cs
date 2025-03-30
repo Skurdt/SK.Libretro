@@ -24,6 +24,10 @@ namespace SK.Libretro.Unity
 {
     internal readonly struct SaveSRAMBridgeCommand : IBridgeCommand
     {
-        public void Execute() => Wrapper.Instance.SerializationHandler.SaveSRAM();
+        private readonly Wrapper _wrapper;
+
+        public SaveSRAMBridgeCommand(Wrapper wrapper) => _wrapper = wrapper;
+
+        public void Execute() => _wrapper.SerializationHandler.SaveSRAM();
     }
 }

@@ -29,9 +29,14 @@ namespace SK.Libretro
     {
         private const int VERSION = 1;
 
+        private readonly Wrapper _wrapper;
         private readonly IMessageProcessor _processor;
 
-        public MessageHandler(IMessageProcessor processor) => _processor = processor ?? new NullMessageProcessor();
+        public MessageHandler(Wrapper wrapper, IMessageProcessor processor)
+        {
+            _wrapper   = wrapper;
+            _processor = processor ?? new NullMessageProcessor();
+        }
 
         public void Dispose() => _processor.Dispose();
 
@@ -81,7 +86,7 @@ namespace SK.Libretro
         }
 
         private void LogConsole(string message) =>
-            Wrapper.Instance.LogHandler.LogInfo(message);
+            _wrapper.LogHandler.LogInfo(message);
 
         private void LogOSD(string message, uint seconds) =>
             _processor.ShowNotification(message, seconds, LogLevel.Info, 0);

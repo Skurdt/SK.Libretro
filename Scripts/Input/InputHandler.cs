@@ -124,10 +124,16 @@ namespace SK.Libretro
 
         public readonly ControllersMap DeviceMap = new();
 
+#if ENABLE_IL2CPP
         private static readonly retro_input_poll_t _pollCallback         = PollCallback;
         private static readonly retro_input_state_t _stateCallback       = StateCallback;
         private static readonly retro_set_rumble_state_t _setRumbleState = SetRumbleState;
-
+#else
+        private readonly Wrapper _wrapper;
+        private readonly retro_input_poll_t _pollCallback;
+        private readonly retro_input_state_t _stateCallback;
+        private readonly retro_set_rumble_state_t _setRumbleState;
+#endif
         private readonly IInputProcessor _processor;
 
         private readonly List<retro_input_descriptor> _inputDescriptors = new();
@@ -135,7 +141,16 @@ namespace SK.Libretro
 
         private retro_keyboard_event_t _keyboardEvent;
 
-        public InputHandler(IInputProcessor processor) => _processor = processor ?? new NullInputProcessor();
+        public InputHandler(Wrapper wrapper, IInputProcessor processor)
+        {
+#if !ENABLE_IL2CPP
+            _wrapper         = wrapper;
+            _pollCallback    = PollCallback;
+            _stateCallback   = StateCallback;
+            _setRumbleState  = SetRumbleState;
+#endif
+            _processor       = processor ?? new NullInputProcessor();
+        }
 
         public void SetCoreCallbacks(retro_set_input_poll_t setInputPoll, retro_set_input_state_t setInputState)
         {
@@ -307,25 +322,36 @@ namespace SK.Libretro
             return true;
         }
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_input_poll_t))]
         private static void PollCallback() { }
+#else
+        private void PollCallback() { }
+#endif
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_input_state_t))]
         private static short StateCallback(uint port, RETRO_DEVICE device, uint index, uint id)
         {
-            if (!Wrapper.Instance.InputHandler.Enabled)
+            if (!Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper _wrapper))
+                return 0;
+#else
+        private short StateCallback(uint port, RETRO_DEVICE device, uint index, uint id)
+        {
+#endif
+            if (!_wrapper.InputHandler.Enabled)
                 return 0;
 
             device &= (RETRO_DEVICE)RETRO.DEVICE_MASK;
 
             return device switch
             {
-                RETRO_DEVICE.JOYPAD   => Wrapper.Instance.InputHandler.ProcessJoypadDevice(port, (RETRO_DEVICE_ID_JOYPAD)id),
-                RETRO_DEVICE.MOUSE    => Wrapper.Instance.InputHandler.ProcessMouseDevice(port, (RETRO_DEVICE_ID_MOUSE)id),
-                RETRO_DEVICE.KEYBOARD => Wrapper.Instance.InputHandler.ProcessKeyboardDevice(port, (retro_key)id),
-                RETRO_DEVICE.LIGHTGUN => Wrapper.Instance.InputHandler.ProcessLightgunDevice(port, (RETRO_DEVICE_ID_LIGHTGUN)id),
-                RETRO_DEVICE.POINTER  => Wrapper.Instance.InputHandler.ProcessPointerDevice(port, (RETRO_DEVICE_ID_POINTER)id),
-                RETRO_DEVICE.ANALOG   => Wrapper.Instance.InputHandler.ProcessAnalogDevice(port, (RETRO_DEVICE_INDEX_ANALOG)index, (RETRO_DEVICE_ID_ANALOG)id),
+                RETRO_DEVICE.JOYPAD   => _wrapper.InputHandler.ProcessJoypadDevice(port, (RETRO_DEVICE_ID_JOYPAD)id),
+                RETRO_DEVICE.MOUSE    => _wrapper.InputHandler.ProcessMouseDevice(port, (RETRO_DEVICE_ID_MOUSE)id),
+                RETRO_DEVICE.KEYBOARD => _wrapper.InputHandler.ProcessKeyboardDevice(port, (retro_key)id),
+                RETRO_DEVICE.LIGHTGUN => _wrapper.InputHandler.ProcessLightgunDevice(port, (RETRO_DEVICE_ID_LIGHTGUN)id),
+                RETRO_DEVICE.POINTER  => _wrapper.InputHandler.ProcessPointerDevice(port, (RETRO_DEVICE_ID_POINTER)id),
+                RETRO_DEVICE.ANALOG   => _wrapper.InputHandler.ProcessAnalogDevice(port, (RETRO_DEVICE_INDEX_ANALOG)index, (RETRO_DEVICE_ID_ANALOG)id),
                 _ => 0
             };
         }
@@ -406,9 +432,12 @@ namespace SK.Libretro
             _ => 0
         };
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_set_rumble_state_t))]
-        private static bool SetRumbleState(uint port, retro_rumble_effect effect, ushort strength)
-            => Wrapper.Instance.InputHandler._processor.SetRumbleState((int)port, effect, strength);
+        private static bool SetRumbleState(uint port, retro_rumble_effect effect, ushort strength) => !Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper wrapper) || wrapper.InputHandler._processor.SetRumbleState((int)port, effect, strength);
+#else
+        private bool SetRumbleState(uint port, retro_rumble_effect effect, ushort strength) => _wrapper.InputHandler._processor.SetRumbleState((int)port, effect, strength);
+#endif
 
         private static short BoolToShort(bool boolValue) => (short)(boolValue ? 1 : 0);
     }

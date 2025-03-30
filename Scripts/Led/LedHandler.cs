@@ -28,13 +28,33 @@ namespace SK.Libretro
 {
     internal sealed class LedHandler
     {
+#if ENABLE_IL2CPP
         private static readonly retro_set_led_state_t _setLedState = SetState;
+#else
+        private readonly Wrapper _wrapper;
+        private readonly retro_set_led_state_t _setLedState;
+#endif
         private readonly ILedProcessor _processor;
 
-        public LedHandler(ILedProcessor processor) => _processor = processor ?? new NullLedProcessor();
+        public LedHandler(Wrapper wrapper, ILedProcessor processor)
+        {
+#if !ENABLE_IL2CPP
+            _wrapper     = wrapper;
+            _setLedState = SetState;
+#endif
+            _processor   = processor ?? new NullLedProcessor();
+        }
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_set_led_state_t))]
-        private static void SetState(int led, int state) => Wrapper.Instance.LedHandler._processor.SetState(led, state);
+        private static void SetState(int led, int state)
+        {
+            if (Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper _wrapper))
+                _wrapper.LedHandler._processor.SetState(led, state);
+        }
+#else
+        private void SetState(int led, int state) => _wrapper.LedHandler._processor.SetState(led, state);
+#endif
 
         public bool GetLedInterface(IntPtr data)
         {

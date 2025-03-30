@@ -30,12 +30,21 @@ namespace SK.Libretro
     {
         protected LogLevel _level = LogLevel.Warning;
 
+#if ENABLE_IL2CPP
         private static readonly retro_log_printf_t _logPrintf = LogPrintf;
+#else
+        private readonly Wrapper _wrapper;
+        private readonly retro_log_printf_t _logPrintf;
+#endif
 
         private readonly ILogProcessor _processor;
 
-        public LogHandler(ILogProcessor processor, LogLevel logLevel)
+        public LogHandler(Wrapper wrapper, ILogProcessor processor, LogLevel logLevel)
         {
+#if !ENABLE_IL2CPP
+            _wrapper   = wrapper;
+            _logPrintf = LogPrintf;
+#endif
             _processor = processor ?? new NullLogProcessor();
             _level     = logLevel;
         }
@@ -79,6 +88,7 @@ namespace SK.Libretro
             return true;
         }
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_log_printf_t))]
         private static void LogPrintf(retro_log_level level,
                                       string format,
@@ -95,9 +105,28 @@ namespace SK.Libretro
                                       IntPtr arg11,
                                       IntPtr arg12)
         {
+            if (!Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper _wrapper))
+                return;
+#else
+        private void LogPrintf(retro_log_level level,
+                                      string format,
+                                      IntPtr arg1,
+                                      IntPtr arg2,
+                                      IntPtr arg3,
+                                      IntPtr arg4,
+                                      IntPtr arg5,
+                                      IntPtr arg6,
+                                      IntPtr arg7,
+                                      IntPtr arg8,
+                                      IntPtr arg9,
+                                      IntPtr arg10,
+                                      IntPtr arg11,
+                                      IntPtr arg12)
+        {
+#endif
             LogLevel logLevel = level.ToLogLevel();
-            if (logLevel >= Wrapper.Instance.LogHandler._level)
-                Wrapper.Instance.LogHandler.LogMessage(logLevel, format);
+            if (logLevel >= _wrapper.LogHandler._level)
+                _wrapper.LogHandler.LogMessage(logLevel, format);
         }
 
         protected virtual void Log(retro_log_level level,

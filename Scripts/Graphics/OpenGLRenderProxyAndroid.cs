@@ -11,8 +11,8 @@ namespace SK.Libretro
         private IntPtr _eglContext = IntPtr.Zero;
         private IntPtr _eglConfig = IntPtr.Zero;
 
-        public OpenGLRenderProxyAndroid(retro_hw_render_callback hwRenderCallback, IntPtr nativeWindow)
-        : base(hwRenderCallback)
+        public OpenGLRenderProxyAndroid(Wrapper wrapper, retro_hw_render_callback hwRenderCallback, IntPtr nativeWindow)
+        : base(wrapper, hwRenderCallback)
             => _windowHandle = nativeWindow;
 
         public override bool Init()

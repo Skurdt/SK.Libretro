@@ -30,8 +30,13 @@ namespace SK.Libretro
     {
         public bool Enabled { get; set; }
 
+#if ENABLE_IL2CPP
         private static readonly retro_video_refresh_t _refreshCallback = RefreshCallback;
+#else
+        private readonly retro_video_refresh_t _refreshCallback;
+#endif
 
+        private readonly Wrapper _wrapper;
         private readonly IGraphicsProcessor _processor;
 
         private retro_pixel_format _pixelFormat;
@@ -39,7 +44,14 @@ namespace SK.Libretro
 
         private HardwareRenderProxy _hardwareRenderProxy;
 
-        public GraphicsHandler(IGraphicsProcessor processor) => _processor = processor;
+        public GraphicsHandler(Wrapper wrapper, IGraphicsProcessor processor)
+        {
+#if !ENABLE_IL2CPP
+            _refreshCallback = RefreshCallback;
+#endif
+            _wrapper         = wrapper;
+            _processor       = processor;
+        }
 
         public void Init(bool enabled)
         {
@@ -81,8 +93,8 @@ namespace SK.Libretro
         public bool GetOverscan(IntPtr data)
         {
             if (data.IsNotNull())
-                data.Write(Wrapper.Instance.Settings.CropOverscan);
-            return Wrapper.Instance.Settings.CropOverscan;
+                data.Write(_wrapper.Settings.CropOverscan);
+            return _wrapper.Settings.CropOverscan;
         }
 
         public bool GetCanDupe(IntPtr data)
@@ -146,7 +158,7 @@ namespace SK.Libretro
 
         public bool SetHwRender(IntPtr data)
         {
-            if (Wrapper.Instance.Settings.Platform == Platform.Android)
+            if (_wrapper.Settings.Platform == Platform.Android)
                 return false;
 
             if (data.IsNull() || _hardwareRenderProxy is not null)
@@ -156,7 +168,7 @@ namespace SK.Libretro
             _hardwareRenderProxy = hwRenderCallback.context_type switch
             {
                 retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL
-                or retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE => new OpenGLRenderProxySDL(hwRenderCallback),
+                or retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE => new OpenGLRenderProxySDL(_wrapper, hwRenderCallback),
 
                 retro_hw_context_type.RETRO_HW_CONTEXT_NONE
                 or _ => default
@@ -176,20 +188,27 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            if (Wrapper.Instance.Game.SetGeometry(data.ToStructure<retro_game_geometry>()))
+            if (_wrapper.Game.SetGeometry(data.ToStructure<retro_game_geometry>()))
             {
                 // TODO(Tom): Change width/height/aspect ratio
             }
             return true;
         }
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_video_refresh_t))]
         private static void RefreshCallback(IntPtr data, uint width, uint height, nuint pitch)
         {
-            if (!Wrapper.Instance.GraphicsHandler.Enabled)
+            if (!Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper _wrapper))
+                return;
+#else
+        private void RefreshCallback(IntPtr data, uint width, uint height, nuint pitch)
+        {
+#endif
+            if (!_wrapper.GraphicsHandler.Enabled)
                 return;
 
-            Wrapper.Instance.GraphicsHandler._frameHandler.ProcessFrame(data, width, height, pitch);
+            _wrapper.GraphicsHandler._frameHandler.ProcessFrame(data, width, height, pitch);
         }
     }
 }

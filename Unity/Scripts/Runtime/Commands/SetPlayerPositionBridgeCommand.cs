@@ -22,19 +22,27 @@
 
 namespace SK.Libretro.Unity
 {
-    internal readonly struct SetControllerPortDeviceBridgeCommand : IBridgeCommand
+    internal readonly struct SetPlayerPositionBridgeCommand : IBridgeCommand
     {
         private readonly Wrapper _wrapper;
-        private readonly uint _port;
-        private readonly uint _device;
+        private readonly float _x;
+        private readonly float _y;
+        private readonly float _z;
+        private readonly float _distance;
+        private readonly float _forwardX;
+        private readonly float _forwardZ;
 
-        public SetControllerPortDeviceBridgeCommand(Wrapper wrapper, uint port, uint device)
+        public SetPlayerPositionBridgeCommand(Wrapper wrapper, float x, float y, float z, float distance, float forwardX, float forwardZ)
         {
-            _wrapper = wrapper;
-            _port    = port;
-            _device  = device;
+            _wrapper  = wrapper;
+            _x        = x;
+            _y        = y;
+            _z        = z;
+            _distance = distance;
+            _forwardX = forwardX;
+            _forwardZ = forwardZ;
         }
 
-        public void Execute() => _wrapper.Core.SetControllerPortDevice(_port, _device);
+        public void Execute() => _wrapper?.AudioHandler.SetPosition(_x, _y, _z, _distance, _forwardX, _forwardZ);
     }
 }

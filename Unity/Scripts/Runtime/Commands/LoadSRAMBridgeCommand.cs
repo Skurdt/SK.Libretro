@@ -24,6 +24,10 @@ namespace SK.Libretro.Unity
 {
     internal readonly struct LoadSRAMBridgeCommand : IBridgeCommand
     {
-        public void Execute() => Wrapper.Instance.SerializationHandler.LoadSRAM();
+        private readonly Wrapper _wrapper;
+
+        public LoadSRAMBridgeCommand(Wrapper wrapper) => _wrapper = wrapper;
+
+        public void Execute() => _wrapper.SerializationHandler.LoadSRAM();
     }
 }

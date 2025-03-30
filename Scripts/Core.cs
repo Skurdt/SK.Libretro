@@ -30,16 +30,18 @@ namespace SK.Libretro
 {
     internal sealed class Core : IDisposable
     {
-        public bool Initialized { get; private set; }
-        public uint ApiVersion { get; private set; }
-        public string Name { get; private set; }
-        public string Path => System.IO.Path.GetDirectoryName(_dll.Path);
-        public SystemInfo SystemInfo { get; private set; }
-        public int PerformanceLevel { get; private set; }
-        public bool SupportNoGame { get; private set; }
+        public bool Initialized          { get; private set; }
+        public uint ApiVersion           { get; private set; }
+        public string Path               => System.IO.Path.GetDirectoryName(_dll.Path);
+        public SystemInfo SystemInfo     { get; private set; }
+        public int PerformanceLevel      { get; private set; }
+        public bool SupportNoGame        { get; private set; }
         public bool SupportsAchievements { get; private set; }
 
+        public readonly string Name;
         public readonly List<retro_subsystem_info> SubsystemInfo = new();
+
+        private readonly Wrapper _wrapper;
 
         private DynamicLibrary _dll;
 
@@ -69,6 +71,12 @@ namespace SK.Libretro
         private retro_set_audio_sample_batch_t _retro_set_audio_sample_batch;
         private retro_set_input_poll_t _retro_set_input_poll;
         private retro_set_input_state_t _retro_set_input_state;
+
+        public Core(Wrapper wrapper, string coreName)
+        {
+            _wrapper = wrapper;
+            Name     = coreName;
+        }
 
         public void Dispose()
         {
@@ -100,9 +108,9 @@ namespace SK.Libretro
             }
         }
 
-        public bool Start(string coreName)
+        public bool Start()
         {
-            switch (Wrapper.Instance.Settings.Platform)
+            switch (_wrapper.Settings.Platform)
             {
                 case Platform.Win:
                     _dll = new DynamicLibraryWindows(true);
@@ -115,11 +123,9 @@ namespace SK.Libretro
                     _dll = new DynamicLibraryLinux(true);
                     break;
                 default:
-                    Wrapper.Instance.LogHandler.LogError($"Runtime platform '{Wrapper.Instance.Settings.Platform}' not supported.", "SK.Libretro.Core.Start");
+                    _wrapper.LogHandler.LogError($"Runtime platform '{_wrapper.Settings.Platform}' not supported.", "SK.Libretro.Core.Start");
                     return false;
             }
-
-            Name = coreName;
 
             if (!LoadLibrary())
                 return false;
@@ -218,7 +224,7 @@ namespace SK.Libretro
         {
             try
             {
-                string corePath = Wrapper.Instance.Settings.Platform switch
+                string corePath = _wrapper.Settings.Platform switch
                 {
                     Platform.Android => $"{Wrapper.CoresDirectory}/{Name}_libretro_android.{_dll.Extension}",
                     _                => $"{Wrapper.CoresDirectory}/{Name}_libretro.{_dll.Extension}"
@@ -226,7 +232,7 @@ namespace SK.Libretro
 
                 if (!FileSystem.FileExists(corePath))
                 {
-                    Wrapper.Instance.LogHandler.LogError($"Core '{Name}' at path '{corePath}' not found.", "SK.Libretro.Core.LoadLibrary");
+                    _wrapper.LogHandler.LogError($"Core '{Name}' at path '{corePath}' not found.", "SK.Libretro.Core.LoadLibrary");
                     return false;
                 }
 
@@ -238,7 +244,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Wrapper.Instance.LogHandler.LogException(e);
+                _wrapper.LogHandler.LogException(e);
                 Dispose();
                 return false;
             }
@@ -279,7 +285,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Wrapper.Instance.LogHandler.LogException(e);
+                _wrapper.LogHandler.LogException(e);
                 Dispose();
                 return false;
             }
@@ -293,10 +299,10 @@ namespace SK.Libretro
 
         private void SetCallbacks()
         {
-            Wrapper.Instance.EnvironmentHandler.SetCoreCallback(_retro_set_environment);
-            Wrapper.Instance.GraphicsHandler.SetCoreCallback(_retro_set_video_refresh);
-            Wrapper.Instance.AudioHandler.SetCoreCallbacks(_retro_set_audio_sample, _retro_set_audio_sample_batch);
-            Wrapper.Instance.InputHandler.SetCoreCallbacks(_retro_set_input_poll, _retro_set_input_state);
+            _wrapper.EnvironmentHandler.SetCoreCallback(_retro_set_environment);
+            _wrapper.GraphicsHandler.SetCoreCallback(_retro_set_video_refresh);
+            _wrapper.AudioHandler.SetCoreCallbacks(_retro_set_audio_sample, _retro_set_audio_sample_batch);
+            _wrapper.InputHandler.SetCoreCallbacks(_retro_set_input_poll, _retro_set_input_state);
         }
     }
 }

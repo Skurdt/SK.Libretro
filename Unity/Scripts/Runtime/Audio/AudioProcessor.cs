@@ -107,7 +107,7 @@ namespace SK.Libretro.Unity
             }
         }
 
-        public unsafe void ProcessSampleBatch(IntPtr data, nuint frames)
+        public unsafe void ProcessSampleBatch(IntPtr data, nuint frames, PositionalData positionalData)
         {
             if (!_circularBuffer.IsCreated)
                 return;

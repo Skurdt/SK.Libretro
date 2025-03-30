@@ -24,12 +24,14 @@ namespace SK.Libretro.Unity
 {
     internal readonly struct SetDiskIndexBridgeCommand : IBridgeCommand
     {
+        private readonly Wrapper _wrapper;
         private readonly string _gamesDirectory;
         private readonly string[] _gameNames;
         private readonly int _index;
 
-        public SetDiskIndexBridgeCommand(string gamesDirectory, string[] gameNames, int index)
+        public SetDiskIndexBridgeCommand(Wrapper wrapper, string gamesDirectory, string[] gameNames, int index)
         {
+            _wrapper        = wrapper;
             _gamesDirectory = gamesDirectory;
             _gameNames      = gameNames;
             _index          = index;
@@ -37,8 +39,8 @@ namespace SK.Libretro.Unity
 
         public void Execute()
         {
-            if (Wrapper.Instance.DiskHandler.Enabled && !string.IsNullOrWhiteSpace(_gamesDirectory) && _gameNames is not null && _index >= 0 && _index < _gameNames.Length)
-                _ = Wrapper.Instance.DiskHandler.SetImageIndexAuto((uint)_index, $"{_gamesDirectory}/{_gameNames[_index]}");
+            if (_wrapper.DiskHandler.Enabled && !string.IsNullOrWhiteSpace(_gamesDirectory) && _gameNames is not null && _index >= 0 && _index < _gameNames.Length)
+                _ = _wrapper.DiskHandler.SetImageIndexAuto((uint)_index, $"{_gamesDirectory}/{_gameNames[_index]}");
         }
     }
 }

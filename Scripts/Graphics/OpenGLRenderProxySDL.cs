@@ -29,8 +29,8 @@ namespace SK.Libretro
     {
         private IntPtr _glContext;
 
-        public OpenGLRenderProxySDL(retro_hw_render_callback hwRenderCallback)
-        : base(hwRenderCallback)
+        public OpenGLRenderProxySDL(Wrapper wrapper, retro_hw_render_callback hwRenderCallback)
+        : base(wrapper, hwRenderCallback)
         {
         }
 
@@ -38,7 +38,7 @@ namespace SK.Libretro
         {
             try
             {
-                if (SDL.InitSubSystem(SDL.INIT_VIDEO) != 0)
+                if (SDL.InitSubSystem(SDL.INIT_VIDEO) == 0)
                     return false;
 
                 _windowHandle = SDL.CreateWindow("LibretroHardwareRenderProxy", 1280, 1024, SDL.WINDOW_HIDDEN | SDL.WINDOW_OPENGL);
@@ -46,11 +46,11 @@ namespace SK.Libretro
                     return false;
 
                 _glContext = SDL.GL_CreateContext(_windowHandle);
-                return _glContext.IsNotNull() && SDL.GL_MakeCurrent(_windowHandle, _glContext) == 0;
+                return _glContext.IsNotNull() && SDL.GL_MakeCurrent(_windowHandle, _glContext) != 0;
             }
             catch (Exception e)
             {
-                Wrapper.Instance.LogHandler.LogException(e);
+                _wrapper.LogHandler.LogException(e);
                 return false;
             }
         }
@@ -67,7 +67,7 @@ namespace SK.Libretro
             {
                 if (_glContext.IsNotNull())
                 {
-                    _ = SDL.GL_DeleteContext(_glContext);
+                    _ = SDL.GL_DestroyContext(_glContext);
                     PointerUtilities.SetToNull(ref _glContext);
                 }
 
@@ -78,7 +78,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Wrapper.Instance.LogHandler.LogException(e);
+                _wrapper.LogHandler.LogException(e);
             }
         }
 

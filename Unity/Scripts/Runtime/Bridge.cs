@@ -32,18 +32,6 @@ namespace SK.Libretro.Unity
 {
     internal sealed class Bridge
     {
-        public static Bridge Instance
-        {
-            get
-            {
-                lock (_lock)
-                {
-                    _instance ??= new();
-                    return _instance;
-                }
-            }
-        }
-
         public bool Running
         {
             get
@@ -126,7 +114,7 @@ namespace SK.Libretro.Unity
                 lock (_lock)
                 {
                     _inputEnabled = value;
-                    _bridgeCommands.Enqueue(new EnableInputBridgeCommand(value));
+                    _bridgeCommands.Enqueue(new EnableInputBridgeCommand(_wrapper, value));
                 }
             }
         }
@@ -165,7 +153,7 @@ namespace SK.Libretro.Unity
 
         private const int DEFAULT_FASTFORWARD_FACTOR = 8;
 
-        private static readonly object _lock = new();
+        private readonly object _lock = new();
 
         private readonly string _mainDirectory;
         private readonly string _tempDirectory;
@@ -182,6 +170,7 @@ namespace SK.Libretro.Unity
         private Action _instanceStartedCallback;
         private Action _instanceStoppedCallback;
 
+        private Wrapper _wrapper;
         private bool _running;
         private bool _paused;
         private int _fastForwardFactor;
@@ -193,9 +182,8 @@ namespace SK.Libretro.Unity
 
         private Thread _thread;
         private Texture2D _texture;
-        private static Bridge _instance;
 
-        private Bridge()
+        public Bridge()
         {
             _mainDirectory     = $"{Application.persistentDataPath}/Libretro";
             _tempDirectory     = Application.platform switch
@@ -269,26 +257,28 @@ namespace SK.Libretro.Unity
                     LedProcessor      = ledProcessor
                 };
 
-                if (!Wrapper.Instance.StartContent(wrapperSettings, _coreName, _gamesDirectory, _gameNames))
+                _wrapper = new(wrapperSettings, _coreName, _gamesDirectory, _gameNames);
+
+                if (!_wrapper.StartContent())
                 {
                     Debug.LogError("Failed to start core/game combination");
                     return;
                 }
 
-                Wrapper.Instance.InitGraphics();
-                Wrapper.Instance.InitAudio();
-                Wrapper.Instance.InputHandler.Enabled = true;
-                DiskHandlerEnabled = Wrapper.Instance.DiskHandler.Enabled;
-                ControllersMap     = Wrapper.Instance.InputHandler.DeviceMap;
+                _wrapper.InitGraphics();
+                _wrapper.InitAudio();
+                _wrapper.InputHandler.Enabled = true;
+                DiskHandlerEnabled = _wrapper.DiskHandler.Enabled;
+                ControllersMap     = _wrapper.InputHandler.DeviceMap;
 
-                //_Wrapper.Instance.RewindEnabled = _settings.RewindEnabled;
+                //__wrapper.RewindEnabled = _settings.RewindEnabled;
 
-                Options = (Wrapper.Instance.OptionsHandler.CoreOptions, Wrapper.Instance.OptionsHandler.GameOptions);
+                Options = (_wrapper.OptionsHandler.CoreOptions, _wrapper.OptionsHandler.GameOptions);
 
                 InvokeInstanceEvent(_instanceStartedCallback);
 
                 System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                double gameFrameTime = 1.0 / Wrapper.Instance.Game.SystemAVInfo.Fps;
+                double gameFrameTime = 1.0 / _wrapper.Game.SystemAVInfo.Fps;
                 double startTime     = 0.0;
                 double accumulator   = 0.0;
 
@@ -301,10 +291,10 @@ namespace SK.Libretro.Unity
                     if (!Running)
                         break;
 
-                    //_Wrapper.Instance.RewindEnabled = _settings.RewindEnabled;
+                    //__wrapper.RewindEnabled = _settings.RewindEnabled;
 
                     //if (_settings.RewindEnabled)
-                    //    _Wrapper.Instance.PerformRewind = Rewind;
+                    //    __wrapper.PerformRewind = Rewind;
 
                     double currentTime = stopwatch.Elapsed.TotalSeconds;
                     double dt = currentTime - startTime;
@@ -313,7 +303,7 @@ namespace SK.Libretro.Unity
                     double targetFrameTime = /*FastForward && FastForwardFactor > 0 ? gameFrameTime / FastForwardFactor : */gameFrameTime;
                     if ((accumulator += dt) >= targetFrameTime)
                     {
-                        Wrapper.Instance.RunFrame();
+                        _wrapper.RunFrame();
                         accumulator = 0.0;
                     }
 
@@ -325,11 +315,11 @@ namespace SK.Libretro.Unity
                 InvokeInstanceEvent(_instanceStoppedCallback);
 
                 lock (_lock)
-                    Wrapper.Instance.StopContent();
+                    _wrapper.StopContent();
 
                 StopThread();
 
-                _instance = null;
+                _wrapper = null;
             }
             catch (Exception e) when (e is not ThreadAbortException)
             {
@@ -340,25 +330,25 @@ namespace SK.Libretro.Unity
         public ReadOnlySpan<byte> GetSaveMemory()
         {
             lock (_lock)
-                return Wrapper.Instance.MemoryHandler.GetSaveMemory();
+                return _wrapper.MemoryHandler.GetSaveMemory();
         }
 
         public ReadOnlySpan<byte> GetRtcMemory()
         {
             lock (_lock)
-                return Wrapper.Instance.MemoryHandler.GetRtcMemory();
+                return _wrapper.MemoryHandler.GetRtcMemory();
         }
 
         public ReadOnlySpan<byte> GetSystemMemory()
         {
             lock (_lock)
-                return Wrapper.Instance.MemoryHandler.GetSystemMemory();
+                return _wrapper.MemoryHandler.GetSystemMemory();
         }
 
         public ReadOnlySpan<byte> GetVideoMemory()
         {
             lock (_lock)
-                return Wrapper.Instance.MemoryHandler.GetVideoMemory();
+                return _wrapper.MemoryHandler.GetVideoMemory();
         }
 
         public void PauseContent()
@@ -407,10 +397,10 @@ namespace SK.Libretro.Unity
         }
 
         public void SetStateSlot(int slot)
-            => _bridgeCommands.Enqueue(new SetStateSlotBridgeCommand(slot));
+            => _bridgeCommands.Enqueue(new SetStateSlotBridgeCommand(_wrapper, slot));
 
         public void SaveStateWithScreenshot()
-            => _bridgeCommands.Enqueue(new SaveStateWithScreenshotBridgeCommand(TakeScreenshot));
+            => _bridgeCommands.Enqueue(new SaveStateWithScreenshotBridgeCommand(_wrapper, TakeScreenshot));
 
         public void SaveStateWithoutScreenshot()
             => _bridgeCommands.Enqueue(new SaveStateWithoutScreenshotBridgeCommand());
@@ -419,7 +409,7 @@ namespace SK.Libretro.Unity
             => _bridgeCommands.Enqueue(new LoadStateBridgeCommand());
 
         public void SetDiskIndex(int index)
-            => _bridgeCommands.Enqueue(new SetDiskIndexBridgeCommand(_gamesDirectory, _gameNames, index));
+            => _bridgeCommands.Enqueue(new SetDiskIndexBridgeCommand(_wrapper, _gamesDirectory, _gameNames, index));
 
         public void SaveSRAM()
             => _bridgeCommands.Enqueue(new SaveSRAMBridgeCommand());
@@ -428,10 +418,13 @@ namespace SK.Libretro.Unity
             => _bridgeCommands.Enqueue(new LoadSRAMBridgeCommand());
 
         public void SaveOptions(bool global)
-            => _bridgeCommands.Enqueue(new SaveOptionsBridgeCommand(global));
+            => _bridgeCommands.Enqueue(new SaveOptionsBridgeCommand(_wrapper, global));
 
         public void SetControllerPortDevice(uint port, uint device)
-            => _bridgeCommands.Enqueue(new SetControllerPortDeviceBridgeCommand(port, device));
+            => _bridgeCommands.Enqueue(new SetControllerPortDeviceBridgeCommand(_wrapper, port, device));
+
+        public void SetPlayerPosition(float x, float y, float z, float distance, float forwardX, float forwardZ)
+            => _bridgeCommands.Enqueue(new SetPlayerPositionBridgeCommand(_wrapper, x, y ,z, distance, forwardX, forwardZ));
 
         private void SetTexture(Texture texture)
         {

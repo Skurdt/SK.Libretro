@@ -30,13 +30,17 @@ namespace SK.Libretro
 {
     internal sealed class Game : IDisposable
     {
-        public bool Running { get; private set; }
-        public string Name { get; private set; }
+        public bool Running              { get; private set; }
         public SystemAVInfo SystemAVInfo { get; } = new();
-        public int Rotation { get; private set; }
+        public int Rotation              { get; private set; }
+
+        public readonly string[] Names;
+        public readonly string Name;
 
         public retro_game_info GameInfo = new();
 
+        private readonly Wrapper _wrapper;
+        private readonly string _gameDirectory;
         private readonly ContentOverrides _contentOverrides = new();
         private readonly List<retro_system_content_info_override> _systemContentInfoOverrides = new();
 
@@ -49,20 +53,26 @@ namespace SK.Libretro
         private bool _persistentData;
         private IntPtr _gameInfoExtPtr;
 
-        public bool Start(string gameDirectory, string gameName)
+        public Game(Wrapper wrapper, string gameDirectory, string[] gameNames)
         {
-            Name = gameName;
+            _wrapper       = wrapper;
+            _gameDirectory = gameDirectory;
+            Names          = gameNames;
+            Name           = gameNames[0];
+        }
 
+        public bool Start()
+        {
             try
             {
-                if (!string.IsNullOrWhiteSpace(gameDirectory) && !string.IsNullOrWhiteSpace(Name))
+                if (!string.IsNullOrWhiteSpace(_gameDirectory) && !string.IsNullOrWhiteSpace(Name))
                 {
-                    _path = GetGamePath(gameDirectory, Name);
+                    _path = GetGamePath(_gameDirectory, Name);
                     if (_path is null)
                     {
                         // Try Zip archive
                         // TODO(Tom): Check for any file after extraction instead of exact game name (only the archive needs to match)
-                        string archivePath = $"{gameDirectory}/{Name}.zip";
+                        string archivePath = $"{_gameDirectory}/{Name}.zip";
                         if (FileSystem.FileExists(archivePath))
                         {
                             string extractDirectory = FileSystem.GetOrCreateDirectory($"{Wrapper.TempDirectory}/extracted/{Name}_{Guid.NewGuid()}");
@@ -76,7 +86,7 @@ namespace SK.Libretro
 
                 if (!GetGameInfo())
                 {
-                    Wrapper.Instance.LogHandler.LogError($"Game not set, core '{Wrapper.Instance.Core.Name}' needs a game to run.", "SK.Libretro.Game.Start");
+                    _wrapper.LogHandler.LogError($"Game not set, core '{_wrapper.Core.Name}' needs a game to run.", "SK.Libretro.Game.Start");
                     return false;
                 }
 
@@ -88,7 +98,7 @@ namespace SK.Libretro
             }
             catch (Exception e)
             {
-                Wrapper.Instance.LogHandler.LogException(e);
+                _wrapper.LogHandler.LogException(e);
             }
 
             return false;
@@ -99,7 +109,7 @@ namespace SK.Libretro
             if (Running)
             {
                 Running = false;
-                Wrapper.Instance.Core.UnloadGame();
+                _wrapper.Core.UnloadGame();
             }
 
             try
@@ -143,10 +153,10 @@ namespace SK.Libretro
 
             retro_game_info_ext gameInfoExt = new()
             {
-                full_path       = Wrapper.Instance.GetUnsafeString(_path),
-                dir             = Wrapper.Instance.GetUnsafeString(directory),
-                name            = Wrapper.Instance.GetUnsafeString(name),
-                ext             = Wrapper.Instance.GetUnsafeString(extension),
+                full_path       = _wrapper.GetUnsafeString(_path),
+                dir             = _wrapper.GetUnsafeString(directory),
+                name            = _wrapper.GetUnsafeString(name),
+                ext             = _wrapper.GetUnsafeString(extension),
                 file_in_archive = false,
                 archive_path    = IntPtr.Zero,
                 archive_file    = IntPtr.Zero,
@@ -180,7 +190,7 @@ namespace SK.Libretro
             // ???????????????????
 
             Rotation = (int)data.ReadUInt32() * 90;
-            return Wrapper.Instance.Settings.UseCoreRotation;
+            return _wrapper.Settings.UseCoreRotation;
         }
 
         public bool SetGeometry(retro_game_geometry geometry)
@@ -238,10 +248,10 @@ namespace SK.Libretro
 
         private string GetGamePath(string directory, string gameName)
         {
-            if (Wrapper.Instance.Core.SystemInfo.ValidExtensions is null)
+            if (_wrapper.Core.SystemInfo.ValidExtensions is null)
                 return null;
 
-            foreach (string extension in Wrapper.Instance.Core.SystemInfo.ValidExtensions)
+            foreach (string extension in _wrapper.Core.SystemInfo.ValidExtensions)
             {
                 string filePath = $"{directory}/{gameName}.{extension}";
                 if (FileSystem.FileExists(filePath))
@@ -254,12 +264,12 @@ namespace SK.Libretro
         private bool GetGameInfo()
         {
             if (string.IsNullOrWhiteSpace(_path))
-                return Wrapper.Instance.Core.SupportNoGame;
+                return _wrapper.Core.SupportNoGame;
 
-            GameInfo.path = Wrapper.Instance.GetUnsafeString(_path);
+            GameInfo.path = _wrapper.GetUnsafeString(_path);
 
             (bool result, ContentOverride contentOverride) = _contentOverrides.TryGet(Path.GetExtension(_path).TrimStart('.'));
-            _needFullPath   = result ? contentOverride.NeedFullpath : Wrapper.Instance.Core.SystemInfo.NeedFullPath;
+            _needFullPath   = result ? contentOverride.NeedFullpath : _wrapper.Core.SystemInfo.NeedFullPath;
             _persistentData = result && contentOverride.PersistentData;
             if (_needFullPath)
                 return true;
@@ -289,16 +299,16 @@ namespace SK.Libretro
         {
             try
             {
-                if (!Wrapper.Instance.Core.LoadGame(ref GameInfo))
+                if (!_wrapper.Core.LoadGame(ref GameInfo))
                     return false;
 
-                Wrapper.Instance.Core.GetSystemAVInfo(out retro_system_av_info info);
+                _wrapper.Core.GetSystemAVInfo(out retro_system_av_info info);
                 SystemAVInfo.Init(info);
                 return true;
             }
             catch (Exception e)
             {
-                Wrapper.Instance.LogHandler.LogException(e);
+                _wrapper.LogHandler.LogException(e);
             }
 
             return false;

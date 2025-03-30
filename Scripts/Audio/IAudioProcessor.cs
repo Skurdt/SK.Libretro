@@ -28,6 +28,6 @@ namespace SK.Libretro
     {
         void Init(int sampleRate);
         void ProcessSample(short left, short right);
-        void ProcessSampleBatch(IntPtr data, nuint frames);
+        void ProcessSampleBatch(IntPtr data, nuint frames, PositionalData positionalData);
     }
 }

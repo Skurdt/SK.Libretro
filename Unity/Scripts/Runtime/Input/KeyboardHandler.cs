@@ -22,17 +22,18 @@
 
 using SK.Libretro.Header;
 using System;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace SK.Libretro.Unity
 {
     internal sealed class KeyboardHandler : IDisposable
     {
-        //private const uint NUM_KEYBOARD_KEYS = 320;
+        private const uint NUM_KEYBOARD_KEYS = 320;
 
         private readonly InputActionMap _inputActionMap;
 
-        private uint _keys;
+        private readonly short[] _keys = new short[NUM_KEYBOARD_KEYS];
 
         public KeyboardHandler(InputActionMap inputActionMap)
         {
@@ -46,14 +47,14 @@ namespace SK.Libretro.Unity
 
         public void Dispose() => _inputActionMap.Dispose();
 
-        public short IsKeyDown(retro_key key) => _keys.IsBitSetAsShort((uint)key);
+        public short IsKeyDown(retro_key key) => _keys[(uint)key];
 
         private void KeyCallback(InputAction.CallbackContext context) { }
 
         public void Update()
         {
-            //for (uint i = 0; i < NUM_KEYBOARD_KEYS; ++i)
-            //    _keys.SetBit(i, Input.GetKey((KeyCode)i));
+            for (uint i = 0; i < NUM_KEYBOARD_KEYS; ++i)
+                _keys[i] = (short)(Input.GetKey((KeyCode)i) ? 1 : 0);
         }
     }
 }

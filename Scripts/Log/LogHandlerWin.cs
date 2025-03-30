@@ -34,8 +34,8 @@ namespace SK.Libretro
         private static readonly Regex _argumentsRegex        = new(@"%(?:\d+\$)?[+-]?(?:[ 0]|'.{1})?-?\d*(?:\.\d+)?([bcdeEufFgGosxX])", RegexOptions.Compiled);
         private static readonly StringBuilder _sprintfBuffer = new();
 
-        public LogHandlerWin(ILogProcessor processor, LogLevel logLevel)
-        : base(processor, logLevel)
+        public LogHandlerWin(Wrapper wrapper, ILogProcessor processor, LogLevel logLevel)
+        : base(wrapper, processor, logLevel)
         {
         }
 

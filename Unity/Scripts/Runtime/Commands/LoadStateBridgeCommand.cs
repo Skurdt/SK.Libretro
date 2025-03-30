@@ -24,6 +24,10 @@ namespace SK.Libretro.Unity
 {
     internal readonly struct LoadStateBridgeCommand : IBridgeCommand
     {
-        public void Execute() => Wrapper.Instance.SerializationHandler.LoadStateFromDisk();
+        private readonly Wrapper _wrapper;
+
+        public LoadStateBridgeCommand(Wrapper wrapper) => _wrapper = wrapper;
+
+        public void Execute() => _wrapper.SerializationHandler.LoadStateFromDisk();
     }
 }

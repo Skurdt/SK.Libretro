@@ -21,7 +21,7 @@
  * SOFTWARE. */
 
 using SK.Libretro.Header;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -32,7 +32,7 @@ namespace SK.Libretro.Unity
     {
         public LeftStickBehaviour LeftStickBehaviour { get; set; }
 
-        private readonly Dictionary<int, PlayerInputProcessor> _controls = new();
+        private readonly ConcurrentDictionary<int, PlayerInputProcessor> _controls = new();
 
         private PlayerInputManager _playerInputManager;
 
@@ -58,7 +58,7 @@ namespace SK.Libretro.Unity
         public short MouseWheel(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.MouseHandler.Wheel : (short)0;
         public short MouseButton(int port, RETRO_DEVICE_ID_MOUSE button) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.MouseHandler.IsButtonDown(button) : (short)0;
 
-        public short KeyboardKey(int port, retro_key key) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.KeyboardHandler.IsKeyDown(key) : (short)0;
+        public short KeyboardKey(int port, retro_key key) => _controls.TryGetValue(0, out PlayerInputProcessor processor) ? processor.KeyboardHandler.IsKeyDown(key) : (short)0;
 
         public short LightgunX(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.LightgunHandler.X : (short)0;
         public short LightgunY(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.LightgunHandler.Y : (short)0;
@@ -90,7 +90,7 @@ namespace SK.Libretro.Unity
 
             processor.Init(LeftStickBehaviour);
 
-            _controls.Add(playerInput.playerIndex, processor);
+            _ = _controls.TryAdd(playerInput.playerIndex, processor);
             Debug.Log($"Player #{playerInput.playerIndex} joined ({playerInput.currentControlScheme}).");
         }
 
@@ -99,7 +99,7 @@ namespace SK.Libretro.Unity
             playerInput.onDeviceLost     -= OnDeviceLost;
             playerInput.onDeviceRegained -= OnDeviceRegained;
 
-            if (!_controls.Remove(playerInput.playerIndex))
+            if (!_controls.TryRemove(playerInput.playerIndex, out _))
                 return;
 
             if (!_controls.TryGetValue(playerInput.playerIndex, out PlayerInputProcessor processor))

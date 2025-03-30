@@ -24,10 +24,15 @@ namespace SK.Libretro.Unity
 {
     internal readonly struct SetStateSlotBridgeCommand : IBridgeCommand
     {
+        private readonly Wrapper _wrapper;
         private readonly int _slot;
 
-        public SetStateSlotBridgeCommand(int slot) => _slot = slot;
+        public SetStateSlotBridgeCommand(Wrapper wrapper, int slot)
+        {
+            _wrapper = wrapper;
+            _slot    = slot;
+        }
 
-        public void Execute() => Wrapper.Instance.SerializationHandler.SetStateSlot(_slot);
+        public void Execute() => _wrapper.SerializationHandler.SetStateSlot(_slot);
     }
 }

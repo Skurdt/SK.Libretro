@@ -1,13 +1,13 @@
 {
   "name": "com.sk.libretro",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "displayName": "SK.Libretro",
   "description": "Libretro support in Unity",
   "unity": "6000.0",
   "dependencies": {
-    "com.unity.burst": "1.8.18",
-    "com.unity.collections": "2.5.1",
-    "com.unity.inputsystem": "1.11.2",
+    "com.unity.burst": "1.8.19",
+    "com.unity.collections": "2.5.3",
+    "com.unity.inputsystem": "1.13.1",
     "com.unity.nuget.newtonsoft-json": "3.2.1"
   },
   "keywords": [],

@@ -24,10 +24,15 @@ namespace SK.Libretro.Unity
 {
     internal readonly struct EnableInputBridgeCommand : IBridgeCommand
     {
+        private readonly Wrapper _wrapper;
         private readonly bool _enabled;
 
-        public EnableInputBridgeCommand(bool enable) => _enabled = enable;
+        public EnableInputBridgeCommand(Wrapper wrapper, bool enable)
+        {
+            _wrapper = wrapper;
+            _enabled = enable;
+        }
 
-        public void Execute() => Wrapper.Instance.InputHandler.Enabled = _enabled;
+        public void Execute() => _wrapper.InputHandler.Enabled = _enabled;
     }
 }

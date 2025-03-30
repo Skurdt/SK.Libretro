@@ -24,6 +24,10 @@ namespace SK.Libretro.Unity
 {
     internal readonly struct SaveStateWithoutScreenshotBridgeCommand : IBridgeCommand
     {
-        public void Execute() => Wrapper.Instance.SerializationHandler.SaveStateToDisk();
+        private readonly Wrapper _wrapper;
+
+        public SaveStateWithoutScreenshotBridgeCommand(Wrapper wrapper) => _wrapper = wrapper;
+
+        public void Execute() => _wrapper.SerializationHandler.SaveStateToDisk();
     }
 }

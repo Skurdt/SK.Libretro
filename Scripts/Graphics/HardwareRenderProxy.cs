@@ -30,13 +30,16 @@ namespace SK.Libretro
         public readonly retro_hw_get_current_framebuffer_t GetCurrentFrameBuffer;
         public readonly retro_hw_get_proc_address_t GetProcAddress;
 
+        protected readonly Wrapper _wrapper;
+
         protected IntPtr _windowHandle;
 
         private readonly retro_hw_context_reset_t _contextReset;
         //private readonly retro_hw_context_reset_t _contextDestroy;
 
-        public HardwareRenderProxy(retro_hw_render_callback hwRenderCallback)
+        public HardwareRenderProxy(Wrapper wrapper, retro_hw_render_callback hwRenderCallback)
         {
+            _wrapper              = wrapper;
             _contextReset         = hwRenderCallback.context_reset.GetDelegate<retro_hw_context_reset_t>();
             //_contextDestroy       = hwRenderCallback.context_destroy.GetDelegate<retro_hw_context_reset_t>();
             GetCurrentFrameBuffer = GetCurrentFrameBufferCall;
@@ -46,6 +49,7 @@ namespace SK.Libretro
         public void Dispose()
         {
             DeInit();
+
             if (_windowHandle.IsNotNull())
                 PointerUtilities.SetToNull(ref _windowHandle);
         }

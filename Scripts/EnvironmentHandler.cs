@@ -27,92 +27,116 @@ namespace SK.Libretro
 {
     internal sealed class EnvironmentHandler
     {
+#if ENABLE_IL2CPP
         private static readonly retro_environment_t _callback = EnvironmentCallback;
+#else
+        private readonly retro_environment_t _callback;
+#endif
+        private readonly Wrapper _wrapper;
+
+        public EnvironmentHandler(Wrapper wrapper)
+        {
+            _wrapper  = wrapper;
+#if !ENABLE_IL2CPP
+            _callback = EnvironmentCallback;
+#endif
+        }
 
         public void SetCoreCallback(retro_set_environment_t setEnvironment) => setEnvironment(_callback);
 
+#if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_environment_t))]
-        private static bool EnvironmentCallback(RETRO_ENVIRONMENT cmd, IntPtr data) => cmd switch
+        private static bool EnvironmentCallback(RETRO_ENVIRONMENT cmd, IntPtr data) => !Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper _wrapper) || cmd switch
+#else
+        private bool EnvironmentCallback(RETRO_ENVIRONMENT cmd, IntPtr data) => cmd switch
+#endif
         {
             /************************************************************************************************
             * Frontend to core
             */
-            RETRO_ENVIRONMENT.GET_OVERSCAN                                => Wrapper.Instance.GraphicsHandler.GetOverscan(data),
-            RETRO_ENVIRONMENT.GET_CAN_DUPE                                => Wrapper.Instance.GraphicsHandler.GetCanDupe(data),
-            RETRO_ENVIRONMENT.GET_SYSTEM_DIRECTORY                        => Wrapper.Instance.GetSystemDirectory(data),
-            RETRO_ENVIRONMENT.GET_VARIABLE                                => Wrapper.Instance.OptionsHandler.GetVariable(data),
-            RETRO_ENVIRONMENT.GET_VARIABLE_UPDATE                         => Wrapper.Instance.OptionsHandler.GetVariableUpdate(data),
-            RETRO_ENVIRONMENT.GET_LIBRETRO_PATH                           => Wrapper.Instance.GetLibretroPath(data),
-            RETRO_ENVIRONMENT.GET_RUMBLE_INTERFACE                        => Wrapper.Instance.InputHandler.GetRumbleInterface(data),
-            RETRO_ENVIRONMENT.GET_INPUT_DEVICE_CAPABILITIES               => Wrapper.Instance.InputHandler.GetInputDeviceCapabilities(data),
-            RETRO_ENVIRONMENT.GET_SENSOR_INTERFACE                        => EnvironmentNotImplemented(cmd),
-            RETRO_ENVIRONMENT.GET_CAMERA_INTERFACE                        => EnvironmentNotImplemented(cmd),
-            RETRO_ENVIRONMENT.GET_LOG_INTERFACE                           => Wrapper.Instance.LogHandler.GetLogInterface(data),
-            RETRO_ENVIRONMENT.GET_PERF_INTERFACE                          => Wrapper.Instance.PerfHandler.GetPerfInterface(data),
-            RETRO_ENVIRONMENT.GET_LOCATION_INTERFACE                      => EnvironmentNotImplemented(cmd),
-            RETRO_ENVIRONMENT.GET_CORE_ASSETS_DIRECTORY                   => Wrapper.Instance.GetCoreAssetsDirectory(data),
-            RETRO_ENVIRONMENT.GET_SAVE_DIRECTORY                          => Wrapper.Instance.SerializationHandler.GetSaveDirectory(data),
-            RETRO_ENVIRONMENT.GET_USERNAME                                => Wrapper.Instance.GetUsername(data),
-            RETRO_ENVIRONMENT.GET_LANGUAGE                                => Wrapper.Instance.GetLanguage(data),
-            RETRO_ENVIRONMENT.GET_CURRENT_SOFTWARE_FRAMEBUFFER            => Wrapper.Instance.GraphicsHandler.GetCurrentSoftwareFramebuffer(data),
-            RETRO_ENVIRONMENT.GET_HW_RENDER_INTERFACE                     => EnvironmentNotImplemented(cmd),
-            RETRO_ENVIRONMENT.GET_VFS_INTERFACE                           => Wrapper.Instance.VFSHandler.GetVfsInterface(data),
-            RETRO_ENVIRONMENT.GET_LED_INTERFACE                           => Wrapper.Instance.LedHandler.GetLedInterface(data),
-            RETRO_ENVIRONMENT.GET_AUDIO_VIDEO_ENABLE                      => Wrapper.Instance.EnvironmentHandler.GetAudioVideoEnable(data),
-            RETRO_ENVIRONMENT.GET_MIDI_INTERFACE                          => EnvironmentNotImplemented(cmd),
-            RETRO_ENVIRONMENT.GET_FASTFORWARDING                          => Wrapper.Instance.EnvironmentHandler.GetFastForwarding(data),
-            RETRO_ENVIRONMENT.GET_TARGET_REFRESH_RATE                     => EnvironmentNotImplemented(cmd),
-            RETRO_ENVIRONMENT.GET_INPUT_BITMASKS                          => Wrapper.Instance.InputHandler.GetInputBitmasks(data),
-            RETRO_ENVIRONMENT.GET_CORE_OPTIONS_VERSION                    => Wrapper.Instance.OptionsHandler.GetCoreOptionsVersion(data),
-            RETRO_ENVIRONMENT.GET_PREFERRED_HW_RENDER                     => Wrapper.Instance.GraphicsHandler.GetPreferredHwRender(data),
-            RETRO_ENVIRONMENT.GET_DISK_CONTROL_INTERFACE_VERSION          => Wrapper.Instance.DiskHandler.GetDiskControlInterfaceVersion(data),
-            RETRO_ENVIRONMENT.GET_MESSAGE_INTERFACE_VERSION               => Wrapper.Instance.MessageHandler.GetMessageInterfaceVersion(data),
-            RETRO_ENVIRONMENT.GET_INPUT_MAX_USERS                         => Wrapper.Instance.InputHandler.GetInputMaxUsers(data),
-            RETRO_ENVIRONMENT.GET_GAME_INFO_EXT                           => Wrapper.Instance.Game.GetGameInfoExt(data),
-            RETRO_ENVIRONMENT.GET_THROTTLE_STATE                          => EnvironmentNotImplemented(cmd),
-            RETRO_ENVIRONMENT.GET_SAVESTATE_CONTEXT                       => EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.GET_OVERSCAN                                        => _wrapper.GraphicsHandler.GetOverscan(data),
+            RETRO_ENVIRONMENT.GET_CAN_DUPE                                        => _wrapper.GraphicsHandler.GetCanDupe(data),
+            RETRO_ENVIRONMENT.GET_SYSTEM_DIRECTORY                                => _wrapper.GetSystemDirectory(data),
+            RETRO_ENVIRONMENT.GET_VARIABLE                                        => _wrapper.OptionsHandler.GetVariable(data),
+            RETRO_ENVIRONMENT.GET_VARIABLE_UPDATE                                 => _wrapper.OptionsHandler.GetVariableUpdate(data),
+            RETRO_ENVIRONMENT.GET_LIBRETRO_PATH                                   => _wrapper.GetLibretroPath(data),
+            RETRO_ENVIRONMENT.GET_RUMBLE_INTERFACE                                => _wrapper.InputHandler.GetRumbleInterface(data),
+            RETRO_ENVIRONMENT.GET_INPUT_DEVICE_CAPABILITIES                       => _wrapper.InputHandler.GetInputDeviceCapabilities(data),
+            RETRO_ENVIRONMENT.GET_SENSOR_INTERFACE                                => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.GET_CAMERA_INTERFACE                                => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.GET_LOG_INTERFACE                                   => _wrapper.LogHandler.GetLogInterface(data),
+            RETRO_ENVIRONMENT.GET_PERF_INTERFACE                                  => _wrapper.PerfHandler.GetPerfInterface(data),
+            RETRO_ENVIRONMENT.GET_LOCATION_INTERFACE                              => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.GET_CORE_ASSETS_DIRECTORY                           => _wrapper.GetCoreAssetsDirectory(data),
+            RETRO_ENVIRONMENT.GET_SAVE_DIRECTORY                                  => _wrapper.SerializationHandler.GetSaveDirectory(data),
+            RETRO_ENVIRONMENT.GET_USERNAME                                        => _wrapper.GetUsername(data),
+            RETRO_ENVIRONMENT.GET_LANGUAGE                                        => _wrapper.GetLanguage(data),
+            RETRO_ENVIRONMENT.GET_CURRENT_SOFTWARE_FRAMEBUFFER                    => _wrapper.GraphicsHandler.GetCurrentSoftwareFramebuffer(data),
+            RETRO_ENVIRONMENT.GET_HW_RENDER_INTERFACE                             => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.GET_VFS_INTERFACE                                   => _wrapper.VFSHandler.GetVfsInterface(data),
+            RETRO_ENVIRONMENT.GET_LED_INTERFACE                                   => _wrapper.LedHandler.GetLedInterface(data),
+            RETRO_ENVIRONMENT.GET_AUDIO_VIDEO_ENABLE                              => _wrapper.EnvironmentHandler.GetAudioVideoEnable(data),
+            RETRO_ENVIRONMENT.GET_MIDI_INTERFACE                                  => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.GET_FASTFORWARDING                                  => _wrapper.EnvironmentHandler.GetFastForwarding(data),
+            RETRO_ENVIRONMENT.GET_TARGET_REFRESH_RATE                             => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.GET_INPUT_BITMASKS                                  => _wrapper.InputHandler.GetInputBitmasks(data),
+            RETRO_ENVIRONMENT.GET_CORE_OPTIONS_VERSION                            => _wrapper.OptionsHandler.GetCoreOptionsVersion(data),
+            RETRO_ENVIRONMENT.GET_PREFERRED_HW_RENDER                             => _wrapper.GraphicsHandler.GetPreferredHwRender(data),
+            RETRO_ENVIRONMENT.GET_DISK_CONTROL_INTERFACE_VERSION                  => _wrapper.DiskHandler.GetDiskControlInterfaceVersion(data),
+            RETRO_ENVIRONMENT.GET_MESSAGE_INTERFACE_VERSION                       => _wrapper.MessageHandler.GetMessageInterfaceVersion(data),
+            RETRO_ENVIRONMENT.GET_INPUT_MAX_USERS                                 => _wrapper.InputHandler.GetInputMaxUsers(data),
+            RETRO_ENVIRONMENT.GET_GAME_INFO_EXT                                   => _wrapper.Game.GetGameInfoExt(data),
+            RETRO_ENVIRONMENT.GET_THROTTLE_STATE                                  => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd, false),
+            RETRO_ENVIRONMENT.GET_SAVESTATE_CONTEXT                               => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.GET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE_SUPPORT => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.GET_JIT_CAPABLE                                     => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.GET_MICROPHONE_INTERFACE                            => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.GET_DEVICE_POWER                                    => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.GET_PLAYLIST_DIRECTORY                              => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.GET_FILE_BROWSER_START_DIRECTORY                    => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
 
             /************************************************************************************************
             * Core to frontend
             */
-            RETRO_ENVIRONMENT.SET_ROTATION                                => Wrapper.Instance.Game.SetRotation(data),
-            RETRO_ENVIRONMENT.SET_MESSAGE                                 => Wrapper.Instance.MessageHandler.SetMessage(data),
-            RETRO_ENVIRONMENT.SHUTDOWN                                    => Wrapper.Instance.Shutdown(),
-            RETRO_ENVIRONMENT.SET_PERFORMANCE_LEVEL                       => Wrapper.Instance.Core.SetPerformanceLevel(data),
-            RETRO_ENVIRONMENT.SET_PIXEL_FORMAT                            => Wrapper.Instance.GraphicsHandler.SetPixelFormat(data),
-            RETRO_ENVIRONMENT.SET_INPUT_DESCRIPTORS                       => Wrapper.Instance.InputHandler.SetInputDescriptors(data),
-            RETRO_ENVIRONMENT.SET_KEYBOARD_CALLBACK                       => Wrapper.Instance.InputHandler.SetKeyboardCallback(data),
-            RETRO_ENVIRONMENT.SET_DISK_CONTROL_INTERFACE                  => Wrapper.Instance.DiskHandler.SetDiskControlInterface(data),
-            RETRO_ENVIRONMENT.SET_HW_RENDER                               => Wrapper.Instance.GraphicsHandler.SetHwRender(data),
-            RETRO_ENVIRONMENT.SET_VARIABLES                               => Wrapper.Instance.OptionsHandler.SetVariables(data),
-            RETRO_ENVIRONMENT.SET_SUPPORT_NO_GAME                         => Wrapper.Instance.Core.SetSupportNoGame(data),
-            RETRO_ENVIRONMENT.SET_FRAME_TIME_CALLBACK                     => Wrapper.Instance.EnvironmentHandler.SetFrameTimeCallback(data),
-            RETRO_ENVIRONMENT.SET_AUDIO_CALLBACK                          => Wrapper.Instance.AudioHandler.SetAudioCallback(data),
-            RETRO_ENVIRONMENT.SET_SYSTEM_AV_INFO                          => Wrapper.Instance.Game.SetSystemAvInfo(data),
-            RETRO_ENVIRONMENT.SET_PROC_ADDRESS_CALLBACK                   => EnvironmentNotImplemented(cmd),
-            RETRO_ENVIRONMENT.SET_SUBSYSTEM_INFO                          => Wrapper.Instance.Core.SetSubsystemInfo(data),
-            RETRO_ENVIRONMENT.SET_CONTROLLER_INFO                         => Wrapper.Instance.InputHandler.SetControllerInfo(data),
-            RETRO_ENVIRONMENT.SET_MEMORY_MAPS                             => Wrapper.Instance.MemoryHandler.SetMemoryMaps(data),
-            RETRO_ENVIRONMENT.SET_GEOMETRY                                => Wrapper.Instance.GraphicsHandler.SetGeometry(data),
-            RETRO_ENVIRONMENT.SET_SUPPORT_ACHIEVEMENTS                    => Wrapper.Instance.Core.SetSupportAchievements(data),
-            RETRO_ENVIRONMENT.SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE => EnvironmentNotImplemented(cmd),
-            RETRO_ENVIRONMENT.SET_SERIALIZATION_QUIRKS                    => Wrapper.Instance.SerializationHandler.SetSerializationQuirks(data),
-            RETRO_ENVIRONMENT.SET_HW_SHARED_CONTEXT                       => EnvironmentNotImplemented(cmd),
-            RETRO_ENVIRONMENT.SET_CORE_OPTIONS                            => Wrapper.Instance.OptionsHandler.SetCoreOptions(data),
-            RETRO_ENVIRONMENT.SET_CORE_OPTIONS_INTL                       => Wrapper.Instance.OptionsHandler.SetCoreOptionsIntl(data),
-            RETRO_ENVIRONMENT.SET_CORE_OPTIONS_DISPLAY                    => Wrapper.Instance.OptionsHandler.SetCoreOptionsDisplay(data),
-            RETRO_ENVIRONMENT.SET_DISK_CONTROL_EXT_INTERFACE              => Wrapper.Instance.DiskHandler.SetDiskControlExtInterface(data),
-            RETRO_ENVIRONMENT.SET_MESSAGE_EXT                             => Wrapper.Instance.MessageHandler.SetMessageExt(data),
-            RETRO_ENVIRONMENT.SET_AUDIO_BUFFER_STATUS_CALLBACK            => Wrapper.Instance.AudioHandler.SetAudioBufferStatusCallback(data),
-            RETRO_ENVIRONMENT.SET_MINIMUM_AUDIO_LATENCY                   => Wrapper.Instance.AudioHandler.SetMinimumAudioLatency(data),
-            RETRO_ENVIRONMENT.SET_FASTFORWARDING_OVERRIDE                 => EnvironmentNotImplemented(cmd),
-            RETRO_ENVIRONMENT.SET_CONTENT_INFO_OVERRIDE                   => Wrapper.Instance.Game.SetContentInfoOverride(data),
-            RETRO_ENVIRONMENT.SET_CORE_OPTIONS_V2                         => EnvironmentNotImplemented(cmd),
-            RETRO_ENVIRONMENT.SET_CORE_OPTIONS_V2_INTL                    => EnvironmentNotImplemented(cmd),
-            RETRO_ENVIRONMENT.SET_CORE_OPTIONS_UPDATE_DISPLAY_CALLBACK    => EnvironmentNotImplemented(cmd),
-            RETRO_ENVIRONMENT.SET_VARIABLE                                => EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.SET_ROTATION                                        => _wrapper.Game.SetRotation(data),
+            RETRO_ENVIRONMENT.SET_MESSAGE                                         => _wrapper.MessageHandler.SetMessage(data),
+            RETRO_ENVIRONMENT.SHUTDOWN                                            => _wrapper.Shutdown(),
+            RETRO_ENVIRONMENT.SET_PERFORMANCE_LEVEL                               => _wrapper.Core.SetPerformanceLevel(data),
+            RETRO_ENVIRONMENT.SET_PIXEL_FORMAT                                    => _wrapper.GraphicsHandler.SetPixelFormat(data),
+            RETRO_ENVIRONMENT.SET_INPUT_DESCRIPTORS                               => _wrapper.InputHandler.SetInputDescriptors(data),
+            RETRO_ENVIRONMENT.SET_KEYBOARD_CALLBACK                               => _wrapper.InputHandler.SetKeyboardCallback(data),
+            RETRO_ENVIRONMENT.SET_DISK_CONTROL_INTERFACE                          => _wrapper.DiskHandler.SetDiskControlInterface(data),
+            RETRO_ENVIRONMENT.SET_HW_RENDER                                       => _wrapper.GraphicsHandler.SetHwRender(data),
+            RETRO_ENVIRONMENT.SET_VARIABLES                                       => _wrapper.OptionsHandler.SetVariables(data),
+            RETRO_ENVIRONMENT.SET_SUPPORT_NO_GAME                                 => _wrapper.Core.SetSupportNoGame(data),
+            RETRO_ENVIRONMENT.SET_FRAME_TIME_CALLBACK                             => _wrapper.EnvironmentHandler.SetFrameTimeCallback(data),
+            RETRO_ENVIRONMENT.SET_AUDIO_CALLBACK                                  => _wrapper.AudioHandler.SetAudioCallback(data),
+            RETRO_ENVIRONMENT.SET_SYSTEM_AV_INFO                                  => _wrapper.Game.SetSystemAvInfo(data),
+            RETRO_ENVIRONMENT.SET_PROC_ADDRESS_CALLBACK                           => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.SET_SUBSYSTEM_INFO                                  => _wrapper.Core.SetSubsystemInfo(data),
+            RETRO_ENVIRONMENT.SET_CONTROLLER_INFO                                 => _wrapper.InputHandler.SetControllerInfo(data),
+            RETRO_ENVIRONMENT.SET_MEMORY_MAPS                                     => _wrapper.MemoryHandler.SetMemoryMaps(data),
+            RETRO_ENVIRONMENT.SET_GEOMETRY                                        => _wrapper.GraphicsHandler.SetGeometry(data),
+            RETRO_ENVIRONMENT.SET_SUPPORT_ACHIEVEMENTS                            => _wrapper.Core.SetSupportAchievements(data),
+            RETRO_ENVIRONMENT.SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE         => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.SET_SERIALIZATION_QUIRKS                            => _wrapper.SerializationHandler.SetSerializationQuirks(data),
+            RETRO_ENVIRONMENT.SET_HW_SHARED_CONTEXT                               => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.SET_CORE_OPTIONS                                    => _wrapper.OptionsHandler.SetCoreOptions(data),
+            RETRO_ENVIRONMENT.SET_CORE_OPTIONS_INTL                               => _wrapper.OptionsHandler.SetCoreOptionsIntl(data),
+            RETRO_ENVIRONMENT.SET_CORE_OPTIONS_DISPLAY                            => _wrapper.OptionsHandler.SetCoreOptionsDisplay(data),
+            RETRO_ENVIRONMENT.SET_DISK_CONTROL_EXT_INTERFACE                      => _wrapper.DiskHandler.SetDiskControlExtInterface(data),
+            RETRO_ENVIRONMENT.SET_MESSAGE_EXT                                     => _wrapper.MessageHandler.SetMessageExt(data),
+            RETRO_ENVIRONMENT.SET_AUDIO_BUFFER_STATUS_CALLBACK                    => _wrapper.AudioHandler.SetAudioBufferStatusCallback(data),
+            RETRO_ENVIRONMENT.SET_MINIMUM_AUDIO_LATENCY                           => _wrapper.AudioHandler.SetMinimumAudioLatency(data),
+            RETRO_ENVIRONMENT.SET_FASTFORWARDING_OVERRIDE                         => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.SET_CONTENT_INFO_OVERRIDE                           => _wrapper.Game.SetContentInfoOverride(data),
+            RETRO_ENVIRONMENT.SET_CORE_OPTIONS_V2                                 => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.SET_CORE_OPTIONS_V2_INTL                            => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.SET_CORE_OPTIONS_UPDATE_DISPLAY_CALLBACK            => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.SET_VARIABLE                                        => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
+            RETRO_ENVIRONMENT.SET_NETPACKET_INTERFACE                             => _wrapper.EnvironmentHandler.EnvironmentNotImplemented(cmd),
 
-            _                                                             => EnvironmentUnknown(cmd)
+            _                                                                     => _wrapper.EnvironmentHandler.EnvironmentUnknown(cmd)
         };
 
         /************************************************************************************************
@@ -146,29 +170,29 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            Wrapper.Instance.LogHandler.LogInfo("Using FrameTime Callback", nameof(RETRO_ENVIRONMENT.SET_FRAME_TIME_CALLBACK));
-            Wrapper.Instance.FrameTimeInterface = data.ToStructure<retro_frame_time_callback>();
+            _wrapper.LogHandler.LogInfo("Using FrameTime Callback", nameof(RETRO_ENVIRONMENT.SET_FRAME_TIME_CALLBACK));
+            _wrapper.FrameTimeInterface = data.ToStructure<retro_frame_time_callback>();
             return true;
         }
 
         /************************************************************************************************
         / Utilities
         /***********************************************************************************************/
-        private static bool EnvironmentNotImplemented(RETRO_ENVIRONMENT cmd, bool log = true, bool defaultReturns = false)
+        private bool EnvironmentNotImplemented(RETRO_ENVIRONMENT cmd, bool log = true, bool defaultReturns = false)
         {
             if (!log)
                 return defaultReturns;
 
             if (defaultReturns)
-                Wrapper.Instance.LogHandler.LogWarning("Environment not implemented!", cmd.ToString());
+                _wrapper.LogHandler.LogWarning("Environment not implemented!", cmd.ToString());
             else
-                Wrapper.Instance.LogHandler.LogError("Environment not implemented!", cmd.ToString());
+                _wrapper.LogHandler.LogError("Environment not implemented!", cmd.ToString());
             return defaultReturns;
         }
 
-        private static bool EnvironmentUnknown(RETRO_ENVIRONMENT cmd)
+        private bool EnvironmentUnknown(RETRO_ENVIRONMENT cmd)
         {
-            Wrapper.Instance.LogHandler.LogError("Environment unknown!", cmd.ToString());
+            _wrapper.LogHandler.LogError("Environment unknown!", cmd.ToString());
             return false;
         }
     }

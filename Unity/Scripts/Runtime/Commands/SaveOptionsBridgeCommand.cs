@@ -24,10 +24,15 @@ namespace SK.Libretro.Unity
 {
     internal readonly struct SaveOptionsBridgeCommand : IBridgeCommand
     {
+        private readonly Wrapper _wrapper;
         private readonly bool _global;
 
-        public SaveOptionsBridgeCommand(bool global) => _global = global;
+        public SaveOptionsBridgeCommand(Wrapper wrapper, bool global)
+        {
+            _wrapper = wrapper;
+            _global  = global;
+        }
 
-        public void Execute() => Wrapper.Instance.OptionsHandler.Serialize(_global);
+        public void Execute() => _wrapper.OptionsHandler.Serialize(_global);
     }
 }

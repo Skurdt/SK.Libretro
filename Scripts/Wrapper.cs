@@ -22,72 +22,63 @@
 
 using SK.Libretro.Header;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace SK.Libretro
 {
     internal sealed class Wrapper
     {
-        public static Wrapper Instance
-        {
-            get
-            {
-                _instance ??= new();
-                return _instance;
-            }
-        }
-
-        public static string CoresDirectory      { get; private set; } = null;
-        public static string OptionsDirectory    { get; private set; } = null;
-        public static string SavesDirectory      { get; private set; } = null;
-        public static string StatesDirectory     { get; private set; } = null;
-        public static string TempDirectory       { get; private set; } = null;
-
-        public WrapperSettings Settings { get; private set; }
-
-        public Core Core { get; private set; }
-        public Game Game { get; private set; }
-
-        public EnvironmentHandler EnvironmentHandler { get; private set; }
-        public GraphicsHandler GraphicsHandler { get; private set; }
-        public AudioHandler AudioHandler { get; private set; }
-        public InputHandler InputHandler { get; private set; }
-        public LogHandler LogHandler { get; private set; }
-        public OptionsHandler OptionsHandler { get; private set; }
-        public VFSHandler VFSHandler { get; private set; }
-        public SerializationHandler SerializationHandler { get; private set; }
-        public DiskHandler DiskHandler { get; private set; }
-        public PerfHandler PerfHandler { get; private set; }
-        public LedHandler LedHandler { get; private set; }
-        public MessageHandler MessageHandler { get; private set; }
-        public MemoryHandler MemoryHandler { get; private set; }
+        public static string CoresDirectory   { get; private set; } = null;
+        public static string OptionsDirectory { get; private set; } = null;
+        public static string SavesDirectory   { get; private set; } = null;
+        public static string StatesDirectory  { get; private set; } = null;
+        public static string TempDirectory    { get; private set; } = null;
 
         public bool RewindEnabled { get; private set; } = false;
         public bool PerformRewind { get; private set; } = false;
+
+        public readonly WrapperSettings Settings;
+
+        public readonly Core Core;
+        public readonly Game Game;
+
+        public readonly EnvironmentHandler EnvironmentHandler;
+        public readonly GraphicsHandler GraphicsHandler;
+        public readonly AudioHandler AudioHandler;
+        public readonly InputHandler InputHandler;
+        public readonly LogHandler LogHandler;
+        public readonly OptionsHandler OptionsHandler;
+        public readonly VFSHandler VFSHandler;
+        public readonly SerializationHandler SerializationHandler;
+        public readonly DiskHandler DiskHandler;
+        public readonly PerfHandler PerfHandler;
+        public readonly LedHandler LedHandler;
+        public readonly MessageHandler MessageHandler;
+        public readonly MemoryHandler MemoryHandler;
 
         public retro_frame_time_callback FrameTimeInterface;
         public retro_frame_time_callback_t FrameTimeInterfaceCallback;
 
         //private const int REWIND_FRAMES_INTERVAL = 10;
 
-        private static Wrapper _instance;
+        //private static Wrapper _instance;
         private static string _mainDirectory;
         private static string _systemDirectory;
         private static string _coreAssetsDirectory;
 
+        private static readonly ConcurrentDictionary<Thread, Wrapper> _instances = new();
+
+        private readonly Thread _thread;
         private readonly List<IntPtr> _unsafeStrings = new();
 
         private long _frameTimeLast = 0;
         //private uint _totalFrameCount = 0;
 
-        private Wrapper()
+        public Wrapper(WrapperSettings settings, string coreName, string gameDirectory, string[] gameNames)
         {
-        }
-
-        public bool StartContent(WrapperSettings settings, string coreName, string gameDirectory, string[] gameNames)
-        {
-            if (string.IsNullOrWhiteSpace(coreName))
-                return false;
+            _thread  = Thread.CurrentThread;
             Settings = settings;
 
             if (_mainDirectory is null)
@@ -102,28 +93,40 @@ namespace SK.Libretro
                 StatesDirectory      = FileSystem.GetOrCreateDirectory($"{_mainDirectory}/states");
             }
 
-            Core = new();
-            Game = new();
+            Core = new(this, coreName);
+            Game = new(this, gameDirectory, gameNames);
 
-            EnvironmentHandler       = new();
-            GraphicsHandler          = new(settings.GraphicsProcessor);
-            AudioHandler             = new(settings.AudioProcessor);
-            InputHandler             = new(settings.InputProcessor);
+            EnvironmentHandler       = new(this);
+            GraphicsHandler          = new(this, settings.GraphicsProcessor);
+            AudioHandler             = new(this, settings.AudioProcessor);
+            InputHandler             = new(this, settings.InputProcessor);
             LogHandler               = settings.Platform switch
             {
-                Platform.Win => new LogHandlerWin(settings.LogProcessor, settings.LogLevel),
-                _            => new LogHandler(settings.LogProcessor, settings.LogLevel),
+                Platform.Win => new LogHandlerWin(this, settings.LogProcessor, settings.LogLevel),
+                _            => new LogHandler(this, settings.LogProcessor, settings.LogLevel),
             };
-            OptionsHandler           = new();
-            VFSHandler               = new();
-            SerializationHandler     = new();
-            DiskHandler              = new();
+            OptionsHandler           = new(this);
+            VFSHandler               = new(this);
+            SerializationHandler     = new(this);
+            DiskHandler              = new(this);
             PerfHandler              = new();
-            LedHandler               = new(settings.LedProcessor);
-            MessageHandler           = new(settings.MessageProcessor);
-            MemoryHandler            = new();
+            LedHandler               = new(this, settings.LedProcessor);
+            MessageHandler           = new(this, settings.MessageProcessor);
+            MemoryHandler            = new(this);
+        }
 
-            if (!Core.Start(coreName))
+#if ENABLE_IL2CPP
+        public static bool TryGetInstance(Thread thread, out Wrapper wrapper) => _instances.TryGetValue(thread, out wrapper);
+#endif
+        public bool StartContent()
+        {
+            if (string.IsNullOrWhiteSpace(Core.Name))
+                return false;
+
+            if (!_instances.TryAdd(_thread, this))
+                return false;
+
+            if (!Core.Start())
             {
                 StopContent();
                 return false;
@@ -132,14 +135,14 @@ namespace SK.Libretro
             if (FrameTimeInterface.callback.IsNotNull())
                 FrameTimeInterfaceCallback = FrameTimeInterface.callback.GetDelegate<retro_frame_time_callback_t>();
 
-            if (!Game.Start(gameDirectory, gameNames?[0]))
+            if (!Game.Start())
             {
                 StopContent();
                 return false;
             }
 
-            if (DiskHandler.Enabled && gameNames is not null)
-                for (int i = 0; i < gameNames.Length; ++i)
+            if (DiskHandler.Enabled)
+                for (int i = 0; i < Game.Names.Length; ++i)
                     _ = DiskHandler.AddImageIndex();
 
             SerializationHandler.Init();
@@ -167,6 +170,8 @@ namespace SK.Libretro
             VFSHandler.Dispose();
 
             PointerUtilities.Free(_unsafeStrings);
+
+            _ = _instances.Remove(_thread, out _);
         }
 
         public void RunFrame()
@@ -175,7 +180,6 @@ namespace SK.Libretro
                 return;
 
             GraphicsHandler.PollEvents();
-
             //_totalFrameCount++;
 
             FrameTimeUpdate();

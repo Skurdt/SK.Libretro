@@ -77,8 +77,8 @@ namespace SK.Libretro
         [DllImport(LIB_NAME, EntryPoint = "SDL_GL_CreateContext")]
         public static extern IntPtr GL_CreateContext(IntPtr window);
 
-        [DllImport(LIB_NAME, EntryPoint = "SDL_GL_DeleteContext")]
-        public static extern int GL_DeleteContext(IntPtr context);
+        [DllImport(LIB_NAME, EntryPoint = "SDL_GL_DestroyContext")]
+        public static extern int GL_DestroyContext(IntPtr context);
 
         [DllImport(LIB_NAME, EntryPoint = "SDL_GL_MakeCurrent")]
         public static extern int GL_MakeCurrent(IntPtr window, IntPtr context);
