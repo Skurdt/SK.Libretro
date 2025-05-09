@@ -328,34 +328,49 @@ namespace SK.Libretro
 #else
         private void PollCallback() { }
 #endif
-
 #if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_input_state_t))]
         private static short StateCallback(uint port, RETRO_DEVICE device, uint index, uint id)
         {
-            if (!Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper _wrapper))
+            if (!Wrapper.TryGetInstance(System.Threading.Thread.CurrentThread, out Wrapper wrapper))
                 return 0;
-#else
-        private short StateCallback(uint port, RETRO_DEVICE device, uint index, uint id)
-        {
-#endif
-            if (!_wrapper.InputHandler.Enabled)
+
+            if (!wrapper.InputHandler.Enabled)
                 return 0;
 
             device &= (RETRO_DEVICE)RETRO.DEVICE_MASK;
 
             return device switch
             {
-                RETRO_DEVICE.JOYPAD   => _wrapper.InputHandler.ProcessJoypadDevice(port, (RETRO_DEVICE_ID_JOYPAD)id),
-                RETRO_DEVICE.MOUSE    => _wrapper.InputHandler.ProcessMouseDevice(port, (RETRO_DEVICE_ID_MOUSE)id),
-                RETRO_DEVICE.KEYBOARD => _wrapper.InputHandler.ProcessKeyboardDevice(port, (retro_key)id),
-                RETRO_DEVICE.LIGHTGUN => _wrapper.InputHandler.ProcessLightgunDevice(port, (RETRO_DEVICE_ID_LIGHTGUN)id),
-                RETRO_DEVICE.POINTER  => _wrapper.InputHandler.ProcessPointerDevice(port, (RETRO_DEVICE_ID_POINTER)id),
-                RETRO_DEVICE.ANALOG   => _wrapper.InputHandler.ProcessAnalogDevice(port, (RETRO_DEVICE_INDEX_ANALOG)index, (RETRO_DEVICE_ID_ANALOG)id),
+                RETRO_DEVICE.JOYPAD   => wrapper.InputHandler.ProcessJoypadDevice(port, (RETRO_DEVICE_ID_JOYPAD)id),
+                RETRO_DEVICE.MOUSE    => wrapper.InputHandler.ProcessMouseDevice(port, (RETRO_DEVICE_ID_MOUSE)id),
+                RETRO_DEVICE.KEYBOARD => wrapper.InputHandler.ProcessKeyboardDevice(port, (retro_key)id),
+                RETRO_DEVICE.LIGHTGUN => wrapper.InputHandler.ProcessLightgunDevice(port, (RETRO_DEVICE_ID_LIGHTGUN)id),
+                RETRO_DEVICE.POINTER  => wrapper.InputHandler.ProcessPointerDevice(port, (RETRO_DEVICE_ID_POINTER)id),
+                RETRO_DEVICE.ANALOG   => wrapper.InputHandler.ProcessAnalogDevice(port, (RETRO_DEVICE_INDEX_ANALOG)index, (RETRO_DEVICE_ID_ANALOG)id),
                 _ => 0
             };
         }
+#else
+        private short StateCallback(uint port, RETRO_DEVICE device, uint index, uint id)
+        {
+            if (!Enabled)
+                return 0;
 
+            device &= (RETRO_DEVICE)RETRO.DEVICE_MASK;
+
+            return device switch
+            {
+                RETRO_DEVICE.JOYPAD   => ProcessJoypadDevice(port, (RETRO_DEVICE_ID_JOYPAD)id),
+                RETRO_DEVICE.MOUSE    => ProcessMouseDevice(port, (RETRO_DEVICE_ID_MOUSE)id),
+                RETRO_DEVICE.KEYBOARD => ProcessKeyboardDevice(port, (retro_key)id),
+                RETRO_DEVICE.LIGHTGUN => ProcessLightgunDevice(port, (RETRO_DEVICE_ID_LIGHTGUN)id),
+                RETRO_DEVICE.POINTER  => ProcessPointerDevice(port, (RETRO_DEVICE_ID_POINTER)id),
+                RETRO_DEVICE.ANALOG   => ProcessAnalogDevice(port, (RETRO_DEVICE_INDEX_ANALOG)index, (RETRO_DEVICE_ID_ANALOG)id),
+                _ => 0
+            };
+        }
+#endif
         private short ProcessJoypadDevice(uint port, RETRO_DEVICE_ID_JOYPAD id) => id is RETRO_DEVICE_ID_JOYPAD.MASK
                                                                                  ? _processor.JoypadButtons((int)port)
                                                                                  : _processor.JoypadButton((int)port, id);
@@ -377,9 +392,15 @@ namespace SK.Libretro
             _ => 0
         };
 
-        private short ProcessKeyboardDevice(uint port, retro_key id) => id < retro_key.RETROK_OEM_102
-                                                                      ? _processor.KeyboardKey((int)port, id)
-                                                                      : (short)0;
+        private short ProcessKeyboardDevice(uint port, retro_key id)
+        {
+            if (id >= retro_key.RETROK_OEM_102)
+                return 0;
+
+            short down = _processor.KeyboardKey((int)port, id);
+            _keyboardEvent(down, (uint)id, 0, 0);
+            return down;
+        }
 
         private short ProcessLightgunDevice(uint port, RETRO_DEVICE_ID_LIGHTGUN id) => id switch
         {

@@ -71,14 +71,13 @@ namespace SK.Libretro
                     if (_path is null)
                     {
                         // Try Zip archive
-                        // TODO(Tom): Check for any file after extraction instead of exact game name (only the archive needs to match)
                         string archivePath = $"{_gameDirectory}/{Name}.zip";
                         if (FileSystem.FileExists(archivePath))
                         {
                             string extractDirectory = FileSystem.GetOrCreateDirectory($"{Wrapper.TempDirectory}/extracted/{Name}_{Guid.NewGuid()}");
                             System.IO.Compression.ZipFile.ExtractToDirectory(archivePath, extractDirectory);
 
-                            _path = GetGamePath(extractDirectory, Name);
+                            _path = GetExtractedGamePath(extractDirectory);
                             _extractedPath = _path;
                         }
                     }
@@ -257,6 +256,18 @@ namespace SK.Libretro
                 if (FileSystem.FileExists(filePath))
                     return filePath.Replace(Path.DirectorySeparatorChar, '/');
             }
+
+            return null;
+        }
+
+        private string GetExtractedGamePath(string directory)
+        {
+            if (_wrapper.Core.SystemInfo.ValidExtensions is null)
+                return null;
+
+            foreach (string extension in _wrapper.Core.SystemInfo.ValidExtensions)
+                foreach (string filePath in Directory.EnumerateFiles(directory, $"*.{extension}", SearchOption.AllDirectories))
+                    return filePath.Replace(Path.DirectorySeparatorChar, '/');
 
             return null;
         }
