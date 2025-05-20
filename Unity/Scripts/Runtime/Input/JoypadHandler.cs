@@ -28,88 +28,118 @@ namespace SK.Libretro.Unity
 {
     internal sealed class JoypadHandler : IDisposable
     {
-        public short Buttons => (short)_buttons;
+        public readonly short[] Buttons = new short[16];
 
         private readonly InputActionMap _inputActionMap;
-
-        private uint _buttons;
 
         public JoypadHandler(InputActionMap inputActionMap)
         {
             _inputActionMap = inputActionMap;
 
-            _inputActionMap.FindAction("DPadUp").started        += DPadUpCallback;
-            _inputActionMap.FindAction("DPadUp").canceled       += DPadUpCallback;
-            _inputActionMap.FindAction("DPadDown").started      += DPadDownCallback;
-            _inputActionMap.FindAction("DPadDown").canceled     += DPadDownCallback;
-            _inputActionMap.FindAction("DPadLeft").started      += DPadLeftCallback;
-            _inputActionMap.FindAction("DPadLeft").canceled     += DPadLeftCallback;
-            _inputActionMap.FindAction("DPadRight").started     += DPadRightCallback;
-            _inputActionMap.FindAction("DPadRight").canceled    += DPadRightCallback;
-            _inputActionMap.FindAction("ButtonStart").started   += ButtonStartCallback;
-            _inputActionMap.FindAction("ButtonStart").canceled  += ButtonStartCallback;
-            _inputActionMap.FindAction("ButtonSelect").started  += ButtonSelectCallback;
-            _inputActionMap.FindAction("ButtonSelect").canceled += ButtonSelectCallback;
-            _inputActionMap.FindAction("ButtonA").started       += ButtonACallback;
-            _inputActionMap.FindAction("ButtonA").canceled      += ButtonACallback;
-            _inputActionMap.FindAction("ButtonB").started       += ButtonBCallback;
-            _inputActionMap.FindAction("ButtonB").canceled      += ButtonBCallback;
-            _inputActionMap.FindAction("ButtonX").started       += ButtonXCallback;
-            _inputActionMap.FindAction("ButtonX").canceled      += ButtonXCallback;
-            _inputActionMap.FindAction("ButtonY").started       += ButtonYCallback;
-            _inputActionMap.FindAction("ButtonY").canceled      += ButtonYCallback;
-            _inputActionMap.FindAction("ButtonL1").started      += ButtonL1Callback;
-            _inputActionMap.FindAction("ButtonL1").canceled     += ButtonL1Callback;
-            _inputActionMap.FindAction("ButtonL2").started      += ButtonL2Callback;
-            _inputActionMap.FindAction("ButtonL2").canceled     += ButtonL2Callback;
-            _inputActionMap.FindAction("ButtonL3").started      += ButtonL3Callback;
-            _inputActionMap.FindAction("ButtonL3").canceled     += ButtonL3Callback;
-            _inputActionMap.FindAction("ButtonR1").started      += ButtonR1Callback;
-            _inputActionMap.FindAction("ButtonR1").canceled     += ButtonR1Callback;
-            _inputActionMap.FindAction("ButtonR2").started      += ButtonR2Callback;
-            _inputActionMap.FindAction("ButtonR2").canceled     += ButtonR2Callback;
-            _inputActionMap.FindAction("ButtonR3").started      += ButtonR3Callback;
-            _inputActionMap.FindAction("ButtonR3").canceled     += ButtonR3Callback;
+            _inputActionMap.FindAction("DPadUp").started        += DPadUpStartedCallback;
+            _inputActionMap.FindAction("DPadUp").canceled       += DPadUpCanceledCallback;
+            _inputActionMap.FindAction("DPadDown").started      += DPadDownStartedCallback;
+            _inputActionMap.FindAction("DPadDown").canceled     += DPadDownCanceledCallback;
+            _inputActionMap.FindAction("DPadLeft").started      += DPadLeftStartedCallback;
+            _inputActionMap.FindAction("DPadLeft").canceled     += DPadLeftCanceledCallback;
+            _inputActionMap.FindAction("DPadRight").started     += DPadRightStartedCallback;
+            _inputActionMap.FindAction("DPadRight").canceled    += DPadRightCanceledCallback;
+            _inputActionMap.FindAction("ButtonStart").started   += ButtonStartStartedCallback;
+            _inputActionMap.FindAction("ButtonStart").canceled  += ButtonStartCanceledCallback;
+            _inputActionMap.FindAction("ButtonSelect").started  += ButtonSelectStartedCallback;
+            _inputActionMap.FindAction("ButtonSelect").canceled += ButtonSelectCanceledCallback;
+            _inputActionMap.FindAction("ButtonA").started       += ButtonAStartedCallback;
+            _inputActionMap.FindAction("ButtonA").canceled      += ButtonACanceledCallback;
+            _inputActionMap.FindAction("ButtonB").started       += ButtonBStartedCallback;
+            _inputActionMap.FindAction("ButtonB").canceled      += ButtonBCanceledCallback;
+            _inputActionMap.FindAction("ButtonX").started       += ButtonXStartedCallback;
+            _inputActionMap.FindAction("ButtonX").canceled      += ButtonXCanceledCallback;
+            _inputActionMap.FindAction("ButtonY").started       += ButtonYStartedCallback;
+            _inputActionMap.FindAction("ButtonY").canceled      += ButtonYCanceledCallback;
+            _inputActionMap.FindAction("ButtonL1").started      += ButtonL1StartedCallback;
+            _inputActionMap.FindAction("ButtonL1").canceled     += ButtonL1CanceledCallback;
+            _inputActionMap.FindAction("ButtonL2").started      += ButtonL2StartedCallback;
+            _inputActionMap.FindAction("ButtonL2").canceled     += ButtonL2CanceledCallback;
+            _inputActionMap.FindAction("ButtonL3").started      += ButtonL3StartedCallback;
+            _inputActionMap.FindAction("ButtonL3").canceled     += ButtonL3CanceledCallback;
+            _inputActionMap.FindAction("ButtonR1").started      += ButtonR1StartedCallback;
+            _inputActionMap.FindAction("ButtonR1").canceled     += ButtonR1CanceledCallback;
+            _inputActionMap.FindAction("ButtonR2").started      += ButtonR2StartedCallback;
+            _inputActionMap.FindAction("ButtonR2").canceled     += ButtonR2CanceledCallback;
+            _inputActionMap.FindAction("ButtonR3").started      += ButtonR3StartedCallback;
+            _inputActionMap.FindAction("ButtonR3").canceled     += ButtonR3CanceledCallback;
 
             _inputActionMap.Enable();
         }
 
         public void Dispose() => _inputActionMap.Dispose();
 
-        public short IsButtonDown(RETRO_DEVICE_ID_JOYPAD button) => _buttons.IsBitSetAsShort((uint)button);
+        public short IsButtonDown(RETRO_DEVICE_ID_JOYPAD button) => Buttons[(uint)button];
 
-        public void SetButtonState(RETRO_DEVICE_ID_JOYPAD button, bool pressed) => _buttons.SetBit((uint)button, pressed);
+        public void SetButtonState(RETRO_DEVICE_ID_JOYPAD button, bool pressed) => Buttons[(uint)button] = pressed ? (short)1 : (short)0;
 
-        private void DPadUpCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_JOYPAD.UP);
+        private void DPadUpStartedCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.UP] = 1;
 
-        private void DPadDownCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_JOYPAD.DOWN);
+        private void DPadDownStartedCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.DOWN] = 1;
 
-        private void DPadLeftCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_JOYPAD.LEFT);
+        private void DPadLeftStartedCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.LEFT] = 1;
 
-        private void DPadRightCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_JOYPAD.RIGHT);
+        private void DPadRightStartedCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.RIGHT] = 1;
 
-        private void ButtonStartCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_JOYPAD.START);
+        private void ButtonStartStartedCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.START] = 1;
 
-        private void ButtonSelectCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_JOYPAD.SELECT);
+        private void ButtonSelectStartedCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.SELECT] = 1;
 
-        private void ButtonACallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_JOYPAD.A);
+        private void ButtonAStartedCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.A] = 1;
 
-        private void ButtonBCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_JOYPAD.B);
+        private void ButtonBStartedCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.B] = 1;
 
-        private void ButtonXCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_JOYPAD.X);
+        private void ButtonXStartedCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.X] = 1;
 
-        private void ButtonYCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_JOYPAD.Y);
+        private void ButtonYStartedCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.Y] = 1;
 
-        private void ButtonL1Callback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_JOYPAD.L);
+        private void ButtonL1StartedCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.L] = 1;
 
-        private void ButtonL2Callback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_JOYPAD.L2);
+        private void ButtonL2StartedCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.L2] = 1;
 
-        private void ButtonL3Callback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_JOYPAD.L3);
+        private void ButtonL3StartedCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.L3] = 1;
 
-        private void ButtonR1Callback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_JOYPAD.R);
+        private void ButtonR1StartedCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.R] = 1;
 
-        private void ButtonR2Callback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_JOYPAD.R2);
+        private void ButtonR2StartedCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.R2] = 1;
 
-        private void ButtonR3Callback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_JOYPAD.R3);
+        private void ButtonR3StartedCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.R3] = 1;
+
+        private void DPadUpCanceledCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.UP] = 0;
+
+        private void DPadDownCanceledCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.DOWN] = 0;
+
+        private void DPadLeftCanceledCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.LEFT] = 0;
+
+        private void DPadRightCanceledCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.RIGHT] = 0;
+
+        private void ButtonStartCanceledCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.START] = 0;
+
+        private void ButtonSelectCanceledCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.SELECT] = 0;
+
+        private void ButtonACanceledCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.A] = 0;
+
+        private void ButtonBCanceledCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.B] = 0;
+
+        private void ButtonXCanceledCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.X] = 0;
+
+        private void ButtonYCanceledCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.Y] = 0;
+
+        private void ButtonL1CanceledCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.L] = 0;
+
+        private void ButtonL2CanceledCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.L2] = 0;
+
+        private void ButtonL3CanceledCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.L3] = 0;
+
+        private void ButtonR1CanceledCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.R] = 0;
+
+        private void ButtonR2CanceledCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.R2] = 0;
+
+        private void ButtonR3CanceledCallback(InputAction.CallbackContext context) => Buttons[(uint)RETRO_DEVICE_ID_JOYPAD.R3] = 0;
     }
 }

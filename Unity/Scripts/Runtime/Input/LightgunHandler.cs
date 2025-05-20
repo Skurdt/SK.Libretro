@@ -38,45 +38,44 @@ namespace SK.Libretro.Unity
         private const int RANGE_Y = 0x7fff;
 
         private readonly InputActionMap _inputActionMap;
+        private readonly short[] _buttons = new short[17];
         private readonly LibretroInstance _libretroInstance;
         private readonly RaycastHit[] _raycastHits = new RaycastHit[1];
-
-        private uint _buttons;
 
         public LightgunHandler(InputActionMap inputActionMap, LibretroInstance libretroInstance)
         {
             _inputActionMap   = inputActionMap;
             _libretroInstance = libretroInstance;
 
-            _inputActionMap.FindAction("ButtonTrigger").started  += ButtonTriggerCallback;
-            _inputActionMap.FindAction("ButtonTrigger").canceled += ButtonTriggerCallback;
-            _inputActionMap.FindAction("ButtonReload").started   += ButtonReloadCallback;
-            _inputActionMap.FindAction("ButtonReload").canceled  += ButtonReloadCallback;
-            _inputActionMap.FindAction("ButtonA").started        += ButtonACallback;
-            _inputActionMap.FindAction("ButtonA").canceled       += ButtonACallback;
-            _inputActionMap.FindAction("ButtonB").started        += ButtonBCallback;
-            _inputActionMap.FindAction("ButtonB").canceled       += ButtonBCallback;
-            _inputActionMap.FindAction("ButtonStart").started    += ButtonStartCallback;
-            _inputActionMap.FindAction("ButtonStart").canceled   += ButtonStartCallback;
-            _inputActionMap.FindAction("ButtonSelect").started   += ButtonSelectCallback;
-            _inputActionMap.FindAction("ButtonSelect").canceled  += ButtonSelectCallback;
-            _inputActionMap.FindAction("ButtonC").started        += ButtonCCallback;
-            _inputActionMap.FindAction("ButtonC").canceled       += ButtonCCallback;
-            _inputActionMap.FindAction("DPadUp").started         += DPadUpCallback;
-            _inputActionMap.FindAction("DPadUp").canceled        += DPadUpCallback;
-            _inputActionMap.FindAction("DPadDown").started       += DPadDownCallback;
-            _inputActionMap.FindAction("DPadDown").canceled      += DPadDownCallback;
-            _inputActionMap.FindAction("DPadLeft").started       += DPadLeftCallback;
-            _inputActionMap.FindAction("DPadLeft").canceled      += DPadLeftCallback;
-            _inputActionMap.FindAction("DPadRight").started      += DPadRightCallback;
-            _inputActionMap.FindAction("DPadRight").canceled     += DPadRightCallback;
+            _inputActionMap.FindAction("ButtonTrigger").started  += ButtonTriggerStartedCallback;
+            _inputActionMap.FindAction("ButtonTrigger").canceled += ButtonTriggerCanceledCallback;
+            _inputActionMap.FindAction("ButtonReload").started   += ButtonReloadStartedCallback;
+            _inputActionMap.FindAction("ButtonReload").canceled  += ButtonReloadCanceledCallback;
+            _inputActionMap.FindAction("ButtonA").started        += ButtonAStartedCallback;
+            _inputActionMap.FindAction("ButtonA").canceled       += ButtonACanceledCallback;
+            _inputActionMap.FindAction("ButtonB").started        += ButtonBStartedCallback;
+            _inputActionMap.FindAction("ButtonB").canceled       += ButtonBCanceledCallback;
+            _inputActionMap.FindAction("ButtonStart").started    += ButtonStartStartedCallback;
+            _inputActionMap.FindAction("ButtonStart").canceled   += ButtonStartCanceledCallback;
+            _inputActionMap.FindAction("ButtonSelect").started   += ButtonSelectStartedCallback;
+            _inputActionMap.FindAction("ButtonSelect").canceled  += ButtonSelectCanceledCallback;
+            _inputActionMap.FindAction("ButtonC").started        += ButtonCStartedCallback;
+            _inputActionMap.FindAction("ButtonC").canceled       += ButtonCCanceledCallback;
+            _inputActionMap.FindAction("DPadUp").started         += DPadUpStartedCallback;
+            _inputActionMap.FindAction("DPadUp").canceled        += DPadUpCanceledCallback;
+            _inputActionMap.FindAction("DPadDown").started       += DPadDownStartedCallback;
+            _inputActionMap.FindAction("DPadDown").canceled      += DPadDownCanceledCallback;
+            _inputActionMap.FindAction("DPadLeft").started       += DPadLeftStartedCallback;
+            _inputActionMap.FindAction("DPadLeft").canceled      += DPadLeftCanceledCallback;
+            _inputActionMap.FindAction("DPadRight").started      += DPadRightStartedCallback;
+            _inputActionMap.FindAction("DPadRight").canceled     += DPadRightCanceledCallback;
 
             _inputActionMap.Enable();
         }
 
         public void Dispose() => _inputActionMap.Dispose();
 
-        public short IsButtonDown(RETRO_DEVICE_ID_LIGHTGUN button) => _buttons.IsBitSetAsShort((uint)button);
+        public short IsButtonDown(RETRO_DEVICE_ID_LIGHTGUN button) => _buttons[(uint)button];
 
         public void Update()
         {
@@ -107,26 +106,48 @@ namespace SK.Libretro.Unity
             Y = (short)(-math.remap(0f, 1f, -1f, 1f, _raycastHits[0].textureCoord.y) * RANGE_Y);
         }
 
-        private void ButtonTriggerCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.TRIGGER);
+        private void ButtonTriggerStartedCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.TRIGGER] = 1;
 
-        private void ButtonReloadCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.RELOAD);
+        private void ButtonReloadStartedCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.RELOAD] = 1;
 
-        private void ButtonACallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.AUX_A);
+        private void ButtonAStartedCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.AUX_A] = 1;
 
-        private void ButtonBCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.AUX_B);
+        private void ButtonBStartedCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.AUX_B] = 1;
 
-        private void ButtonStartCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.START);
+        private void ButtonStartStartedCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.START] = 1;
 
-        private void ButtonSelectCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.SELECT);
+        private void ButtonSelectStartedCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.SELECT] = 1;
 
-        private void ButtonCCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.AUX_C);
+        private void ButtonCStartedCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.AUX_C] = 1;
 
-        private void DPadUpCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_UP);
+        private void DPadUpStartedCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_UP] = 1;
 
-        private void DPadDownCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_DOWN);
+        private void DPadDownStartedCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_DOWN] = 1;
 
-        private void DPadLeftCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_LEFT);
+        private void DPadLeftStartedCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_LEFT] = 1;
 
-        private void DPadRightCallback(InputAction.CallbackContext context) => _buttons.ToggleBit((uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_RIGHT);
+        private void DPadRightStartedCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_RIGHT] = 1;
+
+        private void ButtonTriggerCanceledCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.TRIGGER] = 0;
+
+        private void ButtonReloadCanceledCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.RELOAD] = 0;
+
+        private void ButtonACanceledCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.AUX_A] = 0;
+
+        private void ButtonBCanceledCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.AUX_B] = 0;
+
+        private void ButtonStartCanceledCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.START] = 0;
+
+        private void ButtonSelectCanceledCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.SELECT] = 0;
+
+        private void ButtonCCanceledCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.AUX_C] = 0;
+
+        private void DPadUpCanceledCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_UP] = 0;
+
+        private void DPadDownCanceledCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_DOWN] = 0;
+
+        private void DPadLeftCanceledCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_LEFT] = 0;
+
+        private void DPadRightCanceledCallback(InputAction.CallbackContext context) => _buttons[(uint)RETRO_DEVICE_ID_LIGHTGUN.DPAD_RIGHT] = 0;
     }
 }

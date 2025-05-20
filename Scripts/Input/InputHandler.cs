@@ -139,7 +139,7 @@ namespace SK.Libretro
         private readonly List<retro_input_descriptor> _inputDescriptors = new();
         private readonly string[,] _buttonDescriptions = new string[MAX_USERS, FIRST_META_KEY];
 
-        private retro_keyboard_event_t _keyboardEvent;
+        private retro_keyboard_event_t _keyboardEvent = delegate { };
 
         public InputHandler(Wrapper wrapper, IInputProcessor processor)
         {

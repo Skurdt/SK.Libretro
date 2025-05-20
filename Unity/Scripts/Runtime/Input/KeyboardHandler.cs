@@ -32,15 +32,14 @@ namespace SK.Libretro.Unity
         private const uint NUM_KEYBOARD_KEYS = 320;
 
         private readonly InputActionMap _inputActionMap;
-
         private readonly short[] _keys = new short[NUM_KEYBOARD_KEYS];
 
         public KeyboardHandler(InputActionMap inputActionMap)
         {
             _inputActionMap = inputActionMap;
 
-            _inputActionMap.FindAction("Key").started  += KeyCallback;
-            _inputActionMap.FindAction("Key").canceled += KeyCallback;
+            _inputActionMap.FindAction("Key").started  += KeyStartedCallback;
+            _inputActionMap.FindAction("Key").canceled += KeyCanceledCallback;
 
             _inputActionMap.Enable();
         }
@@ -49,7 +48,9 @@ namespace SK.Libretro.Unity
 
         public short IsKeyDown(retro_key key) => _keys[(uint)key];
 
-        private void KeyCallback(InputAction.CallbackContext context) { }
+        private void KeyStartedCallback(InputAction.CallbackContext context) { }
+
+        private void KeyCanceledCallback(InputAction.CallbackContext context) { }
 
         public void Update()
         {

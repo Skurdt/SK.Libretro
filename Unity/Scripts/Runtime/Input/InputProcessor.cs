@@ -51,7 +51,17 @@ namespace SK.Libretro.Unity
         }
 
         public short JoypadButton(int port, RETRO_DEVICE_ID_JOYPAD button) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.JoypadHandler.IsButtonDown(button) : (short)0;
-        public short JoypadButtons(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.JoypadHandler.Buttons: (short)0;
+        public short JoypadButtons(int port)
+        {
+            if (!_controls.TryGetValue(port, out PlayerInputProcessor processor))
+                return 0;
+
+            short bitmask = 0;
+            for (int i = 0; i < processor.JoypadHandler.Buttons.Length; i++)
+                if (processor.JoypadHandler.Buttons[i] != 0)
+                    bitmask |= (short)(1 << i);
+            return bitmask;
+        }
 
         public short MouseX(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? processor.MouseHandler.DeltaX : (short)0;
         public short MouseY(int port) => _controls.TryGetValue(port, out PlayerInputProcessor processor) ? (short)-processor.MouseHandler.DeltaY : (short)0;
