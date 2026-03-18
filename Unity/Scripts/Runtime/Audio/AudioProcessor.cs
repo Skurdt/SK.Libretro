@@ -37,6 +37,8 @@ namespace SK.Libretro.Unity
         private int _bufferDeadzone;
         private int _bufferFillTarget;
         private bool _bufferIsPrimed;
+        private float _rateControlPitch;
+        private float _rateControlPitchFactor;
         private double _sampleRatio;
 
         private AudioSource _audioSource;
@@ -48,7 +50,8 @@ namespace SK.Libretro.Unity
             if (!_bufferIsPrimed || _circularBuffer.Length == 0)
                 return;
 
-            double stepSize = _sampleRatio;
+            float pitch = RateControl();
+            double stepSize = _sampleRatio * pitch;
 
             _resampler.Resample(data, channels, stepSize);
         }
@@ -72,6 +75,8 @@ namespace SK.Libretro.Unity
 
             _bufferFillTarget = dspBufferInputSize * 2;
             _bufferDeadzone = Mathf.CeilToInt(inputSampleRate / (float)fps) * N_INPUT_CHANNELS;
+            _rateControlPitchFactor = inputSampleRate / 1e9f;
+            _rateControlPitch = 1.0f;
 
             if (!_audioSource)
                 _audioSource = GetComponent<AudioSource>();
@@ -133,6 +138,21 @@ namespace SK.Libretro.Unity
 
             _circularBuffer = new(bufferSize, Allocator.Persistent);
             _bufferIsPrimed = false;
+        }
+
+        private float RateControl()
+        {
+            int sampleDifference = _circularBuffer.Length - _bufferFillTarget;
+
+            if (sampleDifference > _bufferDeadzone)
+                sampleDifference -= _bufferDeadzone;
+            else if (sampleDifference < -_bufferDeadzone)
+                sampleDifference += _bufferDeadzone;
+            else
+                return _rateControlPitch = 1.0f;
+
+            float targetPitch = 1.0f + Mathf.Clamp(sampleDifference * _rateControlPitchFactor, -0.05f, 0.05f);
+            return _rateControlPitch = Mathf.Lerp(_rateControlPitch, targetPitch, 0.1f);
         }
 
         private void UpdateBufferStatus()
