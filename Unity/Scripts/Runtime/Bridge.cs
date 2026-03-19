@@ -278,13 +278,20 @@ namespace SK.Libretro.Unity
                 InvokeInstanceEvent(_instanceStartedCallback);
 
                 System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                double gameFrameTime = 1.0 / _wrapper.Game.SystemAVInfo.Fps;
-                double startTime     = 0.0;
-                double accumulator   = 0.0;
+                double gameFrameTime = 1000.0 / _wrapper.Game.SystemAVInfo.Fps;
+                double nextFrameTime = stopwatch.Elapsed.TotalMilliseconds;
 
                 Running = true;
                 while (Running)
                 {
+                    double currentTime = stopwatch.Elapsed.TotalMilliseconds;
+                    double targetFrameTime = /*FastForward && FastForwardFactor > 0 ? gameFrameTime / FastForwardFactor : */gameFrameTime;
+                    nextFrameTime += targetFrameTime;
+                    double timeRemaining = nextFrameTime - currentTime;
+
+                    if (timeRemaining > 2.0)
+                        Thread.Sleep((int)timeRemaining - 2);
+
                     if (Paused)
                         _manualResetEvent.Wait();
 
@@ -296,20 +303,14 @@ namespace SK.Libretro.Unity
                     //if (_settings.RewindEnabled)
                     //    __wrapper.PerformRewind = Rewind;
 
-                    double currentTime = stopwatch.Elapsed.TotalSeconds;
-                    double dt = currentTime - startTime;
-                    startTime = currentTime;
-
-                    double targetFrameTime = /*FastForward && FastForwardFactor > 0 ? gameFrameTime / FastForwardFactor : */gameFrameTime;
-                    if ((accumulator += dt) >= targetFrameTime)
-                    {
-                        _wrapper.RunFrame();
-                        accumulator = 0.0;
-                    }
-
                     lock (_lock)
                         while (_bridgeCommands.TryDequeue(out IBridgeCommand command))
                             command.Execute();
+
+                    while (stopwatch.Elapsed.TotalMilliseconds < nextFrameTime)
+                        Thread.SpinWait(10);
+
+                    _wrapper.RunFrame();
                 }
 
                 InvokeInstanceEvent(_instanceStoppedCallback);
