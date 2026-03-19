@@ -34,7 +34,7 @@ namespace SK.Libretro
         private uint _audioDeviceId = SDL.AUDIO_DEVICE_DEFAULT_OUTPUT;
         private IntPtr _audioStream = IntPtr.Zero;
 
-        public void Init(int sampleRate)
+        public void Init(int sampleRate, double fps)
         {
             lock (_lock)
             {

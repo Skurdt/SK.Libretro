@@ -86,7 +86,7 @@ namespace SK.Libretro
         public void Init(bool enabled)
         {
             Enabled = enabled;
-            _processor.Init(_wrapper.Game.SystemAVInfo.SampleRate);
+            _processor.Init(_wrapper.Game.SystemAVInfo.SampleRate, _wrapper.Game.SystemAVInfo.Fps);
         }
 
         public void Dispose() => _processor.Dispose();

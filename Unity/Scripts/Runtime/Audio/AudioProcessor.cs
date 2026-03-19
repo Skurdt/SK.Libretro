@@ -21,7 +21,6 @@
  * SOFTWARE. */
 
 using System;
-using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
@@ -33,38 +32,58 @@ namespace SK.Libretro.Unity
     [RequireComponent(typeof(AudioSource)), DisallowMultipleComponent]
     public sealed class AudioProcessor : MonoBehaviour, IAudioProcessor
     {
-        private AudioSource _audioSource;
-        private int _inputSampleRate;
-        private int _outputSampleRate;
+        private const int N_INPUT_CHANNELS = 2;
 
+        private int _bufferDeadzone;
+        private int _bufferFillTarget;
+        private bool _bufferIsPrimed;
+        private float _rateControlPitch;
+        private float _rateControlPitchFactor;
+        private double _sampleRatio;
+
+        private AudioSource _audioSource;
         private NativeRingQueue<float> _circularBuffer;
+        private AudioResampler _resampler;
 
         private void OnAudioFilterRead(float[] data, int channels)
         {
-            if (!_circularBuffer.IsCreated || _circularBuffer.Length < data.Length)
+            if (!_bufferIsPrimed || _circularBuffer.Length == 0)
                 return;
 
-            for (int i = 0; i < data.Length; ++i)
-                data[i] = _circularBuffer.Dequeue();
+            float pitch = RateControl();
+            double stepSize = _sampleRatio * pitch;
+
+            _resampler.Resample(data, channels, stepSize);
         }
 
         private void OnDestroy() => Dispose();
 
-        public async void Init(int sampleRate)
+        public async void Init(int sampleRate, double fps)
         {
             await Awaitable.MainThreadAsync();
 
             if (_audioSource)
                 _audioSource.Stop();
 
-            _inputSampleRate = sampleRate;
-            _outputSampleRate = AudioSettings.outputSampleRate;
+            int inputSampleRate = sampleRate;
+            int outputSampleRate = AudioSettings.outputSampleRate;
+            _sampleRatio = (double)inputSampleRate / outputSampleRate;
+
+            var config = AudioSettings.GetConfiguration();
+            int dspBufferSize = AudioSettings.GetConfiguration().dspBufferSize;
+            int dspBufferInputSize = Mathf.CeilToInt(dspBufferSize * (float)_sampleRatio) * N_INPUT_CHANNELS;
+
+            _bufferFillTarget = dspBufferInputSize * 2;
+            _bufferDeadzone = Mathf.CeilToInt(inputSampleRate / (float)fps) * N_INPUT_CHANNELS;
+            _rateControlPitchFactor = inputSampleRate / 1e9f;
+            _rateControlPitch = 1.0f;
 
             if (!_audioSource)
                 _audioSource = GetComponent<AudioSource>();
             _audioSource.playOnAwake = false;
 
-            InitBuffer(_outputSampleRate, 2, 3.0f);
+            InitBuffer(inputSampleRate, N_INPUT_CHANNELS, 3.0f);
+            _resampler = new AudioResampler(_circularBuffer);
 
             _audioSource.Play();
         }
@@ -85,26 +104,13 @@ namespace SK.Libretro.Unity
             if (!_circularBuffer.IsCreated)
                 return;
 
-            if (_circularBuffer.Length >= _circularBuffer.Capacity)
+            if (_circularBuffer.Length + 2 > _circularBuffer.Capacity)
                 return;
 
-            float ratio                 = (float)_outputSampleRate / _inputSampleRate;
-            int sourceSamplesCount      = 2;
-            int destinationSamplesCount = (int)(sourceSamplesCount * ratio);
-            for (int i = 0; i < destinationSamplesCount; i++)
-            {
-                float sampleIndex = i / ratio;
-                int sampleIndex1 = (int)math.floor(sampleIndex);
-                if (sampleIndex1 > sourceSamplesCount - 1)
-                    sampleIndex1 = sourceSamplesCount - 1;
-                int sampleIndex2 = (int)math.ceil(sampleIndex);
-                if (sampleIndex2 > sourceSamplesCount - 1)
-                    sampleIndex2 = sourceSamplesCount - 1;
-                float interpolationFactor = sampleIndex - sampleIndex1;
-                _circularBuffer.Enqueue(math.lerp(left  * AudioHandler.NORMALIZED_GAIN,
-                                                  right * AudioHandler.NORMALIZED_GAIN,
-                                                  interpolationFactor));
-            }
+            _circularBuffer.Enqueue(left * AudioHandler.NORMALIZED_GAIN);
+            _circularBuffer.Enqueue(right * AudioHandler.NORMALIZED_GAIN);
+
+            UpdateBufferStatus();
         }
 
         public unsafe void ProcessSampleBatch(IntPtr data, nuint frames, PositionalData positionalData)
@@ -112,28 +118,16 @@ namespace SK.Libretro.Unity
             if (!_circularBuffer.IsCreated)
                 return;
 
-            short* sourceSamples        = (short*)data;
-            float ratio                 = (float)_outputSampleRate / _inputSampleRate;
-            int sourceSamplesCount      = (int)frames * 2;
-            int destinationSamplesCount = (int)(sourceSamplesCount * ratio);
+            short* sourceSamples = (short*)data;
+            int sourceSamplesCount = (int)frames * N_INPUT_CHANNELS;
 
-            using NativeArray<float> tempBuffer = new(destinationSamplesCount, Allocator.TempJob);
-
-            new ProcessSampleBatchJob()
-            {
-                sourceSamples           = sourceSamples,
-                ratio                   = ratio,
-                sourceSamplesCount      = sourceSamplesCount,
-                destinationSamplesCount = destinationSamplesCount,
-                tempBuffer              = tempBuffer
-            }.Schedule(destinationSamplesCount, 64).Complete();
-
-            // check if there is enough space in the circular buffer
-            if (_circularBuffer.Length + destinationSamplesCount > _circularBuffer.Capacity)
+            if (_circularBuffer.Length + sourceSamplesCount > _circularBuffer.Capacity)
                 return;
 
-            for (int i = 0; i < destinationSamplesCount; i++)
-                _circularBuffer.Enqueue(tempBuffer[i]);
+            for (int i = 0; i < sourceSamplesCount; i++)
+                _circularBuffer.Enqueue(sourceSamples[i] * AudioHandler.NORMALIZED_GAIN);
+
+            UpdateBufferStatus();
         }
 
         private void InitBuffer(int sampleRate, int channels, float bufferDurationSeconds)
@@ -141,43 +135,91 @@ namespace SK.Libretro.Unity
             int bufferSize = (int)(sampleRate * channels * bufferDurationSeconds);
             if (_circularBuffer.IsCreated)
                 _circularBuffer.Dispose();
+
             _circularBuffer = new(bufferSize, Allocator.Persistent);
+            _bufferIsPrimed = false;
         }
 
-        [BurstCompile]
-        private unsafe struct ProcessSampleBatchJob : IJobParallelFor
+        private float RateControl()
         {
-            [NativeDisableUnsafePtrRestriction] public short* sourceSamples;
-            public float ratio;
-            public int sourceSamplesCount;
-            public int destinationSamplesCount;
-            public NativeArray<float> tempBuffer;
+            int sampleDifference = _circularBuffer.Length - _bufferFillTarget;
 
-            public void Execute(int i)
+            if (sampleDifference > _bufferDeadzone)
+                sampleDifference -= _bufferDeadzone;
+            else if (sampleDifference < -_bufferDeadzone)
+                sampleDifference += _bufferDeadzone;
+            else
+                return _rateControlPitch = 1.0f;
+
+            float targetPitch = 1.0f + Mathf.Clamp(sampleDifference * _rateControlPitchFactor, -0.05f, 0.05f);
+            return _rateControlPitch = Mathf.Lerp(_rateControlPitch, targetPitch, 0.1f);
+        }
+
+        private void UpdateBufferStatus()
+        {
+            if (!_bufferIsPrimed) _bufferIsPrimed = _circularBuffer.Length >= _bufferFillTarget - _bufferDeadzone;
+        }
+
+        private class AudioResampler
+        {
+            private NativeRingQueue<float> _circularBuffer;
+            private double _fractionalPosition = 0;
+            private float _L0 = 0f, _L1 = 0f, _L2 = 0f, _L3 = 0f;
+            private float _R0 = 0f, _R1 = 0f, _R2 = 0f, _R3 = 0f;
+
+            public AudioResampler(NativeRingQueue<float> circularBuffer)
             {
-                float sampleIndex = i / ratio;
-                int sampleIndex1 = math.clamp((int)math.floor(sampleIndex), 0, sourceSamplesCount - 1);
-                int sampleIndex0 = math.clamp(sampleIndex1 - 1, 0, sourceSamplesCount - 1);
-                int sampleIndex2 = math.clamp(sampleIndex1 + 1, 0, sourceSamplesCount - 1);
-                int sampleIndex3 = math.clamp(sampleIndex1 + 2, 0, sourceSamplesCount - 1);
-                float interpolationFactor = sampleIndex - sampleIndex1;
-
-                float sample0 = sourceSamples[sampleIndex0] * AudioHandler.NORMALIZED_GAIN;
-                float sample1 = sourceSamples[sampleIndex1] * AudioHandler.NORMALIZED_GAIN;
-                float sample2 = sourceSamples[sampleIndex2] * AudioHandler.NORMALIZED_GAIN;
-                float sample3 = sourceSamples[sampleIndex3] * AudioHandler.NORMALIZED_GAIN;
-
-                float interpolatedSample = CubicInterpolate(sample0, sample1, sample2, sample3, interpolationFactor);
-                tempBuffer[i] = interpolatedSample;
+                _circularBuffer = circularBuffer;
             }
 
-            private readonly float CubicInterpolate(float v0, float v1, float v2, float v3, float t)
+            public void Resample(float[] data, int channels, double stepSize)
             {
-                float P = v3 - v2 - (v0 - v1);
-                float Q = v0 - v1 - P;
-                float R = v2 - v0;
-                float S = v1;
-                return (P * t * t * t) + (Q * t * t) + (R * t) + S;
+                for (int i = 0; i < data.Length; i += channels)
+                {
+                    while (_fractionalPosition >= 1.0)
+                    {
+                        _L0 = _L1;
+                        _L1 = _L2;
+                        _L2 = _L3;
+                        _R0 = _R1;
+                        _R1 = _R2;
+                        _R2 = _R3;
+
+                        if (_circularBuffer.TryDequeue(out float newL) && _circularBuffer.TryDequeue(out float newR))
+                        {
+                            _L3 = newL;
+                            _R3 = newR;
+                        }
+                        else
+                        {
+                            _L3 = 0f;
+                            _R3 = 0f;
+                        }
+
+                        _fractionalPosition -= 1.0;
+                    }
+    
+                    float t = (float)_fractionalPosition;
+                    data[i] = CubicInterpolate(_L0, _L1, _L2, _L3, t);
+
+                    if (channels > 1)
+                        data[i + 1] = CubicInterpolate(_R0, _R1, _R2, _R3, t);
+
+                    _fractionalPosition += stepSize;
+                }
+            }
+
+            private static float CubicInterpolate(float v0, float v1, float v2, float v3, float t)
+            {
+                float t2 = t * t;
+                float t3 = t2 * t;
+
+                float P = -v0 + 3f * v1 - 3f * v2 + v3;
+                float Q = 2f * v0 - 5f * v1 + 4f * v2 - v3;
+                float R = -v0 + v2;
+                float S = 2f * v1;
+
+                return 0.5f * (P * t3 + Q * t2 + R * t + S);
             }
         }
     }
