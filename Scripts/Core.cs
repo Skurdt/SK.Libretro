@@ -199,7 +199,7 @@ namespace SK.Libretro
 
             SubsystemInfo.Clear();
 
-            retro_subsystem_info subsystemInfo = data.ToStructure<retro_subsystem_info>();
+            var subsystemInfo = data.ToStructure<retro_subsystem_info>();
             while (!subsystemInfo.desc.IsNull())
             {
                 SubsystemInfo.Add(subsystemInfo);
@@ -224,7 +224,7 @@ namespace SK.Libretro
         {
             try
             {
-                string corePath = _wrapper.Settings.Platform switch
+                var corePath = _wrapper.Settings.Platform switch
                 {
                     Platform.Android => $"{Wrapper.CoresDirectory}/{Name}_libretro_android.{_dll.Extension}",
                     _                => $"{Wrapper.CoresDirectory}/{Name}_libretro.{_dll.Extension}"
@@ -236,7 +236,7 @@ namespace SK.Libretro
                     return false;
                 }
 
-                string instancePath = System.IO.Path.Combine(Wrapper.TempDirectory, $"{Name}_{Guid.NewGuid()}.{_dll.Extension}");
+                var instancePath = System.IO.Path.Combine(Wrapper.TempDirectory, $"{Name}_{Guid.NewGuid()}.{_dll.Extension}");
                 File.Copy(corePath, instancePath);
 
                 _dll.Load(instancePath);
@@ -293,7 +293,7 @@ namespace SK.Libretro
 
         private void GetSystemInfo()
         {
-            _retro_get_system_info(out retro_system_info systemInfo);
+            _retro_get_system_info(out var systemInfo);
             SystemInfo = new(systemInfo);
         }
 

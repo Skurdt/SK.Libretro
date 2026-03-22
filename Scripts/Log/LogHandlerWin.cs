@@ -54,7 +54,7 @@ namespace SK.Libretro
                                     IntPtr arg11,
                                     IntPtr arg12)
         {
-            LogLevel logLevel = level.ToLogLevel();
+            var logLevel = level.ToLogLevel();
             if (logLevel < _level)
                 return;
 
@@ -75,7 +75,7 @@ namespace SK.Libretro
                 return;
             }
 
-            Sprintf(out string formattedString,
+            Sprintf(out var formattedString,
                     format,
                     argumentsToPush >= 1 ? arg1 : IntPtr.Zero,
                     argumentsToPush >= 2 ? arg2 : IntPtr.Zero,
@@ -95,10 +95,10 @@ namespace SK.Libretro
 
         private static int GetFormatArgumentCount(string format)
         {
-            int argumentsToPush = 0;
-            MatchCollection matches = _argumentsRegex.Matches(format);
+            var argumentsToPush = 0;
+            var matches = _argumentsRegex.Matches(format);
 
-            foreach (Match match in matches.Cast<Match>())
+            foreach (var match in matches.Cast<Match>())
             {
                 argumentsToPush += match.Groups[1].Value switch
                 {
@@ -113,7 +113,7 @@ namespace SK.Libretro
 
         private static void Sprintf(out string buffer, string format, params IntPtr[] args)
         {
-            int capacity = Platform_scprintf(format,
+            var capacity = Platform_scprintf(format,
                                              args.Length >= 1 ? args[0] : IntPtr.Zero,
                                              args.Length >= 2 ? args[1] : IntPtr.Zero,
                                              args.Length >= 3 ? args[2] : IntPtr.Zero,

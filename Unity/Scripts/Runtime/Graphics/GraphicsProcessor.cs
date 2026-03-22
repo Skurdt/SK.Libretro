@@ -71,8 +71,8 @@ namespace SK.Libretro.Unity
             if (!_texture)
                 throw new NullReferenceException("Texture not created");
 
-            GCHandle handle = GCHandle.Alloc(_texture.GetRawTextureData(), GCHandleType.Pinned);
-            IntPtr result = handle.AddrOfPinnedObject();
+            var handle = GCHandle.Alloc(_texture.GetRawTextureData(), GCHandleType.Pinned);
+            var result = handle.AddrOfPinnedObject();
             handle.Free();
 
             return result;
@@ -86,7 +86,7 @@ namespace SK.Libretro.Unity
             _texture.Apply();
         }
 
-        public async void ProcessFrame0RGB1555(IntPtr data, int width, int height, int pitch)
+        public async void ProcessFrame0RGB1555VFlip(IntPtr data, int width, int height, int pitch)
         {
             await Awaitable.MainThreadAsync();
 
@@ -94,7 +94,7 @@ namespace SK.Libretro.Unity
             if (!_texture)
                 return;
 
-            _jobHandle = new Frame0RGB1555Job
+            _jobHandle = new Frame0RGB1555VFlipJob
             {
                 SourceData  = data,
                 Width       = width,
@@ -146,7 +146,7 @@ namespace SK.Libretro.Unity
             _texture.Apply();
         }
 
-        public async void ProcessFrameRGB565(IntPtr data, int width, int height, int pitch)
+        public async void ProcessFrameRGB565VFlip(IntPtr data, int width, int height, int pitch)
         {
             await Awaitable.MainThreadAsync();
 
@@ -154,7 +154,7 @@ namespace SK.Libretro.Unity
             if (!_texture)
                 return;
 
-            _jobHandle = new FrameRGB565Job
+            _jobHandle = new FrameRGB565VFlipJob
             {
                 SourceData = data,
                 Width = width,

@@ -27,40 +27,31 @@ namespace SK.Libretro
 {
     internal abstract class HardwareRenderProxy : IDisposable
     {
+        public readonly retro_hw_context_reset_t ContextReset;
+        public readonly retro_hw_context_reset_t ContextDestroy;
         public readonly retro_hw_get_current_framebuffer_t GetCurrentFrameBuffer;
         public readonly retro_hw_get_proc_address_t GetProcAddress;
+        public readonly bool Depth;
+        public readonly bool Stencil;
 
         protected readonly Wrapper _wrapper;
-
-        protected IntPtr _windowHandle;
-
-        private readonly retro_hw_context_reset_t _contextReset;
-        //private readonly retro_hw_context_reset_t _contextDestroy;
 
         public HardwareRenderProxy(Wrapper wrapper, retro_hw_render_callback hwRenderCallback)
         {
             _wrapper              = wrapper;
-            _contextReset         = hwRenderCallback.context_reset.GetDelegate<retro_hw_context_reset_t>();
-            //_contextDestroy       = hwRenderCallback.context_destroy.GetDelegate<retro_hw_context_reset_t>();
+            ContextReset          = hwRenderCallback.context_reset.GetDelegate<retro_hw_context_reset_t>();
+            ContextDestroy        = hwRenderCallback.context_destroy.GetDelegate<retro_hw_context_reset_t>();
             GetCurrentFrameBuffer = GetCurrentFrameBufferCall;
             GetProcAddress        = GetProcAddressCall;
+            Depth                 = hwRenderCallback.depth;
+            Stencil               = hwRenderCallback.stencil;
         }
 
-        public void Dispose()
-        {
-            DeInit();
+        public void Dispose() => DeInit();
 
-            if (_windowHandle.IsNotNull())
-                PointerUtilities.SetToNull(ref _windowHandle);
-        }
+        public abstract bool Init(int width, int height);
 
-        public void InitContext() => _contextReset.Invoke();
-
-        public abstract bool Init();
-
-        public abstract void PollEvents();
-
-        public abstract void SwapBuffers();
+        public abstract bool ReadbackFrame(uint width, uint height, ref byte[] textureData);
 
         protected abstract void DeInit();
 

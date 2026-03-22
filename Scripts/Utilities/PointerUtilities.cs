@@ -107,9 +107,9 @@ namespace SK.Libretro
 
         public static void Free(IList<IntPtr> ptrs)
         {
-            for (int i = 0; i < ptrs.Count; i++)
+            for (var i = 0; i < ptrs.Count; i++)
             {
-                IntPtr ptr = ptrs[i];
+                var ptr = ptrs[i];
                 Free(ref ptr);
             }
 

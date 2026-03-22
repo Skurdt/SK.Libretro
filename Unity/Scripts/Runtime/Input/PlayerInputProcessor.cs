@@ -71,8 +71,8 @@ namespace SK.Libretro.Unity
 
         public bool SetRumbleState(retro_rumble_effect effect, ushort strength)
         {
-            float low  = effect is retro_rumble_effect.RETRO_RUMBLE_WEAK   ? strength / (float)ushort.MaxValue : 0f;
-            float high = effect is retro_rumble_effect.RETRO_RUMBLE_STRONG ? strength / (float)ushort.MaxValue : 0f;
+            var low  = effect is retro_rumble_effect.RETRO_RUMBLE_WEAK   ? strength / (float)ushort.MaxValue : 0f;
+            var high = effect is retro_rumble_effect.RETRO_RUMBLE_STRONG ? strength / (float)ushort.MaxValue : 0f;
             Gamepad.current?.SetMotorSpeeds(low, high);
             return true;
         }

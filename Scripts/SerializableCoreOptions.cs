@@ -36,9 +36,9 @@ namespace SK.Libretro
         public SerializableCoreOptions(Options options)
         {
             Options = new string[options.Count];
-            for (int i = 0; i < options.Count; ++i)
+            for (var i = 0; i < options.Count; ++i)
             {
-                Option option = options[i];
+                var option = options[i];
                 Options[i] = $"{option.Key};{option.Description};{option.CurrentValue};{string.Join("|", option.PossibleValues)};";
             }
         }

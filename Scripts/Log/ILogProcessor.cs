@@ -26,11 +26,11 @@ namespace SK.Libretro
 {
     public interface ILogProcessor
     {
-        bool SupportsColorTags { get; }
-        void LogDebug(string message);
-        void LogInfo(string message);
-        void LogWarning(string message);
-        void LogError(string message);
-        void LogException(Exception exception);
+        public bool SupportsColorTags { get; }
+        public void LogDebug(string message);
+        public void LogInfo(string message);
+        public void LogWarning(string message);
+        public void LogError(string message);
+        public void LogException(Exception exception);
     }
 }

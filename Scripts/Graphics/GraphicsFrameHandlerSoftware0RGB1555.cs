@@ -34,7 +34,7 @@ namespace SK.Libretro
         public override void ProcessFrame(IntPtr data, uint width, uint height, nuint pitch)
         {
             if (data.IsNotNull())
-                _processor.ProcessFrame0RGB1555(data, (int)width, (int)height, (int)pitch);
+                _processor.ProcessFrame0RGB1555VFlip(data, (int)width, (int)height, (int)pitch);
         }
     }
 }

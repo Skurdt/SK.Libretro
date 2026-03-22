@@ -86,8 +86,8 @@ namespace SK.Libretro.Unity
                 return;
             }
 
-            Ray ray = _libretroInstance.LightgunRay;
-            int hitCount = Physics.RaycastNonAlloc(ray, _raycastHits, math.INFINITY, 1 << _libretroInstance.LightgunRaycastLayer);
+            var ray = _libretroInstance.LightgunRay;
+            var hitCount = Physics.RaycastNonAlloc(ray, _raycastHits, math.INFINITY, 1 << _libretroInstance.LightgunRaycastLayer);
             if (hitCount <= 0)
             {
                 X = Y = -0x8000;

@@ -27,11 +27,11 @@ namespace SK.Libretro
 {
     public interface IGraphicsProcessor : IDisposable
     {
-        ValueTask<IntPtr> GetCurrentSoftwareFramebuffer(int width, int height);
-        void ProcessFrameSoftwareFramebuffer(IntPtr data, int pitch, int height);
-        void ProcessFrame0RGB1555(IntPtr data, int width, int height, int pitch);
-        void ProcessFrameXRGB8888(IntPtr data, int width, int height, int pitch);
-        void ProcessFrameXRGB8888VFlip(IntPtr data, int width, int height, int pitch);
-        void ProcessFrameRGB565(IntPtr data, int width, int height, int pitch);
+        public ValueTask<IntPtr> GetCurrentSoftwareFramebuffer(int width, int height);
+        public void ProcessFrameSoftwareFramebuffer(IntPtr data, int pitch, int height);
+        public void ProcessFrame0RGB1555VFlip(IntPtr data, int width, int height, int pitch);
+        public void ProcessFrameXRGB8888(IntPtr data, int width, int height, int pitch);
+        public void ProcessFrameXRGB8888VFlip(IntPtr data, int width, int height, int pitch);
+        public void ProcessFrameRGB565VFlip(IntPtr data, int width, int height, int pitch);
     }
 }

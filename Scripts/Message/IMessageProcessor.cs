@@ -26,9 +26,9 @@ namespace SK.Libretro
 {
     public interface IMessageProcessor : IDisposable
     {
-        void ShowNotification(string message, uint seconds, LogLevel level, uint priority);
-        void ShowNotificationAlt(string message, uint seconds, LogLevel level, uint priority);
-        void ShowStatus(string message);
-        void ShowProgress(string message, sbyte progress);
+        public void ShowNotification(string message, uint seconds, LogLevel level, uint priority);
+        public void ShowNotificationAlt(string message, uint seconds, LogLevel level, uint priority);
+        public void ShowStatus(string message);
+        public void ShowProgress(string message, sbyte progress);
     }
 }
