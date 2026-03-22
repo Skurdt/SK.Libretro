@@ -163,7 +163,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_rumble_interface rumbleInterface = data.ToStructure<retro_rumble_interface>();
+            var rumbleInterface = data.ToStructure<retro_rumble_interface>();
             rumbleInterface.set_rumble_state = _setRumbleState.GetFunctionPointer();
             Marshal.StructureToPtr(rumbleInterface, data, false);
             return true;
@@ -210,7 +210,7 @@ namespace SK.Libretro
 
             _inputDescriptors.Clear();
 
-            retro_input_descriptor descriptor = data.ToStructure<retro_input_descriptor>();
+            var descriptor = data.ToStructure<retro_input_descriptor>();
             while (descriptor is not null && !descriptor.desc.IsNull())
             {
                 _inputDescriptors.Add(new()
@@ -226,24 +226,24 @@ namespace SK.Libretro
                     _buttonDescriptions[descriptor.port, descriptor.id] = descriptor.desc.AsString();
                 else if (descriptor.device is RETRO_DEVICE.ANALOG)
                 {
-                    RETRO_DEVICE_ID_ANALOG id = (RETRO_DEVICE_ID_ANALOG)descriptor.id;
+                    var id = (RETRO_DEVICE_ID_ANALOG)descriptor.id;
                     switch (id)
                     {
                         case RETRO_DEVICE_ID_ANALOG.X:
                         {
-                            RETRO_DEVICE_INDEX_ANALOG index = (RETRO_DEVICE_INDEX_ANALOG)descriptor.index;
+                            var index = (RETRO_DEVICE_INDEX_ANALOG)descriptor.index;
                             switch (index)
                             {
                                 case RETRO_DEVICE_INDEX_ANALOG.LEFT:
                                 {
-                                    string desc = descriptor.desc.AsString();
+                                    var desc = descriptor.desc.AsString();
                                     _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_LEFT_X_PLUS] = desc;
                                     _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_LEFT_X_MINUS] = desc;
                                 }
                                 break;
                                 case RETRO_DEVICE_INDEX_ANALOG.RIGHT:
                                 {
-                                    string desc = descriptor.desc.AsString();
+                                    var desc = descriptor.desc.AsString();
                                     _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_RIGHT_X_PLUS] = desc;
                                     _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_RIGHT_X_MINUS] = desc;
                                 }
@@ -253,19 +253,19 @@ namespace SK.Libretro
                         break;
                         case RETRO_DEVICE_ID_ANALOG.Y:
                         {
-                            RETRO_DEVICE_INDEX_ANALOG index = (RETRO_DEVICE_INDEX_ANALOG)descriptor.index;
+                            var index = (RETRO_DEVICE_INDEX_ANALOG)descriptor.index;
                             switch (index)
                             {
                                 case RETRO_DEVICE_INDEX_ANALOG.LEFT:
                                 {
-                                    string desc = descriptor.desc.AsString();
+                                    var desc = descriptor.desc.AsString();
                                     _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_LEFT_Y_PLUS] = desc;
                                     _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_LEFT_Y_MINUS] = desc;
                                 }
                                 break;
                                 case RETRO_DEVICE_INDEX_ANALOG.RIGHT:
                                 {
-                                    string desc = descriptor.desc.AsString();
+                                    var desc = descriptor.desc.AsString();
                                     _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_RIGHT_Y_PLUS] = desc;
                                     _buttonDescriptions[descriptor.port, (int)CustomBinds.ANALOG_RIGHT_Y_MINUS] = desc;
                                 }
@@ -290,7 +290,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_keyboard_callback callback = data.ToStructure<retro_keyboard_callback>();
+            var callback = data.ToStructure<retro_keyboard_callback>();
             _keyboardEvent = callback.callback.GetDelegate<retro_keyboard_event_t>();
             return true;
         }
@@ -300,13 +300,13 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_controller_info controllerInfo = data.ToStructure<retro_controller_info>();
-            int index = 0;
+            var controllerInfo = data.ToStructure<retro_controller_info>();
+            var index = 0;
             while (controllerInfo.types.IsNotNull())
             {
-                for (int deviceIndex = 0; deviceIndex < controllerInfo.num_types; ++deviceIndex)
+                for (var deviceIndex = 0; deviceIndex < controllerInfo.num_types; ++deviceIndex)
                 {
-                    retro_controller_description controllerDescription = controllerInfo.types.ToStructure<retro_controller_description>();
+                    var controllerDescription = controllerInfo.types.ToStructure<retro_controller_description>();
                     if (controllerDescription.desc.IsNotNull())
                         DeviceMap.Add(index, new() { Description = controllerDescription.desc.AsString(), Device = controllerDescription.id });
                     
@@ -397,7 +397,7 @@ namespace SK.Libretro
             if (id >= retro_key.RETROK_OEM_102)
                 return 0;
 
-            short down = _processor.KeyboardKey((int)port, id);
+            var down = _processor.KeyboardKey((int)port, id);
             _keyboardEvent(down, (uint)id, 0, 0);
             return down;
         }

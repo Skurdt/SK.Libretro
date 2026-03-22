@@ -26,33 +26,33 @@ namespace SK.Libretro
 {
     public interface IInputProcessor
     {
-        LeftStickBehaviour LeftStickBehaviour { get; set; }
+        public LeftStickBehaviour LeftStickBehaviour { get; set; }
 
-        short JoypadButton(int port, RETRO_DEVICE_ID_JOYPAD button);
-        short JoypadButtons(int port);
+        public short JoypadButton(int port, RETRO_DEVICE_ID_JOYPAD button);
+        public short JoypadButtons(int port);
 
-        short MouseX(int port);
-        short MouseY(int port);
-        short MouseWheel(int port);
-        short MouseButton(int port, RETRO_DEVICE_ID_MOUSE button);
+        public short MouseX(int port);
+        public short MouseY(int port);
+        public short MouseWheel(int port);
+        public short MouseButton(int port, RETRO_DEVICE_ID_MOUSE button);
 
-        short KeyboardKey(int port, retro_key key);
+        public short KeyboardKey(int port, retro_key key);
 
-        short LightgunX(int port);
-        short LightgunY(int port);
-        bool LightgunIsOffscreen(int port);
-        short LightgunButton(int port, RETRO_DEVICE_ID_LIGHTGUN button);
+        public short LightgunX(int port);
+        public short LightgunY(int port);
+        public bool LightgunIsOffscreen(int port);
+        public short LightgunButton(int port, RETRO_DEVICE_ID_LIGHTGUN button);
 
-        short AnalogLeftX(int port);
-        short AnalogLeftY(int port);
-        short AnalogRightX(int port);
-        short AnalogRightY(int port);
+        public short AnalogLeftX(int port);
+        public short AnalogLeftY(int port);
+        public short AnalogRightX(int port);
+        public short AnalogRightY(int port);
 
-        short PointerX(int port);
-        short PointerY(int port);
-        short PointerPressed(int port);
-        short PointerCount(int port);
+        public short PointerX(int port);
+        public short PointerY(int port);
+        public short PointerPressed(int port);
+        public short PointerCount(int port);
 
-        bool SetRumbleState(int port, retro_rumble_effect effect, ushort strength);
+        public bool SetRumbleState(int port, retro_rumble_effect effect, ushort strength);
     }
 }

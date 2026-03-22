@@ -26,11 +26,11 @@ namespace SK.Libretro
 {
     internal interface ILogger
     {
-        void SetLogLevel(LogLevel level);
-        void LogDebug(string message, string caller);
-        void LogInfo(string message, string caller);
-        void LogWarning(string message, string caller);
-        void LogError(string message, string caller);
-        void LogException(Exception exception, string caller);
+        public void SetLogLevel(LogLevel level);
+        public void LogDebug(string message, string caller);
+        public void LogInfo(string message, string caller);
+        public void LogWarning(string message, string caller);
+        public void LogError(string message, string caller);
+        public void LogException(Exception exception, string caller);
     }
 }

@@ -62,7 +62,7 @@ namespace SK.Libretro
                 _frameHandler = _pixelFormat switch
                 {
                     retro_pixel_format.RETRO_PIXEL_FORMAT_0RGB1555 => new NullGraphicsFrameHandler(_processor),
-                    retro_pixel_format.RETRO_PIXEL_FORMAT_XRGB8888 => new GraphicsFrameHandlerOpenGLXRGB8888VFlip(_processor, _hardwareRenderProxy),
+                    retro_pixel_format.RETRO_PIXEL_FORMAT_XRGB8888 => new GraphicsFrameHandlerOpenGLXRGB8888(_processor, _hardwareRenderProxy),
                     retro_pixel_format.RETRO_PIXEL_FORMAT_RGB565   => new NullGraphicsFrameHandler(_processor),
                     retro_pixel_format.RETRO_PIXEL_FORMAT_UNKNOWN
                     or _ => new NullGraphicsFrameHandler(_processor)
@@ -86,7 +86,7 @@ namespace SK.Libretro
             _hardwareRenderProxy?.Dispose();
         }
 
-        public void PollEvents() => _hardwareRenderProxy?.PollEvents();
+        public bool InitHwRender() => _hardwareRenderProxy is null || _hardwareRenderProxy.Init(_wrapper.Game.SystemAVInfo.BaseWidth, _wrapper.Game.SystemAVInfo.BaseHeight);
 
         public void SetCoreCallback(retro_set_video_refresh_t setVideoRefresh) => setVideoRefresh(_refreshCallback);
 
@@ -146,7 +146,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            int pixelFormat = data.ReadInt32();
+            var pixelFormat = data.ReadInt32();
             _pixelFormat = pixelFormat switch
             {
                 0 or 1 or 2 => (retro_pixel_format)pixelFormat,
@@ -164,7 +164,7 @@ namespace SK.Libretro
             if (data.IsNull() || _hardwareRenderProxy is not null)
                 return false;
 
-            retro_hw_render_callback hwRenderCallback = data.ToStructure<retro_hw_render_callback>();
+            var hwRenderCallback = data.ToStructure<retro_hw_render_callback>();
             _hardwareRenderProxy = hwRenderCallback.context_type switch
             {
                 retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL
@@ -174,7 +174,7 @@ namespace SK.Libretro
                 or _ => default
             };
 
-            if (_hardwareRenderProxy is null || !_hardwareRenderProxy.Init())
+            if (_hardwareRenderProxy is null)
                 return false;
 
             hwRenderCallback.get_current_framebuffer = _hardwareRenderProxy.GetCurrentFrameBuffer.GetFunctionPointer();

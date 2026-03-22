@@ -96,7 +96,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_perf_callback callback = data.ToStructure<retro_perf_callback>();
+            var callback = data.ToStructure<retro_perf_callback>();
 
             callback.get_time_usec    = _get_time_usec.GetFunctionPointer();
             callback.get_cpu_features = _get_cpu_features.GetFunctionPointer();

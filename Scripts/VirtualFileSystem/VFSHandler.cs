@@ -109,7 +109,7 @@ namespace SK.Libretro
 
         public void Dispose()
         {
-            foreach (FileStream stream in _files.Values)
+            foreach (var stream in _files.Values)
             {
                 try
                 {
@@ -129,7 +129,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_vfs_interface_info interfaceInfo = data.ToStructure<retro_vfs_interface_info>();
+            var interfaceInfo = data.ToStructure<retro_vfs_interface_info>();
             if (interfaceInfo.required_interface_version > SUPPORTED_VERSION)
                 return false;
 
@@ -175,7 +175,7 @@ namespace SK.Libretro
              : "";
 #else
         private string GetPath(ref retro_vfs_file_handle stream)
-            => _wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream) ? fileStream.Name : "";
+            => _wrapper.VFSHandler._files.TryGetValue(stream.handle, out var fileStream) ? fileStream.Name : "";
 #endif
 
 #if ENABLE_IL2CPP
@@ -192,12 +192,12 @@ namespace SK.Libretro
             try
             {
 #endif
-                FileMode fileMode = (mode & (uint)RETRO_VFS_FILE_ACCESS.UPDATE_EXISTING) == (uint)RETRO_VFS_FILE_ACCESS.UPDATE_EXISTING
+                var fileMode = (mode & (uint)RETRO_VFS_FILE_ACCESS.UPDATE_EXISTING) == (uint)RETRO_VFS_FILE_ACCESS.UPDATE_EXISTING
                                   ? FileMode.Append
                                   : (mode & (uint)RETRO_VFS_FILE_ACCESS.READ_WRITE) == (uint)RETRO_VFS_FILE_ACCESS.READ_WRITE ? FileMode.Create : FileMode.Open;
 
-                FileStream stream = File.Open(path, fileMode);
-                IntPtr handle = stream.SafeFileHandle.DangerousGetHandle();
+                var stream = File.Open(path, fileMode);
+                var handle = stream.SafeFileHandle.DangerousGetHandle();
                 _wrapper.VFSHandler._files.Add(handle, stream);
                 return handle;
             }
@@ -221,7 +221,7 @@ namespace SK.Libretro
             try
             {
 #endif
-                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
+                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out var fileStream))
                     return -1;
 
                 _ = _wrapper.VFSHandler._files.Remove(stream.handle);
@@ -242,7 +242,7 @@ namespace SK.Libretro
              ? wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream) ? fileStream.Length : -1
              : -1;
 #else
-        private long Size(ref retro_vfs_file_handle stream) => _wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream) ? fileStream.Length : -1;
+        private long Size(ref retro_vfs_file_handle stream) => _wrapper.VFSHandler._files.TryGetValue(stream.handle, out var fileStream) ? fileStream.Length : -1;
 #endif
 
 #if ENABLE_IL2CPP
@@ -252,7 +252,7 @@ namespace SK.Libretro
              ? wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream) ? fileStream.Position : -1
              : -1;
 #else
-        private long Tell(ref retro_vfs_file_handle stream) => _wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream) ? fileStream.Position : -1;
+        private long Tell(ref retro_vfs_file_handle stream) => _wrapper.VFSHandler._files.TryGetValue(stream.handle, out var fileStream) ? fileStream.Position : -1;
 #endif
 
 #if ENABLE_IL2CPP
@@ -272,10 +272,10 @@ namespace SK.Libretro
                 if (seek_position is < (int)RETRO_VFS_SEEK_POSITION.START or > (int)RETRO_VFS_SEEK_POSITION.END)
                     return -1;
 
-                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
+                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out var fileStream))
                     return -1;
 
-                SeekOrigin seekOrigin = seek_position switch
+                var seekOrigin = seek_position switch
                 {
                     (int)RETRO_VFS_SEEK_POSITION.START   => SeekOrigin.Begin,
                     (int)RETRO_VFS_SEEK_POSITION.CURRENT => SeekOrigin.Current,
@@ -308,11 +308,11 @@ namespace SK.Libretro
                 if (len > int.MaxValue)
                     return -1;
 
-                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
+                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out var fileStream))
                     return -1;
 
-                byte[] data = new byte[len];
-                int result = fileStream.Read(data, 0, (int)len);
+                var data = new byte[len];
+                var result = fileStream.Read(data, 0, (int)len);
                 Marshal.Copy(data, 0, s, data.Length);
                 return result;
             }
@@ -339,10 +339,10 @@ namespace SK.Libretro
                 if (len > int.MaxValue)
                     return -1;
 
-                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
+                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out var fileStream))
                     return -1;
 
-                byte[] data = new byte[len];
+                var data = new byte[len];
                 Marshal.Copy(s, data, 0, (int)len);
                 fileStream.Write(data, 0, (int)len);
                 return len;
@@ -367,7 +367,7 @@ namespace SK.Libretro
             try
             {
 #endif
-                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
+                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out var fileStream))
                     return -1;
 
                 fileStream.Flush();
@@ -429,7 +429,7 @@ namespace SK.Libretro
             try
             {
 #endif
-                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out FileStream fileStream))
+                if (!_wrapper.VFSHandler._files.TryGetValue(stream.handle, out var fileStream))
                     return -1;
 
                 fileStream.SetLength(length);

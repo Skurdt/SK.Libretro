@@ -52,8 +52,8 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_message retroMessage = data.ToStructure<retro_message>();
-            string message = retroMessage.msg.AsString();
+            var retroMessage = data.ToStructure<retro_message>();
+            var message = retroMessage.msg.AsString();
             LogConsole(message);
             LogOSD(message, retroMessage.frames / 60);
             return true;
@@ -64,8 +64,8 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_message_ext retroMessage = data.ToStructure<retro_message_ext>();
-            string message = retroMessage.msg.AsString();
+            var retroMessage = data.ToStructure<retro_message_ext>();
+            var message = retroMessage.msg.AsString();
             switch (retroMessage.target)
             {
                 case retro_message_target.RETRO_MESSAGE_TARGET_ALL:

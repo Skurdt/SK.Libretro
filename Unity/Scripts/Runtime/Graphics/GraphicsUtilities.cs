@@ -26,19 +26,19 @@ namespace SK.Libretro.Unity
     {
         public static uint ARGB1555toBGRA32(ushort packed)
         {
-            uint a = (uint)packed & 0x8000;
-            uint r = (uint)packed & 0x7C00;
-            uint g = (uint)packed & 0x03E0;
-            uint b = (uint)packed & 0x1F;
-            uint rgb = (r << 9) | (g << 6) | (b << 3);
+            var a = (uint)packed & 0x8000;
+            var r = (uint)packed & 0x7C00;
+            var g = (uint)packed & 0x03E0;
+            var b = (uint)packed & 0x1F;
+            var rgb = (r << 9) | (g << 6) | (b << 3);
             return (a * 0x1FE00) | rgb | ((rgb >> 5) & 0x070707);
         }
 
         public static uint RGB565toBGRA32(ushort packed)
         {
-            uint r = ((uint)packed >> 11) & 0x1f;
-            uint g = ((uint)packed >> 5) & 0x3f;
-            uint b = ((uint)packed >> 0) & 0x1f;
+            var r = ((uint)packed >> 11) & 0x1f;
+            var g = ((uint)packed >> 5) & 0x3f;
+            var b = ((uint)packed >> 0) & 0x1f;
             r = (r << 3) | (r >> 2);
             g = (g << 2) | (g >> 4);
             b = (b << 3) | (b >> 2);

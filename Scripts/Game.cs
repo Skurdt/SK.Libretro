@@ -71,10 +71,10 @@ namespace SK.Libretro
                     if (_path is null)
                     {
                         // Try Zip archive
-                        string archivePath = $"{_gameDirectory}/{Name}.zip";
+                        var archivePath = $"{_gameDirectory}/{Name}.zip";
                         if (FileSystem.FileExists(archivePath))
                         {
-                            string extractDirectory = FileSystem.GetOrCreateDirectory($"{Wrapper.TempDirectory}/extracted/{Name}_{Guid.NewGuid()}");
+                            var extractDirectory = FileSystem.GetOrCreateDirectory($"{Wrapper.TempDirectory}/extracted/{Name}_{Guid.NewGuid()}");
                             System.IO.Compression.ZipFile.ExtractToDirectory(archivePath, extractDirectory);
 
                             _path = GetExtractedGamePath(extractDirectory);
@@ -146,9 +146,9 @@ namespace SK.Libretro
 
             _gameInfoExtPtr = PointerUtilities.Alloc<retro_game_info_ext>();
 
-            string directory = Path.GetDirectoryName(_path).Replace(Path.DirectorySeparatorChar, '/');
-            string name      = Path.GetFileNameWithoutExtension(_path);
-            string extension = Path.GetExtension(_path).TrimStart('.');
+            var directory = Path.GetDirectoryName(_path).Replace(Path.DirectorySeparatorChar, '/');
+            var name      = Path.GetFileNameWithoutExtension(_path);
+            var extension = Path.GetExtension(_path).TrimStart('.');
 
             retro_game_info_ext gameInfoExt = new()
             {
@@ -221,14 +221,14 @@ namespace SK.Libretro
 
             _systemContentInfoOverrides.Clear();
 
-            retro_system_content_info_override infoOverride = data.ToStructure<retro_system_content_info_override>();
+            var infoOverride = data.ToStructure<retro_system_content_info_override>();
             while (infoOverride is not null && infoOverride.extensions.IsNotNull())
             {
                 _systemContentInfoOverrides.Add(infoOverride);
 
-                string extensionsString = infoOverride.extensions.AsString();
-                string[] extensions = extensionsString.Split('|');
-                foreach (string extension in extensions)
+                var extensionsString = infoOverride.extensions.AsString();
+                var extensions = extensionsString.Split('|');
+                foreach (var extension in extensions)
                     _contentOverrides.Add(extension, infoOverride.need_fullpath, infoOverride.persistent_data);
 
                 data += Marshal.SizeOf(infoOverride);
@@ -250,9 +250,9 @@ namespace SK.Libretro
             if (_wrapper.Core.SystemInfo.ValidExtensions is null)
                 return null;
 
-            foreach (string extension in _wrapper.Core.SystemInfo.ValidExtensions)
+            foreach (var extension in _wrapper.Core.SystemInfo.ValidExtensions)
             {
-                string filePath = $"{directory}/{gameName}.{extension}";
+                var filePath = $"{directory}/{gameName}.{extension}";
                 if (FileSystem.FileExists(filePath))
                     return filePath.Replace(Path.DirectorySeparatorChar, '/');
             }
@@ -265,8 +265,8 @@ namespace SK.Libretro
             if (_wrapper.Core.SystemInfo.ValidExtensions is null)
                 return null;
 
-            foreach (string extension in _wrapper.Core.SystemInfo.ValidExtensions)
-                foreach (string filePath in Directory.EnumerateFiles(directory, $"*.{extension}", SearchOption.AllDirectories))
+            foreach (var extension in _wrapper.Core.SystemInfo.ValidExtensions)
+                foreach (var filePath in Directory.EnumerateFiles(directory, $"*.{extension}", SearchOption.AllDirectories))
                     return filePath.Replace(Path.DirectorySeparatorChar, '/');
 
             return null;
@@ -279,7 +279,7 @@ namespace SK.Libretro
 
             GameInfo.path = _wrapper.GetUnsafeString(_path);
 
-            (bool result, ContentOverride contentOverride) = _contentOverrides.TryGet(Path.GetExtension(_path).TrimStart('.'));
+            (var result, var contentOverride) = _contentOverrides.TryGet(Path.GetExtension(_path).TrimStart('.'));
             _needFullPath   = result ? contentOverride.NeedFullpath : _wrapper.Core.SystemInfo.NeedFullPath;
             _persistentData = result && contentOverride.PersistentData;
             if (_needFullPath)
@@ -288,7 +288,7 @@ namespace SK.Libretro
             try
             {
                 using FileStream stream = new(_path, FileMode.Open);
-                byte[] data = new byte[stream.Length];
+                var data = new byte[stream.Length];
                 _ = stream.Read(data, 0, (int)stream.Length);
 
                 _dataPtr = PointerUtilities.Alloc(data.Length);
@@ -313,7 +313,7 @@ namespace SK.Libretro
                 if (!_wrapper.Core.LoadGame(ref GameInfo))
                     return false;
 
-                _wrapper.Core.GetSystemAVInfo(out retro_system_av_info info);
+                _wrapper.Core.GetSystemAVInfo(out var info);
                 SystemAVInfo.Init(info);
                 return true;
             }

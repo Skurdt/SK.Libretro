@@ -51,7 +51,7 @@ namespace SK.Libretro
 
         protected override IntPtr GetProcAddress(string functionName)
         {
-            IntPtr procAddress = PlatformGetProcAddress(_nativeHandle, functionName);
+            var procAddress = PlatformGetProcAddress(_nativeHandle, functionName);
             return procAddress.IsNotNull() ? procAddress : throw new Exception(GetLastErrorMessage());
         }
 

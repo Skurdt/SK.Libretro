@@ -147,7 +147,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            int bits = 0;
+            var bits = 0;
             bits    |= 1; // if video enabled
             bits    |= 2; // if audio enabled
 
@@ -170,7 +170,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            _wrapper.LogHandler.LogInfo("Using FrameTime Callback", nameof(RETRO_ENVIRONMENT.SET_FRAME_TIME_CALLBACK));
+            _wrapper.LogHandler.LogInfo("Using FrameTime Callback", "SK.Libretro.EnvironmentHandler.SetFrameTimeCallback");
             _wrapper.FrameTimeInterface = data.ToStructure<retro_frame_time_callback>();
             return true;
         }

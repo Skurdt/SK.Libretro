@@ -31,10 +31,10 @@ namespace SK.Libretro
 
         public ValueTask<IntPtr> GetCurrentSoftwareFramebuffer(int width, int height) => new(IntPtr.Zero);
         public void ProcessFrameSoftwareFramebuffer(IntPtr data, int pitch, int height) { }
-        public void ProcessFrame0RGB1555(IntPtr data, int width, int height, int pitch) { }
+        public void ProcessFrame0RGB1555VFlip(IntPtr data, int width, int height, int pitch) { }
         public void ProcessFrameXRGB8888(IntPtr data, int width, int height, int pitch) { }
         public void ProcessFrameXRGB8888VFlip(IntPtr data, int width, int height, int pitch) { }
-        public void ProcessFrameRGB565(IntPtr data, int width, int height, int pitch) { }
+        public void ProcessFrameRGB565VFlip(IntPtr data, int width, int height, int pitch) { }
         public void FinalizeFrame() { }
         public void Dispose() { }
     }

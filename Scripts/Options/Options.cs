@@ -38,7 +38,7 @@ namespace SK.Libretro
 
         internal Options(SerializableCoreOptions options)
         {
-            foreach (string option in options.Options)
+            foreach (var option in options.Options)
             {
                 Option coreOption = new(option);
                 _options.Add(coreOption.Key, coreOption);
@@ -47,7 +47,7 @@ namespace SK.Libretro
 
         internal void UpdateValue(string key, int index)
         {
-            if (TryGetValue(key, out Option option))
+            if (TryGetValue(key, out var option))
                 option.Update(index);
         }
 
@@ -57,7 +57,7 @@ namespace SK.Libretro
 
         public Option this[string key]
         {
-            get => !string.IsNullOrWhiteSpace(key) && TryGetValue(key, out Option option) ? option : null;
+            get => !string.IsNullOrWhiteSpace(key) && TryGetValue(key, out var option) ? option : null;
             set
             {
                 if (string.IsNullOrWhiteSpace(key))

@@ -65,7 +65,7 @@ namespace SK.Libretro.Unity
                 case LeftStickBehaviour.DigitalOnly:
                 {
                     (LeftX, LeftY)             = (0, 0);
-                    (short leftX, short leftY) = context.ReadValue<Vector2>().ToShort(0x7fff);
+                    (var leftX, var leftY) = context.ReadValue<Vector2>().ToShort(0x7fff);
                     _joypadHandler.SetButtonState(RETRO_DEVICE_ID_JOYPAD.UP, leftY > 0);
                     _joypadHandler.SetButtonState(RETRO_DEVICE_ID_JOYPAD.DOWN, leftY < 0);
                     _joypadHandler.SetButtonState(RETRO_DEVICE_ID_JOYPAD.LEFT, leftX < 0);

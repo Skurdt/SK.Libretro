@@ -21,33 +21,29 @@
  * SOFTWARE. */
 
 using System;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Jobs;
 
-namespace SK.Libretro
+namespace SK.Libretro.Unity
 {
-    internal sealed class GraphicsFrameHandlerOpenGLXRGB8888VFlip : GraphicsFrameHandlerBase
+    [BurstCompile]
+    public struct FrameRGB565VFlipJob : IJobParallelFor
     {
-        private readonly HardwareRenderProxy _hardwareRenderProxy;
+        [ReadOnly, NativeDisableUnsafePtrRestriction] public IntPtr SourceData;
+        public int Width;
+        public int Height;
+        public int PitchPixels;
+        [WriteOnly] public NativeArray<uint> TextureData;
 
-        public GraphicsFrameHandlerOpenGLXRGB8888VFlip(IGraphicsProcessor processor, HardwareRenderProxy hardwareRenderProxy)
-        : base(processor)
+        public unsafe void Execute(int index)
         {
-            _hardwareRenderProxy = hardwareRenderProxy;
-            _hardwareRenderProxy?.InitContext();
-        }
-
-        public override unsafe void ProcessFrame(IntPtr _, uint width, uint height, nuint pitch)
-        {
-            if (_hardwareRenderProxy is null)
-                return;
-
-            int bufferSize = (int)(width * height * 4);
-            byte[] bufferSrc = new byte[bufferSize];
-            fixed (void* bufferSrcPtr = bufferSrc)
-            {
-                GL.ReadPixels(0, 0, (int)width, (int)height, GL.BGRA, GL.UNSIGNED_BYTE, bufferSrcPtr);
-                _processor.ProcessFrameXRGB8888VFlip((IntPtr)bufferSrcPtr, (int)width, (int)height, (int)width * 4);
-            }
-            _hardwareRenderProxy.SwapBuffers();
+            var x = index % Width;
+            var y = (index - x) / Width;
+            y = Height - 1 - y;
+            var offset = y * PitchPixels;
+            TextureData[index] = GraphicsUtilities.RGB565toBGRA32(((ushort*)SourceData)[offset + x]);
         }
     }
 }

@@ -60,7 +60,7 @@ namespace SK.Libretro
             if (PossibleValues is null || PossibleValues.Length == 0)
                 return;
 
-            int clampedIndex = index.Clamp(0, PossibleValues.Length - 1);
+            var clampedIndex = index.Clamp(0, PossibleValues.Length - 1);
             CurrentValue = PossibleValues[clampedIndex];
         }
 

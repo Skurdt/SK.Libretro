@@ -24,6 +24,6 @@ namespace SK.Libretro
 {
     public interface ILedProcessor
     {
-        void SetState(int led, int state);
+        public void SetState(int led, int state);
     }
 }

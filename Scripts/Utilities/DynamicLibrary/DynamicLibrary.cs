@@ -95,7 +95,7 @@ namespace SK.Libretro
                 {
                     if (_nativeHandle.IsNotNull())
                         FreeLibrary();
-                    _nativeHandle = IntPtr.Zero;
+                    PointerUtilities.SetToNull(ref _nativeHandle);
                 }
                 catch (Exception e)
                 {

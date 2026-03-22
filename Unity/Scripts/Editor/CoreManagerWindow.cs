@@ -110,10 +110,10 @@ namespace SK.Libretro.Unity.Editor
 
         private void SetupToolbar()
         {
-            ToolbarSearchField searchField = rootVisualElement.Q<ToolbarSearchField>("ToolbarSearchField");
+            var searchField = rootVisualElement.Q<ToolbarSearchField>("ToolbarSearchField");
             _ = searchField.RegisterValueChangedCallback(ToolbarSearchFieldValueChangedCallback);
 
-            ToolbarButton downloadInfoFilesButton = rootVisualElement.Q<ToolbarButton>("ToolbarButton");
+            var downloadInfoFilesButton = rootVisualElement.Q<ToolbarButton>("ToolbarButton");
             downloadInfoFilesButton.clickable = null;
             downloadInfoFilesButton.clicked += async () => await ToolbarDownloadInfoFilesButtonClickedCallback(downloadInfoFilesButton);
         }
@@ -132,12 +132,12 @@ namespace SK.Libretro.Unity.Editor
         private async Awaitable ToolbarDownloadInfoFilesButtonClickedCallback(ToolbarButton downloadInfoFilesButton)
         {
             downloadInfoFilesButton.SetEnabled(false);
-            string infoRepositoryPath = await DownloadFile("https://github.com/libretro/libretro-core-info/archive/refs/heads/master.zip", _infoDirectory);
+            var infoRepositoryPath = await DownloadFile("https://github.com/libretro/libretro-core-info/archive/refs/heads/master.zip", _infoDirectory);
             ExtractFile(infoRepositoryPath, _infoDirectory);
             FileSystem.DeleteFile(infoRepositoryPath);
 
-            string[] infoFiles = FileSystem.GetFilesInDirectory($"{_infoDirectory}/libretro-core-info-master", "*.info");
-            foreach (string infoFile in infoFiles)
+            var infoFiles = FileSystem.GetFilesInDirectory($"{_infoDirectory}/libretro-core-info-master", "*.info");
+            foreach (var infoFile in infoFiles)
             {
                 FileSystem.MoveFile(infoFile, $"{_infoDirectory}/{Path.GetFileName(infoFile)}", true);
             }
@@ -159,8 +159,8 @@ namespace SK.Libretro.Unity.Editor
         {
             VisualElement item = new();
             _listItemVisualTreeAsset.CloneTree(item);
-            VisualElement root = item.Q("ItemRoot");
-            Button button = root.Q<Button>();
+            var root = item.Q("ItemRoot");
+            var button = root.Q<Button>();
             button.clickable = null;
             button.AddToClassList("core-list-item-processing");
             button.AddToClassList("core-list-item-not-available");
@@ -171,11 +171,11 @@ namespace SK.Libretro.Unity.Editor
 
         private void CoreListViewBindItemCallback(VisualElement item, int index)
         {
-            Core core = _coreListDisplay[index];
+            var core = _coreListDisplay[index];
 
-            VisualElement root = item.Q("ItemRoot");
+            var root = item.Q("ItemRoot");
 
-            Button button = root.Q<Button>();
+            var button = root.Q<Button>();
             button.EnableInClassList("core-list-item-processing", false);
             button.EnableInClassList("core-list-item-not-available", false);
             button.EnableInClassList("core-list-item-latest", false);
@@ -198,7 +198,7 @@ namespace SK.Libretro.Unity.Editor
             button.clickable = null;
             button.clicked += async () => await CoreListItemButtonClickedCallback(core, button);
 
-            Label label = root.Q<Label>();
+            var label = root.Q<Label>();
             label.text = core.DisplayName;
         }
 
@@ -225,8 +225,8 @@ namespace SK.Libretro.Unity.Editor
             if (_coreListView.selectedIndex == -1)
                 return;
 
-            Core core = items.First() as Core;
-            string infoFilePath = $"{_infoDirectory}/{core.DisplayName}_libretro.info";
+            var core = items.First() as Core;
+            var infoFilePath = $"{_infoDirectory}/{core.DisplayName}_libretro.info";
             if (!FileSystem.FileExists(infoFilePath))
                 return;
 
@@ -243,12 +243,12 @@ namespace SK.Libretro.Unity.Editor
 
                 if (line.Contains('='))
                 {
-                    int equalSignIndex = line.IndexOf('=');
-                    string propertyValue = line[(equalSignIndex + 1)..].Trim().Trim('\"');
+                    var equalSignIndex = line.IndexOf('=');
+                    var propertyValue = line[(equalSignIndex + 1)..].Trim().Trim('\"');
                     if (string.IsNullOrWhiteSpace(propertyValue))
                         continue;
 
-                    string propertyName = line[..equalSignIndex].Trim();
+                    var propertyName = line[..equalSignIndex].Trim();
                     _ = stringBuilder.Append($"<size=14><b>{propertyName}: </b></size>");
                     _ = stringBuilder.Append($"<size=12>{propertyValue}</size>\n");
                 }
@@ -264,23 +264,23 @@ namespace SK.Libretro.Unity.Editor
             _coreList = FileSystem.FileExists(_coresStatusFile) ? FileSystem.DeserializeFromJson<CoreList>(_coresStatusFile) : new();
 
             HtmlWeb hw = new();
-            HtmlDocument doc = hw.Load(new Uri(_buildbotUrl));
-            HtmlNodeCollection trNodes = doc.DocumentNode.SelectNodes("//body/div/table/tr");
+            var doc = hw.Load(new Uri(_buildbotUrl));
+            var trNodes = doc.DocumentNode.SelectNodes("//body/div/table/tr");
 
-            foreach (HtmlNode trNode in trNodes)
+            foreach (var trNode in trNodes)
             {
-                HtmlNodeCollection tdNodes = trNode.ChildNodes;
+                var tdNodes = trNode.ChildNodes;
                 if (tdNodes.Count < 3)
                     continue;
 
-                string fileName = tdNodes[1].InnerText;
+                var fileName = tdNodes[1].InnerText;
                 if (!fileName.Contains("_libretro"))
                     continue;
 
-                string lastModifiedString = tdNodes[2].InnerText;
-                _ = DateTime.TryParse(lastModifiedString, out DateTime lastModifiedDate);
-                bool available = FileSystem.FileExists($"{_coresDirectory}/{fileName.Replace(".zip", "", StringComparison.OrdinalIgnoreCase)}");
-                Core found = _coreList.Cores.Find(x => x.FullName.Equals(fileName, StringComparison.OrdinalIgnoreCase));
+                var lastModifiedString = tdNodes[2].InnerText;
+                _ = DateTime.TryParse(lastModifiedString, out var lastModifiedDate);
+                var available = FileSystem.FileExists($"{_coresDirectory}/{fileName.Replace(".zip", "", StringComparison.OrdinalIgnoreCase)}");
+                var found = _coreList.Cores.Find(x => x.FullName.Equals(fileName, StringComparison.OrdinalIgnoreCase));
                 if (found is null)
                 {
                     _coreList.Cores.Add(new Core
@@ -317,7 +317,7 @@ namespace SK.Libretro.Unity.Editor
 
             try
             {
-                string zipPath = await DownloadFile($"{_buildbotUrl}{core.FullName}", _coresDirectory);
+                var zipPath = await DownloadFile($"{_buildbotUrl}{core.FullName}", _coresDirectory);
                 ExtractFile(zipPath, _coresDirectory);
                 FileSystem.DeleteFile(zipPath);
 
@@ -337,8 +337,8 @@ namespace SK.Libretro.Unity.Editor
         {
             try
             {
-                string fileName = Path.GetFileName(url);
-                string filePath = $"{directory}/{fileName}";
+                var fileName = Path.GetFileName(url);
+                var filePath = $"{directory}/{fileName}";
                 FileSystem.DeleteFile(filePath);
 
                 using WebClient webClient = new();
@@ -359,7 +359,7 @@ namespace SK.Libretro.Unity.Editor
                 if (!FileSystem.FileExists(zipPath))
                     return;
 
-                using ZipArchive archive = ZipFile.OpenRead(zipPath);
+                using var archive = ZipFile.OpenRead(zipPath);
                 archive.ExtractToDirectory(directory, true);
             }
             catch (Exception e)

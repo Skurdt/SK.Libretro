@@ -49,22 +49,22 @@ namespace SK.Libretro
         protected sealed override void LoadLibrary()
         {
             _nativeHandle = PlatformLoadLibrary(Path, RTLD_NOW);
-            IntPtr error  = PlatformLibraryError();
+            var error  = PlatformLibraryError();
             if (error.IsNotNull())
                 throw new Exception(error.AsString());
         }
 
         protected sealed override IntPtr GetProcAddress(string functionName)
         {
-            IntPtr procAddress = PlatformGetProcAddress(_nativeHandle, functionName);
-            IntPtr error       = PlatformLibraryError();
+            var procAddress = PlatformGetProcAddress(_nativeHandle, functionName);
+            var error       = PlatformLibraryError();
             return error.IsNull() ? procAddress : throw new Exception(error.AsString());
         }
 
         protected sealed override void FreeLibrary()
         {
             _ = PlatformFreeLibrary(_nativeHandle);
-            IntPtr error = PlatformLibraryError();
+            var error = PlatformLibraryError();
             if (error.IsNotNull())
                 throw new Exception(error.AsString());
         }

@@ -112,7 +112,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_audio_callback callback = data.ToStructure<retro_audio_callback>();
+            var callback = data.ToStructure<retro_audio_callback>();
             _audioCallback                = callback.callback.GetDelegate<retro_audio_callback_t>();
             _audioCallbackSetState        = callback.set_state.GetDelegate<retro_audio_set_state_callback_t>();
             return true;
@@ -123,7 +123,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_audio_buffer_status_callback bufferStatusCallback = data.ToStructure<retro_audio_buffer_status_callback>();
+            var bufferStatusCallback = data.ToStructure<retro_audio_buffer_status_callback>();
             _audioBufferStatusCallback = bufferStatusCallback.callback.GetDelegate<retro_audio_buffer_status_callback_t>();
             return true;
         }
@@ -160,7 +160,7 @@ namespace SK.Libretro
         private nuint SampleBatchCallback(IntPtr data, nuint frames)
         {
 #endif
-            AudioHandler audioHandler = _wrapper.AudioHandler;
+            var audioHandler = _wrapper.AudioHandler;
             if (!audioHandler.Enabled)
                 return frames;
 

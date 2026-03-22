@@ -6,6 +6,7 @@ namespace SK.Libretro
 {
     internal sealed class OpenGLRenderProxyAndroid : HardwareRenderProxy
     {
+        private readonly IntPtr _windowHandle;
         private IntPtr _eglDisplay = IntPtr.Zero;
         private IntPtr _eglSurface = IntPtr.Zero;
         private IntPtr _eglContext = IntPtr.Zero;
@@ -15,7 +16,7 @@ namespace SK.Libretro
         : base(wrapper, hwRenderCallback)
             => _windowHandle = nativeWindow;
 
-        public override bool Init()
+        public override bool Init(int width, int height)
         {
             if (_windowHandle == IntPtr.Zero)
                 return false;
@@ -45,7 +46,7 @@ namespace SK.Libretro
             if (!eglInitialize(_eglDisplay, out _, out _))
                 return false;
 
-            if (!eglChooseConfig(_eglDisplay, configAttribs, out _eglConfig, 1, out int numConfigs) || numConfigs < 1)
+            if (!eglChooseConfig(_eglDisplay, configAttribs, out _eglConfig, 1, out var numConfigs) || numConfigs < 1)
                 return false;
 
             _eglSurface = eglCreateWindowSurface(_eglDisplay, _eglConfig, _windowHandle, IntPtr.Zero);
@@ -56,12 +57,7 @@ namespace SK.Libretro
             return _eglContext != IntPtr.Zero && eglMakeCurrent(_eglDisplay, _eglSurface, _eglSurface, _eglContext);
         }
 
-        public override void PollEvents()
-        {
-            // No events to poll on Android in this context
-        }
-
-        public override void SwapBuffers() => eglSwapBuffers(_eglDisplay, _eglSurface);
+        public override bool ReadbackFrame(uint width, uint height, ref byte[] textureData) => false;
 
         protected override void DeInit()
         {
@@ -75,7 +71,6 @@ namespace SK.Libretro
 
         protected override IntPtr GetProcAddressCall(string functionName) => eglGetProcAddress(functionName);
 
-        // EGL constants
         private const int EGL_DEFAULT_DISPLAY = 0;
         private const int EGL_OPENGL_ES2_BIT = 4;
         private const int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
@@ -88,7 +83,7 @@ namespace SK.Libretro
         private const int EGL_RENDERABLE_TYPE = 0x3040;
 
         [DllImport("android")] private static extern IntPtr ANativeWindow_fromSurface(IntPtr jniEnv, IntPtr surface);
-        // P/Invoke declarations for EGL functions
+
         [DllImport("libEGL.so")] private static extern IntPtr eglGetDisplay(int display_id);
         [DllImport("libEGL.so")] private static extern bool eglInitialize(IntPtr dpy, out int major, out int minor);
         [DllImport("libEGL.so")] private static extern bool eglChooseConfig(IntPtr dpy, int[] attrib_list, out IntPtr config, int config_size, out int num_config);

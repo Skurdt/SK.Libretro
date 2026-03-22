@@ -42,14 +42,14 @@ namespace SK.Libretro
 
                 if (_instances.Count == 0)
                 {
-                    if (SDL.InitSubSystem(SDL.INIT_AUDIO) == 0)
+                    if (!SDL.InitSubSystem(SDL.INIT_AUDIO))
                     {
                         Dispose();
                         return;
                     }
                 }
 
-                if (SDL.GetAudioDeviceFormat(_audioDeviceId, out SDL.AudioSpec destAudioSpec, out _) == 0)
+                if (!SDL.GetAudioDeviceFormat(_audioDeviceId, out var destAudioSpec, out _))
                 {
                     Dispose();
                     return;
@@ -67,13 +67,13 @@ namespace SK.Libretro
 
                 SDL.AudioSpec srcAudioSpec = new() { channels = 2, format = SDL.AudioFormat.S16, freq = sampleRate };
                 _audioStream = SDL.CreateAudioStream(ref srcAudioSpec, ref destAudioSpec);
-                if (SDL.BindAudioStream(_audioDeviceId, _audioStream) == 0)
+                if (!SDL.BindAudioStream(_audioDeviceId, _audioStream))
                 {
                     Dispose();
                     return;
                 }
 
-                if (SDL.ResumeAudioDevice(_audioDeviceId) == 0)
+                if (!SDL.ResumeAudioDevice(_audioDeviceId))
                 {
                     Dispose();
                     return;
@@ -116,25 +116,25 @@ namespace SK.Libretro
                 if (_audioDeviceId == 0)
                     return;
 
-                float volume        = 1.0f / (1.0f + positionalData.Distance);
-                float sourceAngle   = (float)Math.Atan2(positionalData.Z, positionalData.X);
-                float listenerAngle = (float)Math.Atan2(positionalData.ForwardZ, positionalData.ForwardX);
-                float relativeAngle = sourceAngle - listenerAngle;
-                float pan           = (float)Math.Sin(relativeAngle);
+                var volume        = 1.0f / (1.0f + positionalData.Distance);
+                var sourceAngle   = (float)Math.Atan2(positionalData.Z, positionalData.X);
+                var listenerAngle = (float)Math.Atan2(positionalData.ForwardZ, positionalData.ForwardX);
+                var relativeAngle = sourceAngle - listenerAngle;
+                var pan           = (float)Math.Sin(relativeAngle);
                 unsafe
                 {
-                    short* samples = (short*)data.ToPointer();
+                    var samples = (short*)data.ToPointer();
                     for (nuint i = 0; i < frames * 2; i += 2)
                     {
-                        float leftSample = samples[i] * volume * (1.0f - pan);
-                        float rightSample = samples[i + 1] * volume * (1.0f + pan);
+                        var leftSample = samples[i] * volume * (1.0f - pan);
+                        var rightSample = samples[i + 1] * volume * (1.0f + pan);
 
                         samples[i] = (short)Math.Clamp(leftSample, short.MinValue, short.MaxValue);
                         samples[i + 1] = (short)Math.Clamp(rightSample, short.MinValue, short.MaxValue);
                     }
                 }
 
-                int numSamples = (int)(frames * 2 * sizeof(short));
+                var numSamples = (int)(frames * 2 * sizeof(short));
                 _ = SDL.PutAudioStreamData(_audioStream, data, numSamples);
             }
         }
