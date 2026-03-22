@@ -39,9 +39,11 @@ namespace SK.Libretro.Unity
 
         public unsafe void Execute(int index)
         {
-            int y = index / Width;
-            int x = index % Width;
-            TextureData[index] = ((uint*)SourceData)[(y * PitchPixels) + x];
+            var x = index % Width;
+            var y = (index - x) / Width;
+            y = Height - 1 - y;
+            var offset = y * PitchPixels;
+            TextureData[index] = ((uint*)SourceData)[offset + x];
         }
     }
 }

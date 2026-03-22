@@ -96,7 +96,7 @@ namespace SK.Libretro.Unity
                 return;
             }
 
-            Vector3 playerPosition = _camera.transform.position;
+            var playerPosition = _camera.transform.position;
             _bridge.SetPlayerPosition(playerPosition.x, playerPosition.y, playerPosition.z, Vector3.Distance(playerPosition, transform.position), _camera.transform.forward.x, _camera.transform.forward.z);
 
             if (!_lightgunRaycastSource || !_lightgunRaycastSource.activeSelf)
@@ -107,8 +107,8 @@ namespace SK.Libretro.Unity
                 return;
             }
 
-            Vector3 controllerPosition = _lightgunRaycastSource.transform.position;
-            Vector3 controllerDirection = _lightgunRaycastSource.transform.forward;
+            var controllerPosition = _lightgunRaycastSource.transform.position;
+            var controllerDirection = _lightgunRaycastSource.transform.forward;
             LightgunRay = new(controllerPosition, controllerDirection);
         }
 
@@ -149,7 +149,7 @@ namespace SK.Libretro.Unity
 
         public void StopContent() => _bridge?.StopContent();
 
-        public uint GetControllerPortDevice(int port) => _inputDevices.TryGetValue(port, out uint device) ? device : (uint)RETRO_DEVICE.JOYPAD;
+        public uint GetControllerPortDevice(int port) => _inputDevices.TryGetValue(port, out var device) ? device : (uint)RETRO_DEVICE.JOYPAD;
 
         public void SetControllerPortDevice(uint port, uint id)
         {

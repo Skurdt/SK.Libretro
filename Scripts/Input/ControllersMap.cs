@@ -32,11 +32,11 @@ namespace SK.Libretro
 
         private readonly ConcurrentDictionary<int, Controllers> _deviceMap = new();
 
-        public Controllers this[int port] => _deviceMap.TryGetValue(port, out Controllers devices) ? devices : null;
+        public Controllers this[int port] => _deviceMap.TryGetValue(port, out var devices) ? devices : null;
 
         internal void Add(int port, Controller device)
         {
-            if (_deviceMap.TryGetValue(port, out Controllers existingDevices))
+            if (_deviceMap.TryGetValue(port, out var existingDevices))
                 existingDevices.Add(device);
             else
                 _ = _deviceMap.TryAdd(port, new Controllers { device });

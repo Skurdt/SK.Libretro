@@ -64,18 +64,18 @@ namespace SK.Libretro
             if (!_set_eject_state(true))
                 return false;
 
-            foreach (string extension in _wrapper.Core.SystemInfo.ValidExtensions)
+            foreach (var extension in _wrapper.Core.SystemInfo.ValidExtensions)
             {
                 try
                 {
-                    string filePath = $"{path}.{extension}";
+                    var filePath = $"{path}.{extension}";
                     if (!FileSystem.FileExists(filePath))
                         continue;
 
-                    Game game = _wrapper.Game;
+                    var game = _wrapper.Game;
                     game.GameInfo.path = _wrapper.GetUnsafeString(filePath);
                     using FileStream stream = new(filePath, FileMode.Open);
-                    byte[] data = new byte[stream.Length];
+                    var data = new byte[stream.Length];
                     game.GameInfo.size = (nuint)data.Length;
                     game.GameInfo.data = PointerUtilities.Alloc(data.Length * Marshal.SizeOf<byte>());
                     _ = stream.Read(data, 0, (int)stream.Length);
@@ -125,7 +125,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_disk_control_callback callback = data.ToStructure<retro_disk_control_callback>();
+            var callback = data.ToStructure<retro_disk_control_callback>();
 
             _set_eject_state     = callback.set_eject_state.GetDelegate<retro_set_eject_state_t>();
             _get_eject_state     = callback.get_eject_state.GetDelegate<retro_get_eject_state_t>();
@@ -147,7 +147,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_disk_control_ext_callback callback = data.ToStructure<retro_disk_control_ext_callback>();
+            var callback = data.ToStructure<retro_disk_control_ext_callback>();
 
             _set_eject_state     = callback.set_eject_state.GetDelegate<retro_set_eject_state_t>();
             _get_eject_state     = callback.get_eject_state.GetDelegate<retro_get_eject_state_t>();

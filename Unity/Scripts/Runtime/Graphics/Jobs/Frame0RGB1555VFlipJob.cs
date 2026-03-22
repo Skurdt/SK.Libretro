@@ -29,7 +29,7 @@ using Unity.Jobs;
 namespace SK.Libretro.Unity
 {
     [BurstCompile]
-    public struct Frame0RGB1555Job : IJobParallelFor
+    public struct Frame0RGB1555VFlipJob : IJobParallelFor
     {
         [ReadOnly, NativeDisableUnsafePtrRestriction] public IntPtr SourceData;
         public int Width;
@@ -39,10 +39,10 @@ namespace SK.Libretro.Unity
 
         public unsafe void Execute(int index)
         {
-            int x = index % Width;
-            int y = (index - x) / Width;
+            var x = index % Width;
+            var y = (index - x) / Width;
             y = Height - 1 - y;
-            int offset = y * PitchPixels;
+            var offset = y * PitchPixels;
             TextureData[index] = GraphicsUtilities.ARGB1555toBGRA32(((ushort*)SourceData)[offset + x]);
         }
     }

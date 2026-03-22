@@ -67,7 +67,7 @@ namespace SK.Libretro.Unity.Editor
 
             _ = searchField.RegisterValueChangedCallback(SearchFieldValueChangedCallback);
 
-            string filter = Application.platform switch
+            var filter = Application.platform switch
             {
                 UnityEngine.RuntimePlatform.OSXEditor     => "*.dylib",
                 UnityEngine.RuntimePlatform.LinuxEditor   => "*.so",
@@ -103,7 +103,7 @@ namespace SK.Libretro.Unity.Editor
 
         private void ListViewBindItemCallback(VisualElement element, int index)
         {
-            Button button = element as Button;
+            var button = element as Button;
             button.text = _filteredCoreNames[index];
             button.clickable = null;
             button.clicked += () => {

@@ -61,7 +61,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_led_interface ledInterface = data.ToStructure<retro_led_interface>();
+            var ledInterface = data.ToStructure<retro_led_interface>();
             ledInterface.set_led_state = _setLedState.GetFunctionPointer();
             Marshal.StructureToPtr(ledInterface, data, false);
             return true;

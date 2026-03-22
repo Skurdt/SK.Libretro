@@ -52,7 +52,7 @@ namespace SK.Libretro
 
         private unsafe ReadOnlySpan<byte> GetRam(RETRO_MEMORY type)
         {
-            int len = (int)_wrapper.Core.GetMemorySize(type);
+            var len = (int)_wrapper.Core.GetMemorySize(type);
             return len > 0
                  ? new(_wrapper.Core.GetMemoryData(type).ToPointer(), len)
                  : ReadOnlySpan<byte>.Empty;

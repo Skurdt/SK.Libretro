@@ -47,22 +47,22 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_variable outVariable = data.ToStructure<retro_variable>();
+            var outVariable = data.ToStructure<retro_variable>();
             if (outVariable.key.IsNull())
                 return false;
 
-            string key = outVariable.key.AsString();
-            if (GameOptions is null || !GameOptions.TryGetValue(key, out Option coreOption))
+            var key = outVariable.key.AsString();
+            if (GameOptions is null || !GameOptions.TryGetValue(key, out var coreOption))
             {
                 if (CoreOptions is null)
                 {
-                    _wrapper.LogHandler.LogWarning($"Core didn't set its options. Requested key: {key}", nameof(RETRO_ENVIRONMENT.GET_VARIABLE));
+                    _wrapper.LogHandler.LogWarning($"Core didn't set its options. Requested key: {key}", $"SK.Libretro.OptionsHandler.GetVariable");
                     return false;
                 }
 
                 if (!CoreOptions.TryGetValue(key, out coreOption))
                 {
-                    _wrapper.LogHandler.LogWarning($"Core option '{key}' not found.", nameof(RETRO_ENVIRONMENT.GET_VARIABLE));
+                    _wrapper.LogHandler.LogWarning($"Core option '{key}' not found.", $"SK.Libretro.OptionsHandler.GetVariable");
                     return false;
                 }
             }
@@ -104,12 +104,12 @@ namespace SK.Libretro
             {
                 Deserialize();
 
-                retro_variable variable = data.ToStructure<retro_variable>();
+                var variable = data.ToStructure<retro_variable>();
                 while (variable is not null && variable.key.IsNotNull() && variable.value.IsNotNull())
                 {
-                    string key     = variable.key.AsString();
-                    string value   = variable.value.AsString();
-                    string[] split = value.Split(';');
+                    var key     = variable.key.AsString();
+                    var value   = variable.value.AsString();
+                    var split = value.Split(';');
                     if (CoreOptions[key] is null)
                         CoreOptions[key] = split.Length > 3 ? new Option(split) : new Option(key, split);
                     else
@@ -141,8 +141,8 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_core_options_intl intl = data.ToStructure<retro_core_options_intl>();
-            bool result = SetCoreOptionsInternal(intl.local);
+            var intl = data.ToStructure<retro_core_options_intl>();
+            var result = SetCoreOptionsInternal(intl.local);
             if (!result)
                 result = SetCoreOptionsInternal(intl.us);
             return result;
@@ -153,11 +153,11 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_core_option_display coreOptionDisplay = data.ToStructure<retro_core_option_display>();
+            var coreOptionDisplay = data.ToStructure<retro_core_option_display>();
             if (coreOptionDisplay.key.IsNull())
                 return false;
 
-            string key = coreOptionDisplay.key.AsString();
+            var key = coreOptionDisplay.key.AsString();
             CoreOptions[key]?.SetVisibility(coreOptionDisplay.visible);
             return true;
         }
@@ -168,13 +168,13 @@ namespace SK.Libretro
             {
                 if (global)
                 {
-                    string filePath = $"{Wrapper.OptionsDirectory}/{_wrapper.Core.Name}.json";
+                    var filePath = $"{Wrapper.OptionsDirectory}/{_wrapper.Core.Name}.json";
                     Serialize(CoreOptions, filePath);
                 }
                 else
                 {
-                    string directoryPath = FileSystem.GetOrCreateDirectory($"{Wrapper.OptionsDirectory}/{_wrapper.Core.Name}");
-                    string filePath      = $"{directoryPath}/{_wrapper.Game.Name}.json";
+                    var directoryPath = FileSystem.GetOrCreateDirectory($"{Wrapper.OptionsDirectory}/{_wrapper.Core.Name}");
+                    var filePath      = $"{directoryPath}/{_wrapper.Game.Name}.json";
                     Serialize(GameOptions, filePath);
                 }
 
@@ -205,7 +205,7 @@ namespace SK.Libretro
             if (!FileSystem.FileExists(path))
                 return null;
 
-            SerializableCoreOptions options = FileSystem.DeserializeFromJson<SerializableCoreOptions>(path);
+            var options = FileSystem.DeserializeFromJson<SerializableCoreOptions>(path);
             return options is null || options.Options is null || options.Options.Length <= 0
                  ? null
                  : new Options(options);
@@ -220,29 +220,29 @@ namespace SK.Libretro
                 if (data.IsNull())
                     return false;
 
-                Type type = typeof(retro_core_option_values);
-                BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
-                FieldInfo[] fields = type.GetFields(bindingFlags);
+                var type = typeof(retro_core_option_values);
+                var bindingFlags = BindingFlags.Public | BindingFlags.Instance;
+                var fields = type.GetFields(bindingFlags);
 
-                retro_core_option_definition optionDefinition = data.ToStructure<retro_core_option_definition>();
+                var optionDefinition = data.ToStructure<retro_core_option_definition>();
                 while (optionDefinition is not null && optionDefinition.key.IsNotNull())
                 {
-                    string key = optionDefinition.key.AsString();
-                    string description = optionDefinition.desc.AsString();
-                    string info = optionDefinition.info.AsString();
-                    string defaultValue = optionDefinition.default_value.AsString();
+                    var key = optionDefinition.key.AsString();
+                    var description = optionDefinition.desc.AsString();
+                    var info = optionDefinition.info.AsString();
+                    var defaultValue = optionDefinition.default_value.AsString();
 
                     List<string> possibleValues = new();
-                    for (int i = 0; i < fields.Length; ++i)
+                    for (var i = 0; i < fields.Length; ++i)
                     {
-                        FieldInfo fieldInfo = fields[i];
+                        var fieldInfo = fields[i];
                         if (fieldInfo.GetValue(optionDefinition.values) is not retro_core_option_value optionValue || optionValue.value.IsNull())
                             continue;
 
                         possibleValues.Add(optionValue.value.AsString());
                     }
 
-                    string value = "";
+                    var value = "";
                     if (!string.IsNullOrWhiteSpace(defaultValue))
                         value = defaultValue;
                     else if (possibleValues.Count > 0)

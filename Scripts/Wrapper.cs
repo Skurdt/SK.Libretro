@@ -141,8 +141,14 @@ namespace SK.Libretro
                 return false;
             }
 
+            if (!GraphicsHandler.InitHwRender())
+            {
+                StopContent();
+                return false;
+            }
+
             if (DiskHandler.Enabled)
-                for (int i = 0; i < Game.Names.Length; ++i)
+                for (var i = 0; i < Game.Names.Length; ++i)
                     _ = DiskHandler.AddImageIndex();
 
             SerializationHandler.Init();
@@ -179,7 +185,6 @@ namespace SK.Libretro
             if (!Game.Running || !Core.Initialized)
                 return;
 
-            GraphicsHandler.PollEvents();
             //_totalFrameCount++;
 
             FrameTimeUpdate();
@@ -204,7 +209,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            IntPtr stringPtr = GetUnsafeString(_systemDirectory);
+            var stringPtr = GetUnsafeString(_systemDirectory);
             data.Write(stringPtr);
             return true;
         }
@@ -214,8 +219,8 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            string path = FileSystem.GetOrCreateDirectory(Core.Path);
-            IntPtr stringPtr = GetUnsafeString(path);
+            var path = FileSystem.GetOrCreateDirectory(Core.Path);
+            var stringPtr = GetUnsafeString(path);
             data.Write(stringPtr);
             return true;
         }
@@ -225,8 +230,8 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            string path = FileSystem.GetOrCreateDirectory($"{_coreAssetsDirectory}/{Core.Name}");
-            IntPtr stringPtr = GetUnsafeString(path);
+            var path = FileSystem.GetOrCreateDirectory($"{_coreAssetsDirectory}/{Core.Name}");
+            var stringPtr = GetUnsafeString(path);
             data.Write(stringPtr);
             return true;
         }
@@ -236,7 +241,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            IntPtr stringPtr = GetUnsafeString(Settings.UserName);
+            var stringPtr = GetUnsafeString(Settings.UserName);
             data.Write(stringPtr);
             return true;
         }
@@ -254,7 +259,7 @@ namespace SK.Libretro
 
         public IntPtr GetUnsafeString(string source)
         {
-            IntPtr ptr = source.AsAllocatedPtr();
+            var ptr = source.AsAllocatedPtr();
             _unsafeStrings.Add(ptr);
             return ptr;
         }
@@ -266,8 +271,8 @@ namespace SK.Libretro
             if (FrameTimeInterfaceCallback is null)
                 return;
 
-            long current = System.Diagnostics.Stopwatch.GetTimestamp();
-            long delta   = current - _frameTimeLast;
+            var current = System.Diagnostics.Stopwatch.GetTimestamp();
+            var delta   = current - _frameTimeLast;
 
             if (_frameTimeLast <= 0)
                 delta = FrameTimeInterface.reference;

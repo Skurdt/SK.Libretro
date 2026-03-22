@@ -40,11 +40,7 @@ namespace SK.Libretro
         private string _gameDirectory;
         private int _currentStateSlot;
 
-        public SerializationHandler(Wrapper wrapper)
-        {
-            _wrapper = wrapper;
-            //_rewindStates = new Deque<byte[]>(REWIND_NUM_MAX_STATES);
-        }
+        public SerializationHandler(Wrapper wrapper) => _wrapper = wrapper;//_rewindStates = new Deque<byte[]>(REWIND_NUM_MAX_STATES);
 
         public void Init()
         {
@@ -59,8 +55,8 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            string path = FileSystem.GetOrCreateDirectory($"{Wrapper.SavesDirectory}/{_wrapper.Core.Name}");
-            IntPtr stringPtr = _wrapper.GetUnsafeString(path);
+            var path = FileSystem.GetOrCreateDirectory($"{Wrapper.SavesDirectory}/{_wrapper.Core.Name}");
+            var stringPtr = _wrapper.GetUnsafeString(path);
             data.Write(stringPtr);
             return true;
         }
@@ -71,13 +67,13 @@ namespace SK.Libretro
         {
             try
             {
-                if (!TrySaveState(out byte[] data))
+                if (!TrySaveState(out var data))
                     return false;
 
                 if (_gameDirectory is not null && !Directory.Exists(_gameDirectory))
                     _ = Directory.CreateDirectory(_gameDirectory);
 
-                string path = $"{_gameDirectory ?? _coreDirectory}/save_{_currentStateSlot}.state";
+                var path = $"{_gameDirectory ?? _coreDirectory}/save_{_currentStateSlot}.state";
                 File.WriteAllBytes(path, data);
                 return true;
             }
@@ -92,7 +88,7 @@ namespace SK.Libretro
         {
             try
             {
-                if (!TrySaveState(out byte[] data))
+                if (!TrySaveState(out var data))
                 {
                     path = null;
                     return false;
@@ -118,25 +114,28 @@ namespace SK.Libretro
             GCHandle handle = default;
             try
             {
-                string coreDirectory = $"{Wrapper.StatesDirectory}/{_wrapper.Core.Name}";
+                var coreDirectory = $"{Wrapper.StatesDirectory}/{_wrapper.Core.Name}";
                 if (!Directory.Exists(coreDirectory))
                     return false;
 
                 if (_gameDirectory is not null && !Directory.Exists(_gameDirectory))
                     return false;
 
-                string savePath = $"{_gameDirectory ?? coreDirectory}/save_{_currentStateSlot}.state";
+                var savePath = $"{_gameDirectory ?? coreDirectory}/save_{_currentStateSlot}.state";
                 if (!FileSystem.FileExists(savePath))
                     return false;
 
-                long stateSize = _wrapper.Core.SerializeSize();
+                var stateSize = _wrapper.Core.SerializeSize();
                 if (stateSize == 0)
                     return false;
 
-                byte[] data = File.ReadAllBytes(savePath);
+                var data = File.ReadAllBytes(savePath);
+                if (data == null || data.Length < (int)stateSize)
+                    return false;
+
                 handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-                IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(data, 0);
-                bool result = _wrapper.Core.Unserialize(ptr, stateSize);
+                var ptr = Marshal.UnsafeAddrOfPinnedArrayElement(data, 0);
+                var result = _wrapper.Core.Unserialize(ptr, stateSize);
                 if (result)
                     _wrapper.AudioHandler.Init(true);
                 return result;
@@ -204,19 +203,19 @@ namespace SK.Libretro
         {
             try
             {
-                int saveSize = (int)_wrapper.Core.GetMemorySize(RETRO_MEMORY.SAVE_RAM);
+                var saveSize = (int)_wrapper.Core.GetMemorySize(RETRO_MEMORY.SAVE_RAM);
                 if (saveSize == 0)
                     return false;
 
-                IntPtr saveData = _wrapper.Core.GetMemoryData(RETRO_MEMORY.SAVE_RAM);
+                var saveData = _wrapper.Core.GetMemoryData(RETRO_MEMORY.SAVE_RAM);
                 if (saveData.IsNull())
                     return false;
 
-                byte[] data = new byte[saveSize];
+                var data = new byte[saveSize];
                 Marshal.Copy(saveData, data, 0, saveSize);
 
-                string coreDirectory = FileSystem.GetOrCreateDirectory($"{Wrapper.SavesDirectory}/{_wrapper.Core.Name}");
-                string path          = $"{coreDirectory}/{_wrapper.Game.Name}.srm";
+                var coreDirectory = FileSystem.GetOrCreateDirectory($"{Wrapper.SavesDirectory}/{_wrapper.Core.Name}");
+                var path          = $"{coreDirectory}/{_wrapper.Game.Name}.srm";
                 File.WriteAllBytes(path, data);
 
                 return true;
@@ -232,23 +231,23 @@ namespace SK.Libretro
         {
             try
             {
-                int saveSize = (int)_wrapper.Core.GetMemorySize(RETRO_MEMORY.SAVE_RAM);
+                var saveSize = (int)_wrapper.Core.GetMemorySize(RETRO_MEMORY.SAVE_RAM);
                 if (saveSize == 0)
                     return false;
 
-                IntPtr saveData = _wrapper.Core.GetMemoryData(RETRO_MEMORY.SAVE_RAM);
+                var saveData = _wrapper.Core.GetMemoryData(RETRO_MEMORY.SAVE_RAM);
                 if (saveData.IsNull())
                     return false;
 
-                string coreDirectory = $"{Wrapper.SavesDirectory}/{_wrapper.Core.Name}";
+                var coreDirectory = $"{Wrapper.SavesDirectory}/{_wrapper.Core.Name}";
                 if (!Directory.Exists(coreDirectory))
                     return false;
 
-                string path = $"{coreDirectory}/{_wrapper.Game.Name}.srm";
+                var path = $"{coreDirectory}/{_wrapper.Game.Name}.srm";
                 if (!FileSystem.FileExists(path))
                     return false;
 
-                byte[] data = File.ReadAllBytes(path);
+                var data = File.ReadAllBytes(path);
                 if (data is null || data.Length == 0)
                     return false;
 
@@ -277,7 +276,7 @@ namespace SK.Libretro
             GCHandle handle = default;
             try
             {
-                long stateSize = _wrapper.Core.SerializeSize();
+                var stateSize = _wrapper.Core.SerializeSize();
                 if (stateSize == 0)
                 {
                     data = Array.Empty<byte>();
@@ -286,7 +285,7 @@ namespace SK.Libretro
 
                 data = new byte[stateSize];
                 handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-                IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(data, 0);
+                var ptr = Marshal.UnsafeAddrOfPinnedArrayElement(data, 0);
                 return _wrapper.Core.Serialize(ptr, stateSize);
             }
             catch

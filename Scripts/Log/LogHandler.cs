@@ -53,25 +53,25 @@ namespace SK.Libretro
 
         public void LogDebug(string message, string caller = null)
         {
-            (string prefix, string callerFormatted) = GetFormattedPrefixAndCaller(LogLevel.Debug, caller);
+            (var prefix, var callerFormatted) = GetFormattedPrefixAndCaller(LogLevel.Debug, caller);
             _processor.LogDebug($"{prefix} {callerFormatted}{message}");
         }
 
         public void LogInfo(string message, string caller = null)
         {
-            (string prefix, string callerFormatted) = GetFormattedPrefixAndCaller(LogLevel.Info, caller);
+            (var prefix, var callerFormatted) = GetFormattedPrefixAndCaller(LogLevel.Info, caller);
             _processor.LogInfo($"{prefix} {callerFormatted}{message}");
         }
 
         public void LogWarning(string message, string caller = null)
         {
-            (string prefix, string callerFormatted) = GetFormattedPrefixAndCaller(LogLevel.Warning, caller);
+            (var prefix, var callerFormatted) = GetFormattedPrefixAndCaller(LogLevel.Warning, caller);
             _processor.LogWarning($"{prefix} {callerFormatted}{message}");
         }
 
         public void LogError(string message, string caller = null)
         {
-            (string prefix, string callerFormatted) = GetFormattedPrefixAndCaller(LogLevel.Error, caller);
+            (var prefix, var callerFormatted) = GetFormattedPrefixAndCaller(LogLevel.Error, caller);
             _processor.LogError($"{prefix} {callerFormatted}{message}");
         }
 
@@ -82,7 +82,7 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            retro_log_callback logCallback = data.ToStructure<retro_log_callback>();
+            var logCallback = data.ToStructure<retro_log_callback>();
             logCallback.log = _logPrintf.GetFunctionPointer();
             Marshal.StructureToPtr(logCallback, data, false);
             return true;
@@ -124,7 +124,7 @@ namespace SK.Libretro
                                       IntPtr arg12)
         {
 #endif
-            LogLevel logLevel = level.ToLogLevel();
+            var logLevel = level.ToLogLevel();
             if (logLevel >= _wrapper.LogHandler._level)
                 _wrapper.LogHandler.LogMessage(logLevel, format);
         }
@@ -144,7 +144,7 @@ namespace SK.Libretro
                                    IntPtr arg11,
                                    IntPtr arg12)
         {
-            LogLevel logLevel = level.ToLogLevel();
+            var logLevel = level.ToLogLevel();
             if (logLevel >= _level)
                 LogMessage(logLevel, format);
         }
@@ -170,7 +170,7 @@ namespace SK.Libretro
 
         private (string prefixFormatted, string callerFormatted) GetFormattedPrefixAndCaller(LogLevel logLevel, string caller)
         {
-            string color = logLevel switch
+            var color = logLevel switch
             {
                 LogLevel.Info         => "yellow",
                 LogLevel.Warning      => "orange",
@@ -179,7 +179,7 @@ namespace SK.Libretro
                 LogLevel.Debug
                 or _                  => "white"
             };
-            string prefix = _processor.SupportsColorTags ? $"[<color={color}>{LogLevel.Debug.ToStringUpperFast()}</color>]" : $"[{LogLevel.Debug.ToStringUpperFast()}]";
+            var prefix = _processor.SupportsColorTags ? $"[<color={color}>{LogLevel.Debug.ToStringUpperFast()}</color>]" : $"[{LogLevel.Debug.ToStringUpperFast()}]";
             caller = !string.IsNullOrWhiteSpace(caller) ? (_processor.SupportsColorTags ? $"<color=lightblue>[{caller}]</color> " : $"[{caller}] ") : "";
             return (prefix, caller);
         }

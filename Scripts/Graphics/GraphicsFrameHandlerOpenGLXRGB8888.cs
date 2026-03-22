@@ -21,29 +21,36 @@
  * SOFTWARE. */
 
 using System;
-using Unity.Burst;
-using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.Jobs;
 
-namespace SK.Libretro.Unity
+namespace SK.Libretro
 {
-    [BurstCompile]
-    public struct FrameRGB565Job : IJobParallelFor
+    internal sealed class GraphicsFrameHandlerOpenGLXRGB8888 : GraphicsFrameHandlerBase
     {
-        [ReadOnly, NativeDisableUnsafePtrRestriction] public IntPtr SourceData;
-        public int Width;
-        public int Height;
-        public int PitchPixels;
-        [WriteOnly] public NativeArray<uint> TextureData;
+        private readonly HardwareRenderProxy _hardwareRenderProxy;
 
-        public unsafe void Execute(int index)
+        private byte[] _bufferSrc = Array.Empty<byte>();
+
+        public GraphicsFrameHandlerOpenGLXRGB8888(IGraphicsProcessor processor, HardwareRenderProxy hardwareRenderProxy)
+        : base(processor)
+            => _hardwareRenderProxy = hardwareRenderProxy;
+
+        public override void ProcessFrame(IntPtr _, uint width, uint height, nuint pitch)
         {
-            int x = index % Width;
-            int y = (index - x) / Width;
-            y = Height - 1 - y;
-            int offset = y * PitchPixels;
-            TextureData[index] = GraphicsUtilities.RGB565toBGRA32(((ushort*)SourceData)[offset + x]);
+            if (_hardwareRenderProxy is null)
+                return;
+
+            var bufferSize = (int)(width * height * 4);
+            if (_bufferSrc.Length != bufferSize)
+                _bufferSrc = new byte[bufferSize];
+
+            if (!_hardwareRenderProxy.ReadbackFrame(width, height, ref _bufferSrc))
+                return;
+
+            unsafe
+            {
+                fixed (byte* bufferPtr = _bufferSrc)
+                    _processor.ProcessFrameXRGB8888((IntPtr)bufferPtr, (int)width, (int)height, (int)width * 4);
+            }
         }
     }
 }

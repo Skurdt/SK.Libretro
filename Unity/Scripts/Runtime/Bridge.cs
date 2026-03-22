@@ -230,7 +230,7 @@ namespace SK.Libretro.Unity
         {
             try
             {
-                Platform platform = Application.platform switch
+                var platform = Application.platform switch
                 {
                     UnityEngine.RuntimePlatform.OSXEditor
                     or UnityEngine.RuntimePlatform.OSXPlayer     => Platform.OSX,
@@ -243,7 +243,7 @@ namespace SK.Libretro.Unity
                     _                                            => Platform.None
                 };
 
-                (ILogProcessor logProcessor, IGraphicsProcessor graphicsProcessor, IAudioProcessor audioProcessor, IInputProcessor inputProcessor, ILedProcessor ledProcessor) = await GetProcessors();
+                (var logProcessor, var graphicsProcessor, var audioProcessor, var inputProcessor, var ledProcessor) = await GetProcessors();
 
                 WrapperSettings wrapperSettings = new(platform)
                 {
@@ -277,10 +277,10 @@ namespace SK.Libretro.Unity
 
                 InvokeInstanceEvent(_instanceStartedCallback);
 
-                System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                double gameFrameTime = 1.0 / _wrapper.Game.SystemAVInfo.Fps;
-                double startTime     = 0.0;
-                double accumulator   = 0.0;
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                var gameFrameTime = 1.0 / _wrapper.Game.SystemAVInfo.Fps;
+                var startTime     = 0.0;
+                var accumulator   = 0.0;
 
                 Running = true;
                 while (Running)
@@ -296,11 +296,11 @@ namespace SK.Libretro.Unity
                     //if (_settings.RewindEnabled)
                     //    __wrapper.PerformRewind = Rewind;
 
-                    double currentTime = stopwatch.Elapsed.TotalSeconds;
-                    double dt = currentTime - startTime;
+                    var currentTime = stopwatch.Elapsed.TotalSeconds;
+                    var dt = currentTime - startTime;
                     startTime = currentTime;
 
-                    double targetFrameTime = /*FastForward && FastForwardFactor > 0 ? gameFrameTime / FastForwardFactor : */gameFrameTime;
+                    var targetFrameTime = /*FastForward && FastForwardFactor > 0 ? gameFrameTime / FastForwardFactor : */gameFrameTime;
                     if ((accumulator += dt) >= targetFrameTime)
                     {
                         _wrapper.RunFrame();
@@ -308,7 +308,7 @@ namespace SK.Libretro.Unity
                     }
 
                     lock (_lock)
-                        while (_bridgeCommands.TryDequeue(out IBridgeCommand command))
+                        while (_bridgeCommands.TryDequeue(out var command))
                             command.Execute();
                 }
 
@@ -406,7 +406,7 @@ namespace SK.Libretro.Unity
             => _bridgeCommands.Enqueue(new SaveStateWithoutScreenshotBridgeCommand());
 
         public void LoadState()
-            => _bridgeCommands.Enqueue(new LoadStateBridgeCommand());
+            => _bridgeCommands.Enqueue(new LoadStateBridgeCommand(_wrapper));
 
         public void SetDiskIndex(int index)
             => _bridgeCommands.Enqueue(new SetDiskIndexBridgeCommand(_wrapper, _gamesDirectory, _gameNames, index));
@@ -451,11 +451,11 @@ namespace SK.Libretro.Unity
         {
             await Awaitable.MainThreadAsync();
 
-            ILogProcessor log           = GetLogProcessor();
-            IGraphicsProcessor graphics = GetGraphicsProcessor();
-            IAudioProcessor audio       = GetAudioProcessor(_instanceComponent.transform);
-            IInputProcessor input       = GetInputProcessor(_instanceComponent.Settings.LeftStickBehaviour);
-            ILedProcessor led           = GetLedProcessor();
+            var log           = GetLogProcessor();
+            var graphics = GetGraphicsProcessor();
+            var audio       = GetAudioProcessor(_instanceComponent.transform);
+            var input       = GetInputProcessor(_instanceComponent.Settings.LeftStickBehaviour);
+            var led           = GetLedProcessor();
             return (log, graphics, audio, input, led);
         }
 
@@ -466,7 +466,7 @@ namespace SK.Libretro.Unity
         private static IAudioProcessor GetAudioProcessor(Transform instanceTransform)
         {
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-            AudioProcessor unityAudio = instanceTransform.GetComponentInChildren<AudioProcessor>(false);
+            var unityAudio = instanceTransform.GetComponentInChildren<AudioProcessor>(false);
             return unityAudio && unityAudio.enabled ? unityAudio : new AudioProcessorSDL();
 #else
             AudioProcessor unityAudio = instanceTransform.GetComponentInChildren<AudioProcessor>(true);
@@ -487,14 +487,14 @@ namespace SK.Libretro.Unity
 
         private static IInputProcessor GetInputProcessor(LeftStickBehaviour leftStickBehaviour)
         {
-            InputProcessor inputProcessor = Object.FindFirstObjectByType<InputProcessor>();
+            var inputProcessor = Object.FindAnyObjectByType<InputProcessor>();
             if (!inputProcessor)
                 inputProcessor = Object.Instantiate(Resources.Load<InputProcessor>("pfLibretroInputProcessor"));
             inputProcessor.LeftStickBehaviour = leftStickBehaviour;
             return inputProcessor;
         }
 
-        private static ILedProcessor GetLedProcessor() => Object.FindFirstObjectByType<LedProcessorBase>(FindObjectsInactive.Exclude);
+        private static ILedProcessor GetLedProcessor() => Object.FindAnyObjectByType<LedProcessorBase>(FindObjectsInactive.Exclude);
 
         private async void TakeScreenshot(string screenshotPath)
         {
@@ -508,7 +508,7 @@ namespace SK.Libretro.Unity
             Texture2D tex = new(_texture.width, _texture.height, TextureFormat.RGB24, false, false, true);
             tex.SetPixels32(_texture.GetPixels32());
             tex.Apply();
-            byte[] bytes = tex.EncodeToPNG();
+            var bytes = tex.EncodeToPNG();
             Object.Destroy(tex);
 
             screenshotPath = screenshotPath.Replace(".state", ".png");
@@ -531,8 +531,8 @@ namespace SK.Libretro.Unity
         private static string GetAndroidPrivateAppDataPath()
         {
             using AndroidJavaClass unityPlayerClass = new("com.unity3d.player.UnityPlayer");
-            using AndroidJavaObject currentActivity = unityPlayerClass.GetStatic<AndroidJavaObject>("currentActivity");
-            using AndroidJavaObject getFilesDir     = currentActivity.Call<AndroidJavaObject>("getFilesDir");
+            using var currentActivity = unityPlayerClass.GetStatic<AndroidJavaObject>("currentActivity");
+            using var getFilesDir     = currentActivity.Call<AndroidJavaObject>("getFilesDir");
             return getFilesDir.Call<string>("getCanonicalPath");
         }
     }

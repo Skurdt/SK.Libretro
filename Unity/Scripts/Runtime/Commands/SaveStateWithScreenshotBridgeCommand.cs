@@ -37,7 +37,7 @@ namespace SK.Libretro.Unity
 
         public void Execute()
         {
-            if (_wrapper.SerializationHandler.SaveStateToDisk(out string screenshotPath))
+            if (_wrapper.SerializationHandler.SaveStateToDisk(out var screenshotPath))
                 _takeScreenshotFunc(screenshotPath);
         }
     }

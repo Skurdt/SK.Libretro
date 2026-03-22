@@ -35,7 +35,7 @@ namespace SK.Libretro
         }
 
         public (bool, ContentOverride) TryGet(string extension) =>
-            _overrides.TryGetValue(extension, out ContentOverride contentOverride)
+            _overrides.TryGetValue(extension, out var contentOverride)
             ? (true, contentOverride)
             : (false, default);
     }

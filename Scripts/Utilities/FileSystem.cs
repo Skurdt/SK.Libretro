@@ -47,7 +47,7 @@ namespace SK.Libretro
         {
             try
             {
-                using FileStream fs = File.Create(path);
+                using var fs = File.Create(path);
             }
             catch
             {
@@ -102,7 +102,7 @@ namespace SK.Libretro
         {
             try
             {
-                string jsonString = JsonConvert.SerializeObject(sourceObject, Formatting.Indented);
+                var jsonString = JsonConvert.SerializeObject(sourceObject, Formatting.Indented);
                 File.WriteAllText(targetPath, jsonString);
             }
             catch
@@ -118,7 +118,7 @@ namespace SK.Libretro
                 if (!FileExists(sourcePath))
                     return default;
 
-                string jsonString = File.ReadAllText(sourcePath);
+                var jsonString = File.ReadAllText(sourcePath);
                 return JsonConvert.DeserializeObject<T>(jsonString);
             }
             catch
