@@ -277,7 +277,7 @@ namespace SK.Libretro.Unity
 
                 InvokeInstanceEvent(_instanceStartedCallback);
 
-                System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
                 var gameFrameTime = 1000.0 / _wrapper.Game.SystemAVInfo.Fps;
                 var nextFrameTime = stopwatch.Elapsed.TotalMilliseconds;
 
