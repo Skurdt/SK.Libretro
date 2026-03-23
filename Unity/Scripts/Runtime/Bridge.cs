@@ -403,7 +403,7 @@ namespace SK.Libretro.Unity
             => _bridgeCommands.Enqueue(new SaveStateWithScreenshotBridgeCommand(_wrapper, TakeScreenshot));
 
         public void SaveStateWithoutScreenshot()
-            => _bridgeCommands.Enqueue(new SaveStateWithoutScreenshotBridgeCommand());
+            => _bridgeCommands.Enqueue(new SaveStateWithoutScreenshotBridgeCommand(_wrapper));
 
         public void LoadState()
             => _bridgeCommands.Enqueue(new LoadStateBridgeCommand(_wrapper));
@@ -412,10 +412,10 @@ namespace SK.Libretro.Unity
             => _bridgeCommands.Enqueue(new SetDiskIndexBridgeCommand(_wrapper, _gamesDirectory, _gameNames, index));
 
         public void SaveSRAM()
-            => _bridgeCommands.Enqueue(new SaveSRAMBridgeCommand());
+            => _bridgeCommands.Enqueue(new SaveSRAMBridgeCommand(_wrapper));
 
         public void LoadSRAM()
-            => _bridgeCommands.Enqueue(new LoadSRAMBridgeCommand());
+            => _bridgeCommands.Enqueue(new LoadSRAMBridgeCommand(_wrapper));
 
         public void SaveOptions(bool global)
             => _bridgeCommands.Enqueue(new SaveOptionsBridgeCommand(_wrapper, global));
