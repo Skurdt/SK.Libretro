@@ -22,7 +22,7 @@
 
 namespace SK.Libretro.Unity
 {
-    internal readonly struct SetControllerPortDeviceBridgeCommand : IBridgeCommand
+    internal class SetControllerPortDeviceBridgeCommand : IBridgeCommand
     {
         private readonly Wrapper _wrapper;
         private readonly uint _port;

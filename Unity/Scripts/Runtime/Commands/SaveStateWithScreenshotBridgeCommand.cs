@@ -24,7 +24,7 @@ using System;
 
 namespace SK.Libretro.Unity
 {
-    internal readonly struct SaveStateWithScreenshotBridgeCommand : IBridgeCommand
+    internal class SaveStateWithScreenshotBridgeCommand : IBridgeCommand
     {
         private readonly Wrapper _wrapper;
         private readonly Action<string> _takeScreenshotFunc;

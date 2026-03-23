@@ -22,7 +22,7 @@
 
 namespace SK.Libretro.Unity
 {
-    internal readonly struct SetPlayerPositionBridgeCommand : IBridgeCommand
+    internal class SetPlayerPositionBridgeCommand : IBridgeCommand
     {
         private readonly Wrapper _wrapper;
         private readonly float _x;

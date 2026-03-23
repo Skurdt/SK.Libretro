@@ -109,7 +109,7 @@ namespace SK.Libretro
         {
         }
 
-        public void ProcessSampleBatch(IntPtr data, nuint frames, PositionalData positionalData)
+        public void ProcessSampleBatch(IntPtr data, nuint frames, in PositionalData positionalData)
         {
             lock (_lock)
             {

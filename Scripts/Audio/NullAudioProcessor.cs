@@ -29,7 +29,7 @@ namespace SK.Libretro
         public void Init(int sampleRate, double fps) { }
         public void Dispose() { }
         public void ProcessSample(short left, short right) { }
-        public void ProcessSampleBatch(IntPtr data, nuint frames, PositionalData positionalData) { }
+        public void ProcessSampleBatch(IntPtr data, nuint frames, in PositionalData positionalData) { }
         public void FinalizeFrame() { }
     }
 }

@@ -22,7 +22,7 @@
 
 namespace SK.Libretro.Unity
 {
-    internal readonly struct SaveStateWithoutScreenshotBridgeCommand : IBridgeCommand
+    internal class SaveStateWithoutScreenshotBridgeCommand : IBridgeCommand
     {
         private readonly Wrapper _wrapper;
 

@@ -25,7 +25,7 @@ using System;
 
 namespace SK.Libretro
 {
-    public readonly struct PositionalData
+    public readonly ref struct PositionalData
     {
         public readonly float X;
         public readonly float Y;

@@ -22,7 +22,7 @@
 
 namespace SK.Libretro.Unity
 {
-    internal readonly struct LoadSRAMBridgeCommand : IBridgeCommand
+    internal class LoadSRAMBridgeCommand : IBridgeCommand
     {
         private readonly Wrapper _wrapper;
 
