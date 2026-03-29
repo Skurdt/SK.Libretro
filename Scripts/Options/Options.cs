@@ -31,6 +31,7 @@ namespace SK.Libretro
         public int Count => _options.Count;
 
         private readonly SortedList<string, Option> _options = new();
+        private readonly object _lock = new();
 
         internal Options()
         {
@@ -38,38 +39,74 @@ namespace SK.Libretro
 
         internal Options(SerializableCoreOptions options)
         {
-            foreach (var option in options.Options)
+            lock (_lock)
             {
-                Option coreOption = new(option);
-                _options.Add(coreOption.Key, coreOption);
+                foreach (var option in options.Options)
+                {
+                    Option coreOption = new(option);
+                    _options.Add(coreOption.Key, coreOption);
+                }
             }
         }
 
         internal void UpdateValue(string key, int index)
         {
-            if (TryGetValue(key, out var option))
-                option.Update(index);
-        }
-
-        internal bool TryGetValue(string key, out Option outOption) => _options.TryGetValue(key, out outOption);
-
-        public Option this[int index] => index >= 0 && index < _options.Count ? _options.Values[index] : null;
-
-        public Option this[string key]
-        {
-            get => !string.IsNullOrWhiteSpace(key) && TryGetValue(key, out var option) ? option : null;
-            set
+            lock (_lock)
             {
-                if (string.IsNullOrWhiteSpace(key))
-                    return;
-                if (_options.ContainsKey(key))
-                    _options[key] = value;
-                else
-                    _options.Add(key, value);
+                if (TryGetValue(key, out var option))
+                    option.Update(index);
             }
         }
 
-        public IEnumerator<Option> GetEnumerator() => _options.Values.GetEnumerator();
+        internal bool TryGetValue(string key, out Option outOption)
+        {
+            lock (_lock)
+            {
+                return _options.TryGetValue(key, out outOption);
+            }
+        }
+
+        public Option this[int index]
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return index >= 0 && index < _options.Count ? _options.Values[index] : null;
+                }
+            }
+        }
+
+        public Option this[string key]
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return !string.IsNullOrWhiteSpace(key) && TryGetValue(key, out var option) ? option : null;
+                }
+            }
+            set
+            {
+                lock (_lock)
+                {
+                    if (string.IsNullOrWhiteSpace(key))
+                        return;
+                    if (_options.ContainsKey(key))
+                        _options[key] = value;
+                    else
+                        _options.Add(key, value);
+                }
+            }
+        }
+
+        public IEnumerator<Option> GetEnumerator()
+        {
+            lock (_lock)
+            {
+                return _options.Values.GetEnumerator();
+            }
+        }
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

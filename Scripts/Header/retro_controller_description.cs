@@ -25,10 +25,10 @@ using System.Runtime.InteropServices;
 
 namespace SK.Libretro.Header
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal sealed class retro_controller_description
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    internal struct retro_controller_description
     {
-        public IntPtr desc; // const char*
+        public IntPtr desc;
         public uint id;
     }
 }

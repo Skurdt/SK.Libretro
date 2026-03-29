@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace SK.Libretro
 {
-    internal sealed class OpenGLRenderProxyAndroid : HardwareRenderProxy
+    internal sealed class HardwareRenderProxyEGL : HardwareRenderProxy
     {
         private readonly IntPtr _windowHandle;
         private IntPtr _eglDisplay = IntPtr.Zero;
@@ -12,7 +12,7 @@ namespace SK.Libretro
         private IntPtr _eglContext = IntPtr.Zero;
         private IntPtr _eglConfig = IntPtr.Zero;
 
-        public OpenGLRenderProxyAndroid(Wrapper wrapper, retro_hw_render_callback hwRenderCallback, IntPtr nativeWindow)
+        public HardwareRenderProxyEGL(Wrapper wrapper, retro_hw_render_callback hwRenderCallback, IntPtr nativeWindow)
         : base(wrapper, hwRenderCallback)
             => _windowHandle = nativeWindow;
 
@@ -57,9 +57,18 @@ namespace SK.Libretro
             return _eglContext != IntPtr.Zero && eglMakeCurrent(_eglDisplay, _eglSurface, _eglSurface, _eglContext);
         }
 
+        public override void Resize(int width, int height)
+        {
+        }
+
         public override bool ReadbackFrame(uint width, uint height, ref byte[] textureData) => false;
 
-        protected override void DeInit()
+        public override void CallContextDestroy()
+        {
+            
+        }
+
+        public override void DeInit()
         {
             _ = eglMakeCurrent(_eglDisplay, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
             _ = eglDestroyContext(_eglDisplay, _eglContext);
@@ -69,7 +78,7 @@ namespace SK.Libretro
 
         protected override IntPtr GetCurrentFrameBufferCall() => IntPtr.Zero;
 
-        protected override IntPtr GetProcAddressCall(string functionName) => eglGetProcAddress(functionName);
+        protected override IntPtr GetProcAddressCall(IntPtr functionName) => eglGetProcAddress(functionName.AsString());
 
         private const int EGL_DEFAULT_DISPLAY = 0;
         private const int EGL_OPENGL_ES2_BIT = 4;
@@ -84,16 +93,16 @@ namespace SK.Libretro
 
         [DllImport("android")] private static extern IntPtr ANativeWindow_fromSurface(IntPtr jniEnv, IntPtr surface);
 
-        [DllImport("libEGL.so")] private static extern IntPtr eglGetDisplay(int display_id);
-        [DllImport("libEGL.so")] private static extern bool eglInitialize(IntPtr dpy, out int major, out int minor);
-        [DllImport("libEGL.so")] private static extern bool eglChooseConfig(IntPtr dpy, int[] attrib_list, out IntPtr config, int config_size, out int num_config);
-        [DllImport("libEGL.so")] private static extern IntPtr eglCreateWindowSurface(IntPtr dpy, IntPtr config, IntPtr win, IntPtr attrib_list);
-        [DllImport("libEGL.so")] private static extern IntPtr eglCreateContext(IntPtr dpy, IntPtr config, IntPtr share_context, int[] attrib_list);
-        [DllImport("libEGL.so")] private static extern bool eglMakeCurrent(IntPtr dpy, IntPtr draw, IntPtr read, IntPtr ctx);
-        [DllImport("libEGL.so")] private static extern bool eglSwapBuffers(IntPtr dpy, IntPtr surface);
-        [DllImport("libEGL.so")] private static extern bool eglDestroySurface(IntPtr dpy, IntPtr surface);
-        [DllImport("libEGL.so")] private static extern bool eglDestroyContext(IntPtr dpy, IntPtr ctx);
-        [DllImport("libEGL.so")] private static extern bool eglTerminate(IntPtr dpy);
-        [DllImport("libEGL.so")] private static extern IntPtr eglGetProcAddress(string procname);
+        [DllImport("libEGL")] private static extern IntPtr eglGetDisplay(int display_id);
+        [DllImport("libEGL")] private static extern bool eglInitialize(IntPtr dpy, out int major, out int minor);
+        [DllImport("libEGL")] private static extern bool eglChooseConfig(IntPtr dpy, int[] attrib_list, out IntPtr config, int config_size, out int num_config);
+        [DllImport("libEGL")] private static extern IntPtr eglCreateWindowSurface(IntPtr dpy, IntPtr config, IntPtr win, IntPtr attrib_list);
+        [DllImport("libEGL")] private static extern IntPtr eglCreateContext(IntPtr dpy, IntPtr config, IntPtr share_context, int[] attrib_list);
+        [DllImport("libEGL")] private static extern bool eglMakeCurrent(IntPtr dpy, IntPtr draw, IntPtr read, IntPtr ctx);
+        [DllImport("libEGL")] private static extern bool eglSwapBuffers(IntPtr dpy, IntPtr surface);
+        [DllImport("libEGL")] private static extern bool eglDestroySurface(IntPtr dpy, IntPtr surface);
+        [DllImport("libEGL")] private static extern bool eglDestroyContext(IntPtr dpy, IntPtr ctx);
+        [DllImport("libEGL")] private static extern bool eglTerminate(IntPtr dpy);
+        [DllImport("libEGL")] private static extern IntPtr eglGetProcAddress(string procname);
     }
 }

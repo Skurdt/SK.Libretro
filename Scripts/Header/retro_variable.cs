@@ -25,8 +25,8 @@ using System.Runtime.InteropServices;
 
 namespace SK.Libretro.Header
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal sealed class retro_variable
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    internal struct retro_variable
     {
         public IntPtr key;   // const char*
         public IntPtr value; // const char*

@@ -106,7 +106,7 @@ namespace SK.Libretro
                 _            => new LogHandler(this, settings.LogProcessor, settings.LogLevel),
             };
             OptionsHandler           = new(this);
-            VFSHandler               = new(this);
+            VFSHandler               = new();
             SerializationHandler     = new(this);
             DiskHandler              = new(this);
             PerfHandler              = new();
@@ -168,12 +168,16 @@ namespace SK.Libretro
 
         public void StopContent()
         {
+            GraphicsHandler.CallHwRenderContextDestroy();
+            
             Game.Dispose();
+
+            GraphicsHandler.DeInitHwRender();
+
             Core.Dispose();
 
             GraphicsHandler.Dispose();
             AudioHandler.Dispose();
-            VFSHandler.Dispose();
 
             PointerUtilities.Free(_unsafeStrings);
 

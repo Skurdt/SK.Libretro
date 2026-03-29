@@ -38,6 +38,7 @@ namespace SK.Libretro
         public readonly string Name;
 
         public retro_game_info GameInfo = new();
+        public retro_game_info_ext GameInfoExt = new();
 
         private readonly Wrapper _wrapper;
         private readonly string _gameDirectory;
@@ -46,12 +47,8 @@ namespace SK.Libretro
 
         private string _path          = "";
         private string _extractedPath = "";
-
-        private IntPtr _dataPtr;
-        private nuint _dataLength;
-        private bool _needFullPath;
-        private bool _persistentData;
-        private IntPtr _gameInfoExtPtr;
+        private bool _needFullPath    = false;
+        private bool _persistentData  = false;
 
         public Game(Wrapper wrapper, string gameDirectory, string[] gameNames)
         {
@@ -119,13 +116,6 @@ namespace SK.Libretro
             {
                 throw;
             }
-            finally
-            {
-                if (_dataPtr.IsNotNull())
-                    PointerUtilities.Free(ref _dataPtr);
-                if (_gameInfoExtPtr.IsNotNull())
-                    PointerUtilities.Free(ref _gameInfoExtPtr);
-            }
 
             try
             {
@@ -144,33 +134,38 @@ namespace SK.Libretro
             if (data.IsNull())
                 return false;
 
-            _gameInfoExtPtr = PointerUtilities.Alloc<retro_game_info_ext>();
-
             var directory = Path.GetDirectoryName(_path).Replace(Path.DirectorySeparatorChar, '/');
             var name      = Path.GetFileNameWithoutExtension(_path);
             var extension = Path.GetExtension(_path).TrimStart('.');
 
-            retro_game_info_ext gameInfoExt = new()
-            {
-                full_path       = _wrapper.GetUnsafeString(_path),
-                dir             = _wrapper.GetUnsafeString(directory),
-                name            = _wrapper.GetUnsafeString(name),
-                ext             = _wrapper.GetUnsafeString(extension),
-                file_in_archive = false,
-                archive_path    = IntPtr.Zero,
-                archive_file    = IntPtr.Zero,
-                meta            = IntPtr.Zero
-            };
+            GameInfoExt.full_path       = _wrapper.GetUnsafeString(_path);
+            GameInfoExt.archive_path    = IntPtr.Zero;
+            GameInfoExt.archive_file    = IntPtr.Zero;
+            GameInfoExt.dir             = _wrapper.GetUnsafeString(directory);
+            GameInfoExt.name            = _wrapper.GetUnsafeString(name);
+            GameInfoExt.ext             = _wrapper.GetUnsafeString(extension);
+            GameInfoExt.meta            = IntPtr.Zero;
 
             if (!_needFullPath)
             {
-                gameInfoExt.persistent_data = _persistentData;
-                gameInfoExt.data            = _dataPtr;
-                gameInfoExt.size            = _dataLength;
+                try
+                {
+                    using FileStream stream = new(_path, FileMode.Open);
+                    var gameData = new byte[stream.Length];
+                    _ = stream.Read(gameData, 0, (int)stream.Length);
+                    GameInfoExt.data = PointerUtilities.Alloc(gameData.Length);
+                    Marshal.Copy(gameData, 0, GameInfoExt.data, gameData.Length);
+                    GameInfoExt.size = (uint)gameData.Length;
+                    GameInfoExt.file_in_archive = false;
+                    GameInfoExt.persistent_data = _persistentData;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
             }
 
-            Marshal.StructureToPtr(gameInfoExt, _gameInfoExtPtr, false);
-            data.Write(_gameInfoExtPtr);
+            GameInfoExt.ToPointer(data);
             return true;
         }
 
@@ -211,6 +206,7 @@ namespace SK.Libretro
                 return false;
 
             SystemAVInfo.Init(data.ToStructure<retro_system_av_info>());
+            _wrapper.GraphicsHandler.ResizeHwRender(SystemAVInfo.BaseWidth, SystemAVInfo.BaseHeight);
             return true;
         }
 
@@ -222,7 +218,7 @@ namespace SK.Libretro
             _systemContentInfoOverrides.Clear();
 
             var infoOverride = data.ToStructure<retro_system_content_info_override>();
-            while (infoOverride is not null && infoOverride.extensions.IsNotNull())
+            while (infoOverride.extensions != IntPtr.Zero && !string.IsNullOrWhiteSpace(infoOverride.extensions.AsString()))
             {
                 _systemContentInfoOverrides.Add(infoOverride);
 
@@ -231,8 +227,8 @@ namespace SK.Libretro
                 foreach (var extension in extensions)
                     _contentOverrides.Add(extension, infoOverride.need_fullpath, infoOverride.persistent_data);
 
-                data += Marshal.SizeOf(infoOverride);
-                data.ToStructure(infoOverride);
+                data += Marshal.SizeOf<retro_system_content_info_override>();
+                infoOverride = data.ToStructure<retro_system_content_info_override>();
             }
 
             return true;
@@ -240,9 +236,11 @@ namespace SK.Libretro
 
         public void FreeGameInfo()
         {
+            PointerUtilities.Free(ref GameInfo.data);
             GameInfo = default;
 
-            PointerUtilities.Free(ref _gameInfoExtPtr);
+            PointerUtilities.Free(ref GameInfoExt.data);
+            GameInfoExt = default;
         }
 
         private string GetGamePath(string directory, string gameName)
@@ -290,14 +288,9 @@ namespace SK.Libretro
                 using FileStream stream = new(_path, FileMode.Open);
                 var data = new byte[stream.Length];
                 _ = stream.Read(data, 0, (int)stream.Length);
-
-                _dataPtr = PointerUtilities.Alloc(data.Length);
-                Marshal.Copy(data, 0, _dataPtr, data.Length);
-                _dataLength = (nuint)data.Length;
-
-                GameInfo.data = _dataPtr;
-                GameInfo.size = _dataLength;
-
+                GameInfo.data = PointerUtilities.Alloc(data.Length);
+                Marshal.Copy(data, 0, GameInfo.data, data.Length);
+                GameInfo.size = (uint)data.Length;
                 return true;
             }
             catch (Exception)

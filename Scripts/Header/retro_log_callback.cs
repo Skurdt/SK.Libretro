@@ -26,9 +26,10 @@ using System.Runtime.InteropServices;
 namespace SK.Libretro.Header
 {
     // typedef void (RETRO_CALLCONV* retro_log_printf_t)(enum retro_log_level level, const char* fmt, ...);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate void retro_log_printf_t(retro_log_level level, [In, MarshalAs(UnmanagedType.LPStr)] string format, IntPtr arg1, IntPtr arg2, IntPtr arg3, IntPtr arg4, IntPtr arg5, IntPtr arg6, IntPtr arg7, IntPtr arg8, IntPtr arg9, IntPtr arg10, IntPtr arg11, IntPtr arg12);
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    internal delegate void retro_log_printf_t(retro_log_level level, IntPtr format, IntPtr arg1, IntPtr arg2, IntPtr arg3, IntPtr arg4, IntPtr arg5, IntPtr arg6, IntPtr arg7, IntPtr arg8, IntPtr arg9, IntPtr arg10, IntPtr arg11, IntPtr arg12);
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct retro_log_callback
     {
         public IntPtr log; // retro_log_printf_t

@@ -21,11 +21,40 @@
  * SOFTWARE. */
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace SK.Libretro.Header
 {
-    public readonly ref struct retro_vfs_file_handle
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    internal struct retro_vfs_file_handle
     {
-        public readonly IntPtr handle;
+        // #ifdef HAVE_CDROM
+        // vfs_cdrom_t cdrom; /* int64_t alignment */
+        // #endif
+        // int64_t size;
+        // uint64_t mappos;
+        // uint64_t mapsize;
+        // FILE *fp;
+        // #ifdef _WIN32
+        // HANDLE fh;
+        // #endif
+        // char *buf;
+        // char* orig_path;
+        // uint8_t *mapped;
+        // int fd;
+        // unsigned hints;
+        // enum vfs_scheme scheme;
+
+        public long size;
+        public ulong mappos;
+        public ulong mapsize;
+        public IntPtr fp;
+        public IntPtr fh;
+        public IntPtr buf;
+        public IntPtr orig_path;
+        public IntPtr mapped;
+        public int fd;
+        public uint hints;
+        public RETRO.vfs_scheme scheme;
     }
 }

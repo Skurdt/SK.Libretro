@@ -26,27 +26,28 @@ using System.Runtime.InteropServices;
 namespace SK.Libretro.Header
 {
     // typedef retro_time_t (RETRO_CALLCONV *retro_perf_get_time_usec_t)(void);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate long retro_perf_get_time_usec_t();
     // typedef retro_perf_tick_t (RETRO_CALLCONV *retro_perf_get_counter_t)(void);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate ulong retro_perf_get_counter_t();
     // typedef uint64_t (RETRO_CALLCONV *retro_get_cpu_features_t)(void);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate ulong retro_get_cpu_features_t();
     // typedef void (RETRO_CALLCONV *retro_perf_log_t) (void);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate void retro_perf_log_t();
     // typedef void (RETRO_CALLCONV *retro_perf_register_t)(struct retro_perf_counter *counter);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate void retro_perf_register_t(ref retro_perf_counter counter);
     // typedef void (RETRO_CALLCONV *retro_perf_start_t)(struct retro_perf_counter *counter);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate void retro_perf_start_t(ref retro_perf_counter counter);
     // typedef void (RETRO_CALLCONV *retro_perf_stop_t)(struct retro_perf_counter *counter);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate void retro_perf_stop_t(ref retro_perf_counter counter);
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct retro_perf_callback
     {
         public IntPtr get_time_usec;    // retro_perf_get_time_usec_t

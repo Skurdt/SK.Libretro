@@ -40,7 +40,7 @@ namespace SK.Libretro
         }
 
         protected override void Log(retro_log_level level,
-                                    string format,
+                                    IntPtr format,
                                     IntPtr arg1,
                                     IntPtr arg2,
                                     IntPtr arg3,
@@ -61,7 +61,7 @@ namespace SK.Libretro
             int argumentsToPush;
             try
             {
-                argumentsToPush = GetFormatArgumentCount(format);
+                argumentsToPush = GetFormatArgumentCount(format.AsString());
             }
             catch (NotImplementedException /*e*/)
             {
@@ -76,7 +76,7 @@ namespace SK.Libretro
             }
 
             Sprintf(out var formattedString,
-                    format,
+                    format.AsString(),
                     argumentsToPush >= 1 ? arg1 : IntPtr.Zero,
                     argumentsToPush >= 2 ? arg2 : IntPtr.Zero,
                     argumentsToPush >= 3 ? arg3 : IntPtr.Zero,

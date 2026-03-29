@@ -22,7 +22,7 @@
 
 namespace SK.Libretro.Unity
 {
-    internal class SaveStateWithoutScreenshotBridgeCommand : IBridgeCommand
+    internal sealed class SaveStateWithoutScreenshotBridgeCommand : IBridgeCommand
     {
         private readonly Wrapper _wrapper;
 

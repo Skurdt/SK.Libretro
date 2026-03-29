@@ -1,4 +1,4 @@
-﻿/* MIT License
+/* MIT License
 
  * Copyright (c) 2021-2022 Skurdt
  *
@@ -20,28 +20,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-using System;
-using Unity.Burst;
-using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.Jobs;
-
-namespace SK.Libretro.Unity
+namespace SK.Libretro.SDL
 {
-    [BurstCompile]
-    public struct FrameXRGB8888Job : IJobParallelFor
+    internal sealed class WindowVulkan : Window
     {
-        [ReadOnly, NativeDisableUnsafePtrRestriction] public IntPtr SourceData;
-        public int Width;
-        public int Height;
-        public int PitchPixels;
-        [WriteOnly] public NativeArray<uint> TextureData;
+        protected override ulong Flags { get; } = SDL_WINDOW_VULKAN;
 
-        public unsafe void Execute(int index)
+        private const ulong SDL_WINDOW_VULKAN = 0x0000000010000000ul;
+
+        public WindowVulkan(string title, int width, int height, bool hidden = true)
+        : base(title, width, height, hidden)
         {
-            var y = index / Width;
-            var x = index % Width;
-            TextureData[index] = ((uint*)SourceData)[(y * PitchPixels) + x];
         }
     }
 }

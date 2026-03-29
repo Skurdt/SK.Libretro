@@ -165,7 +165,7 @@ namespace SK.Libretro
 
             var rumbleInterface = data.ToStructure<retro_rumble_interface>();
             rumbleInterface.set_rumble_state = _setRumbleState.GetFunctionPointer();
-            Marshal.StructureToPtr(rumbleInterface, data, false);
+            rumbleInterface.ToPointer(data);
             return true;
         }
 
@@ -211,7 +211,7 @@ namespace SK.Libretro
             _inputDescriptors.Clear();
 
             var descriptor = data.ToStructure<retro_input_descriptor>();
-            while (descriptor is not null && !descriptor.desc.IsNull())
+            while (descriptor.desc != IntPtr.Zero && !string.IsNullOrWhiteSpace(descriptor.desc.AsString()))
             {
                 _inputDescriptors.Add(new()
                 {
@@ -276,8 +276,8 @@ namespace SK.Libretro
                     }
                 }
 
-                data += Marshal.SizeOf(descriptor);
-                data.ToStructure(descriptor);
+                data += Marshal.SizeOf<retro_input_descriptor>();
+                descriptor = data.ToStructure<retro_input_descriptor>();
             }
 
             HasInputDescriptors = _inputDescriptors.Count > 0;
@@ -307,15 +307,14 @@ namespace SK.Libretro
                 for (var deviceIndex = 0; deviceIndex < controllerInfo.num_types; ++deviceIndex)
                 {
                     var controllerDescription = controllerInfo.types.ToStructure<retro_controller_description>();
-                    if (controllerDescription.desc.IsNotNull())
+                    if (!string.IsNullOrWhiteSpace(controllerDescription.desc.AsString()))
                         DeviceMap.Add(index, new() { Description = controllerDescription.desc.AsString(), Device = controllerDescription.id });
                     
-                    controllerInfo.types += Marshal.SizeOf(controllerDescription);
-                    controllerInfo.types.ToStructure(controllerDescription);
+                    controllerInfo.types += Marshal.SizeOf<retro_controller_description>();
                 }
 
-                data += Marshal.SizeOf(controllerInfo);
-                data.ToStructure(controllerInfo);
+                data += Marshal.SizeOf<retro_controller_info>();
+                controllerInfo = data.ToStructure<retro_controller_info>();
                 index++;
             }
 

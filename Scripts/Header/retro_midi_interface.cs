@@ -26,26 +26,27 @@ using System.Runtime.InteropServices;
 namespace SK.Libretro.Header
 {
     // typedef bool (RETRO_CALLCONV *retro_midi_input_enabled_t)(void);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_midi_input_enabled_t();
     // typedef bool (RETRO_CALLCONV *retro_midi_output_enabled_t)(void);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_midi_output_enabled_t();
     // typedef bool (RETRO_CALLCONV *retro_midi_read_t)(uint8_t*byte);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_midi_read_t(IntPtr @byte);
     // typedef bool (RETRO_CALLCONV *retro_midi_write_t)(uint8_t byte, uint32_t delta_time);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_midi_write_t(byte @byte, uint delta_time);
     // typedef bool (RETRO_CALLCONV *retro_midi_flush_t) (void);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_midi_flush_t();
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct retro_midi_interface
     {
         public IntPtr input_enabled;  // retro_midi_input_enabled_t 

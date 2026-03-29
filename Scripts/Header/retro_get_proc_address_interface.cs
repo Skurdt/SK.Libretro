@@ -26,9 +26,10 @@ using System.Runtime.InteropServices;
 namespace SK.Libretro.Header
 {
     // typedef retro_proc_address_t (RETRO_CALLCONV *retro_get_proc_address_t)(const char* sym);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate IntPtr retro_get_proc_address_t(IntPtr sym);
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct retro_get_proc_address_interface
     {
         public IntPtr get_proc_address; // retro_get_proc_address_t

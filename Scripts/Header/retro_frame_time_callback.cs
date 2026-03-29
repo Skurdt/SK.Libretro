@@ -26,9 +26,10 @@ using System.Runtime.InteropServices;
 namespace SK.Libretro.Header
 {
     // typedef void (RETRO_CALLCONV *retro_frame_time_callback_t)(retro_usec_t usec);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate void retro_frame_time_callback_t(long usec);
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct retro_frame_time_callback
     {
         public IntPtr callback; // retro_frame_time_callback_t

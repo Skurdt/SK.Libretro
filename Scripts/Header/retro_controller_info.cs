@@ -25,8 +25,8 @@ using System.Runtime.InteropServices;
 
 namespace SK.Libretro.Header
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal sealed class retro_controller_info
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    internal struct retro_controller_info
     {
         public IntPtr types; // retro_controller_description*
         public uint num_types;

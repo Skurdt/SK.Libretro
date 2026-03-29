@@ -21,9 +21,11 @@
  * SOFTWARE. */
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace SK.Libretro.Header
 {
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct retro_message_ext
     {
         public IntPtr msg; // const char*

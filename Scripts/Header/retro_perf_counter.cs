@@ -21,15 +21,17 @@
  * SOFTWARE. */
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace SK.Libretro.Header
 {
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct retro_perf_counter
     {
         public IntPtr ident; // const char*
         public ulong start;
         public ulong total;
         public ulong call_cnt;
-        public bool registered;
+        [MarshalAs(UnmanagedType.I1)] public bool registered;
     }
 }

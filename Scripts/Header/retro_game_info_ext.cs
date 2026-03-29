@@ -25,6 +25,7 @@ using System.Runtime.InteropServices;
 
 namespace SK.Libretro.Header
 {
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct retro_game_info_ext
     {
         public IntPtr full_path;    // const char*
@@ -34,8 +35,8 @@ namespace SK.Libretro.Header
         public IntPtr name;         // const char*
         public IntPtr ext;          // const char*
         public IntPtr meta;         // const char*
-        public IntPtr data;         // const void*
-        public nuint size;
+        public IntPtr data; // const void*
+        public uint size;
         [MarshalAs(UnmanagedType.I1)] public bool file_in_archive;
         [MarshalAs(UnmanagedType.I1)] public bool persistent_data;
     }

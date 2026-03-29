@@ -26,7 +26,7 @@ using System.Runtime.InteropServices;
 namespace SK.Libretro.Header
 {
     // typedef bool (RETRO_CALLCONV* retro_core_options_update_display_callback_t) (void);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_core_options_update_display_callback_t();
 

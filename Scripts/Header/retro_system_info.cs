@@ -21,15 +21,17 @@
  * SOFTWARE. */
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace SK.Libretro.Header
 {
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct retro_system_info
     {
         public IntPtr library_name;     // const char*
         public IntPtr library_version;  // const char*
         public IntPtr valid_extensions; // const char*
-        public bool need_fullpath;
-        public bool block_extract;
+        [MarshalAs(UnmanagedType.I1)] public bool need_fullpath;
+        [MarshalAs(UnmanagedType.I1)] public bool block_extract;
     }
 }

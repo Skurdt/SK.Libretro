@@ -26,9 +26,10 @@ using System.Runtime.InteropServices;
 namespace SK.Libretro.Header
 {
     // typedef void (RETRO_CALLCONV *retro_set_led_state_t)(int led, int state);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate void retro_set_led_state_t(int led, int state);
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct retro_led_interface
     {
         public IntPtr set_led_state; // retro_set_led_state_t

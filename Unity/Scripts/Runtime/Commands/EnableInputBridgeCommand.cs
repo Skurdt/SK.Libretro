@@ -22,7 +22,7 @@
 
 namespace SK.Libretro.Unity
 {
-    internal class EnableInputBridgeCommand : IBridgeCommand
+    internal sealed class EnableInputBridgeCommand : IBridgeCommand
     {
         private readonly Wrapper _wrapper;
         private readonly bool _enabled;

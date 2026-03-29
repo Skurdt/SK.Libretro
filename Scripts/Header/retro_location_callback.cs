@@ -26,23 +26,24 @@ using System.Runtime.InteropServices;
 namespace SK.Libretro.Header
 {
     // typedef void (RETRO_CALLCONV *retro_location_set_interval_t) (unsigned interval_ms, unsigned interval_distance);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate void retro_location_set_interval_t(uint interval_ms, uint interval_distance);
     // typedef bool (RETRO_CALLCONV *retro_location_start_t) (void);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_location_start_t();
     // typedef void (RETRO_CALLCONV *retro_location_stop_t) (void);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate void retro_location_stop_t();
     // typedef bool (RETRO_CALLCONV *retro_location_get_position_t) (double* lat, double* lon, double* horiz_accuracy, double* vert_accuracy);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_location_get_position_t(ref double lat, ref double lon, ref double horiz_accuracy, ref double vert_accuracy);
     // typedef void (RETRO_CALLCONV *retro_location_lifetime_status_t) (void);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate void retro_location_lifetime_status_t();
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct retro_location_callback
     {
         public IntPtr start;         // retro_location_start_t

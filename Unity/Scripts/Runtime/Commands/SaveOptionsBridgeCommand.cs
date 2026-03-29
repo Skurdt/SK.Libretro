@@ -22,7 +22,7 @@
 
 namespace SK.Libretro.Unity
 {
-    internal class SaveOptionsBridgeCommand : IBridgeCommand
+    internal sealed class SaveOptionsBridgeCommand : IBridgeCommand
     {
         private readonly Wrapper _wrapper;
         private readonly bool _global;

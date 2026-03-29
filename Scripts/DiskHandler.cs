@@ -76,7 +76,7 @@ namespace SK.Libretro
                     game.GameInfo.path = _wrapper.GetUnsafeString(filePath);
                     using FileStream stream = new(filePath, FileMode.Open);
                     var data = new byte[stream.Length];
-                    game.GameInfo.size = (nuint)data.Length;
+                    game.GameInfo.size = (uint)data.Length;
                     game.GameInfo.data = PointerUtilities.Alloc(data.Length * Marshal.SizeOf<byte>());
                     _ = stream.Read(data, 0, (int)stream.Length);
                     Marshal.Copy(data, 0, game.GameInfo.data, data.Length);
@@ -105,11 +105,43 @@ namespace SK.Libretro
         
         public bool AddImageIndex() => _add_image_index();
         
-        public bool SetInitialImage(uint index, string path) => _set_initial_image(index, path);
-        
-        public bool GetImagePath(uint index, ref string path, nuint len) => _get_image_path(index, ref path, len);
-        
-        public bool GetImageLabel(uint index, ref string label, nuint len) => _get_image_label(index, ref label, len);
+        public bool SetInitialImage(uint index, string path) => _set_initial_image(index, _wrapper.GetUnsafeString(path));
+
+        public bool GetImagePath(uint index, ref string path, nuint len)
+        {
+            var pathPtr = PointerUtilities.Alloc((int)len);
+            try
+            {
+                var result = _get_image_path(index, pathPtr, len);
+                if (result)
+                {
+                    path = pathPtr.AsString();
+                }
+                return result;
+            }
+            finally
+            {
+                PointerUtilities.Free(ref pathPtr);
+            }
+        }
+
+        public bool GetImageLabel(uint index, ref string label, nuint len)
+        {
+            var labelPtr = PointerUtilities.Alloc((int)len);
+            try
+            {
+                var result = _get_image_label(index, labelPtr, len);
+                if (result)
+                {
+                    label = labelPtr.AsString();
+                }
+                return result;
+            }
+            finally
+            {
+                PointerUtilities.Free(ref labelPtr);
+            }
+        }
 
         public bool GetDiskControlInterfaceVersion(IntPtr data)
         {
@@ -134,9 +166,9 @@ namespace SK.Libretro
             _get_num_images      = callback.get_num_images.GetDelegate<retro_get_num_images_t>();
             _replace_image_index = callback.replace_image_index.GetDelegate<retro_replace_image_index_t>();
             _add_image_index     = callback.add_image_index.GetDelegate<retro_add_image_index_t>();
-            _set_initial_image   = (uint index, string path) => false;
-            _get_image_path      = (uint index, ref string path, nuint len) => false;
-            _get_image_label     = (uint index, ref string label, nuint len) => false;
+            _set_initial_image   = (index, path) => false;
+            _get_image_path      = (index, path, len) => false;
+            _get_image_label     = (index, label, len) => false;
 
             Enabled = true;
             return true;

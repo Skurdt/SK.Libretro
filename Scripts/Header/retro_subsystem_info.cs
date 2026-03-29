@@ -25,8 +25,8 @@ using System.Runtime.InteropServices;
 
 namespace SK.Libretro.Header
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal sealed class retro_subsystem_info
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    internal struct retro_subsystem_info
     {
         public IntPtr desc;  // const char*
         public IntPtr ident; // const char*

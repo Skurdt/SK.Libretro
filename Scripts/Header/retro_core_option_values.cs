@@ -25,8 +25,8 @@ using System.Runtime.InteropServices;
 namespace SK.Libretro.Header
 {
     // Equivalent of retro_core_option_value[RETRO_NUM_CORE_OPTION_VALUES_MAX] array
-    [StructLayout(LayoutKind.Sequential)]
-    internal sealed class retro_core_option_values
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    internal struct retro_core_option_values
     {
         public retro_core_option_value e0;
         public retro_core_option_value e1;

@@ -22,7 +22,7 @@
 
 namespace SK.Libretro.Unity
 {
-    internal class SetDiskIndexBridgeCommand : IBridgeCommand
+    internal sealed class SetDiskIndexBridgeCommand : IBridgeCommand
     {
         private readonly Wrapper _wrapper;
         private readonly string _gamesDirectory;

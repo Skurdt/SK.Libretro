@@ -21,14 +21,16 @@
  * SOFTWARE. */
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace SK.Libretro.Header
 {
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct retro_game_info
     {
         public IntPtr path; // const char*
         public IntPtr data; // const void*
-        public nuint size;
+        public uint size;
         public IntPtr meta; // const char*
     }
 }

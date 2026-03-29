@@ -274,13 +274,18 @@ namespace SK.Libretro.Unity
                 //__wrapper.RewindEnabled = _settings.RewindEnabled;
 
                 Options = (_wrapper.OptionsHandler.CoreOptions, _wrapper.OptionsHandler.GameOptions);
-
+                
                 InvokeInstanceEvent(_instanceStartedCallback);
 
-                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                var gameFrameTime = 1.0 / _wrapper.Game.SystemAVInfo.Fps;
-                var startTime     = 0.0;
+                var frameDuration = 1000.0 / _wrapper.Game.SystemAVInfo.Fps;
+                var lastTime      = System.Diagnostics.Stopwatch.GetTimestamp();
                 var accumulator   = 0.0;
+
+                var frameStatsEnabled = true;
+                var runTimed          = true;
+                var frameTime         = 0.0;
+                var lastRetroRunTime  = 0L;
+                var fps = 0.0;
 
                 Running = true;
                 while (Running)
@@ -296,20 +301,49 @@ namespace SK.Libretro.Unity
                     //if (_settings.RewindEnabled)
                     //    __wrapper.PerformRewind = Rewind;
 
-                    var currentTime = stopwatch.Elapsed.TotalSeconds;
-                    var dt = currentTime - startTime;
-                    startTime = currentTime;
-
-                    var targetFrameTime = /*FastForward && FastForwardFactor > 0 ? gameFrameTime / FastForwardFactor : */gameFrameTime;
-                    if ((accumulator += dt) >= targetFrameTime)
-                    {
-                        _wrapper.RunFrame();
-                        accumulator = 0.0;
-                    }
-
                     lock (_lock)
                         while (_bridgeCommands.TryDequeue(out var command))
                             command.Execute();
+
+                    var currentTime = System.Diagnostics.Stopwatch.GetTimestamp();
+                    var elapsedTime = (currentTime - lastTime) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
+                    lastTime = currentTime;
+                    accumulator += elapsedTime;
+
+                    while (accumulator >= frameDuration)
+                    {
+                        if (frameStatsEnabled)
+                        {
+                            var runCurrentTime = System.Diagnostics.Stopwatch.GetTimestamp();
+                            if (runTimed)
+                            {
+                                var dtMs = (runCurrentTime - lastRetroRunTime) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
+                                var kAlpha = 0.1;
+                                var smoothed = (kAlpha * dtMs) + ((1.0 - kAlpha) * frameTime);
+
+                                frameTime = smoothed;
+                                fps = smoothed > 0.0 ? 1000.0 / smoothed : 0.0;
+                            }
+                            lastRetroRunTime = runCurrentTime;
+                            runTimed = true;
+                        }
+                        else if (runTimed)
+                        {
+                            fps = 0.0;
+                            frameTime = 0.0;
+                            runTimed = false;
+                        }
+
+                        _wrapper.RunFrame();
+
+                        accumulator -= frameDuration;
+
+                        if (accumulator < frameDuration)
+                        {
+                            var sleepTimeMs = frameDuration - accumulator;
+                            Thread.Sleep((int)(sleepTimeMs * 0.9));
+                        }
+                    }
                 }
 
                 InvokeInstanceEvent(_instanceStoppedCallback);

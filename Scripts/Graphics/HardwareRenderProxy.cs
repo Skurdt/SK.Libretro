@@ -25,7 +25,7 @@ using System;
 
 namespace SK.Libretro
 {
-    internal abstract class HardwareRenderProxy : IDisposable
+    internal abstract class HardwareRenderProxy
     {
         public readonly retro_hw_context_reset_t ContextReset;
         public readonly retro_hw_context_reset_t ContextDestroy;
@@ -39,24 +39,31 @@ namespace SK.Libretro
         public HardwareRenderProxy(Wrapper wrapper, retro_hw_render_callback hwRenderCallback)
         {
             _wrapper              = wrapper;
-            ContextReset          = hwRenderCallback.context_reset.GetDelegate<retro_hw_context_reset_t>();
-            ContextDestroy        = hwRenderCallback.context_destroy.GetDelegate<retro_hw_context_reset_t>();
             GetCurrentFrameBuffer = GetCurrentFrameBufferCall;
             GetProcAddress        = GetProcAddressCall;
+            ContextReset          = hwRenderCallback.context_reset.GetDelegate<retro_hw_context_reset_t>();
+            ContextDestroy        = hwRenderCallback.context_destroy.GetDelegate<retro_hw_context_reset_t>();
             Depth                 = hwRenderCallback.depth;
             Stencil               = hwRenderCallback.stencil;
         }
 
-        public void Dispose() => DeInit();
-
         public abstract bool Init(int width, int height);
 
+        public abstract void Resize(int width, int height);
+
         public abstract bool ReadbackFrame(uint width, uint height, ref byte[] textureData);
+        
+        public abstract void CallContextDestroy();
 
-        protected abstract void DeInit();
+        public abstract void DeInit();
 
-        protected abstract IntPtr GetCurrentFrameBufferCall();
+        protected virtual IntPtr GetCurrentFrameBufferCall() => IntPtr.Zero;
 
-        protected abstract IntPtr GetProcAddressCall(string functionName);
+        protected virtual IntPtr GetProcAddressCall(IntPtr functionName) => IntPtr.Zero;
+
+        public virtual bool GetHwRenderInterface(IntPtr iface) => false;
+
+        public virtual bool SetHwRenderContextNegotiationInterface(IntPtr negotiation_interface) => false;
+
     }
 }

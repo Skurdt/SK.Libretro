@@ -26,9 +26,10 @@ using System.Runtime.InteropServices;
 namespace SK.Libretro.Header
 {
     // typedef void (RETRO_CALLCONV *retro_keyboard_event_t)(bool down, unsigned keycode, uint32_t character, uint16_t key_modifiers);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate void retro_keyboard_event_t(int down, uint keycode, uint character, ushort key_modifiers);
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct retro_keyboard_callback
     {
         public IntPtr callback; // retro_keyboard_event_t

@@ -26,12 +26,13 @@ using System.Runtime.InteropServices;
 namespace SK.Libretro.Header
 {
     // typedef void (RETRO_CALLCONV *retro_audio_callback_t)(void);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate void retro_audio_callback_t();
     // typedef void (RETRO_CALLCONV *retro_audio_set_state_callback_t)(bool enabled);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate void retro_audio_set_state_callback_t([MarshalAs(UnmanagedType.I1)] bool enabled);
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct retro_audio_callback
     {
         public IntPtr callback;  // retro_audio_callback_t

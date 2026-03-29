@@ -67,15 +67,7 @@ namespace SK.Libretro
         {
             try
             {
-                if (!TrySaveState(out var data))
-                    return false;
-
-                if (_gameDirectory is not null && !Directory.Exists(_gameDirectory))
-                    _ = Directory.CreateDirectory(_gameDirectory);
-
-                var path = $"{_gameDirectory ?? _coreDirectory}/save_{_currentStateSlot}.state";
-                File.WriteAllBytes(path, data);
-                return true;
+                return SaveStateToDisk(out var _);
             }
             catch (Exception e)
             {

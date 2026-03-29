@@ -25,6 +25,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Unity.Jobs;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 
 namespace SK.Libretro.Unity
 {
@@ -67,14 +68,13 @@ namespace SK.Libretro.Unity
         {
             await Awaitable.MainThreadAsync();
 
-            CreateTexture(width, height, TextureFormat.RGB565);
+            CreateTexture(width, height);
             if (!_texture)
                 throw new NullReferenceException("Texture not created");
 
             var handle = GCHandle.Alloc(_texture.GetRawTextureData(), GCHandleType.Pinned);
             var result = handle.AddrOfPinnedObject();
             handle.Free();
-
             return result;
         }
 
@@ -114,16 +114,9 @@ namespace SK.Libretro.Unity
             if (!_texture)
                 return;
 
-            _jobHandle = new FrameXRGB8888Job
-            {
-                SourceData  = data,
-                Width       = width,
-                Height      = height,
-                PitchPixels = pitch / sizeof(uint),
-                TextureData = _texture.GetRawTextureData<uint>()
-            }.Schedule(width * height, 64);
-            _jobHandle.Complete();
+            _texture.LoadRawTextureData(data, pitch * height);
             _texture.Apply();
+            return;
         }
 
         public async void ProcessFrameXRGB8888VFlip(IntPtr data, int width, int height, int pitch)
@@ -166,7 +159,7 @@ namespace SK.Libretro.Unity
             _texture.Apply();
         }
 
-        private void CreateTexture(int width, int height, TextureFormat textureFormat = TextureFormat.BGRA32)
+        private void CreateTexture(int width, int height)
         {
             if (!Application.isPlaying)
                 return;
@@ -174,7 +167,7 @@ namespace SK.Libretro.Unity
             if (!_texture || _texture.width != width || _texture.height != height)
             {
                 UnityEngine.Object.Destroy(_texture);
-                _texture = new Texture2D(width, height, textureFormat, false, false, false)
+                _texture = new(width, height, GraphicsFormat.B8G8R8A8_SRGB, TextureCreationFlags.DontInitializePixels)
                 {
                     filterMode = _filterMode
                 };

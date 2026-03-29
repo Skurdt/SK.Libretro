@@ -28,9 +28,11 @@ namespace SK.Libretro
         public string Key { get; private set; }
         public string Description { get; private set; }
         public string Info { get; private set; }
-        public string CurrentValue { get; private set; }
+        public string CurrentValue { get; set; }
         public string[] PossibleValues { get; private set; }
         public bool Visible { get; private set; } = true;
+
+        private readonly object _lock = new();
 
         internal Option(string line)
         : this(line.Split(';'))
@@ -39,53 +41,81 @@ namespace SK.Libretro
 
         internal Option(string[] lineSplit)
         {
-            Update(lineSplit);
-            CurrentValue = lineSplit[2];
+            lock (_lock)
+            {
+                Update(lineSplit);
+                CurrentValue = lineSplit[2];
+            }
         }
 
         internal Option(string key, string[] lineSplit)
         {
-            Update(key, lineSplit);
-            CurrentValue = lineSplit[1].Trim().Split('|')[0];
+            lock (_lock)
+            {
+                Update(key, lineSplit);
+                CurrentValue = lineSplit[1].Trim().Split('|')[0];
+            }
         }
 
         internal Option(string key, string description, string info, string value, string[] possibleValues)
         {
-            Update(key, description, info, possibleValues);
-            CurrentValue = value;
+            lock (_lock)
+            {
+                Update(key, description, info, possibleValues);
+                CurrentValue = value;
+            }
         }
 
         public void Update(int index)
         {
-            if (PossibleValues is null || PossibleValues.Length == 0)
-                return;
-
-            var clampedIndex = index.Clamp(0, PossibleValues.Length - 1);
-            CurrentValue = PossibleValues[clampedIndex];
+            lock (_lock)
+            {
+                if (PossibleValues is null || PossibleValues.Length == 0)
+                    return;
+    
+                var clampedIndex = index.Clamp(0, PossibleValues.Length - 1);
+                CurrentValue = PossibleValues[clampedIndex];
+    
+            }
         }
 
         internal void Update(string key, string[] lineSplit)
         {
-            Key            = key;
-            Description    = lineSplit[0];
-            PossibleValues = lineSplit[1].Trim().Split('|');
+            lock (_lock)
+            {
+                Key            = key;
+                Description    = lineSplit[0];
+                PossibleValues = lineSplit[1].Trim().Split('|');
+            }
         }
 
         internal void Update(string[] lineSplit)
         {
-            Key            = lineSplit[0];
-            Description    = lineSplit[1];
-            PossibleValues = lineSplit[3].Trim().Split('|');
+            lock (_lock)
+            {
+                Key            = lineSplit[0];
+                Description    = lineSplit[1];
+                PossibleValues = lineSplit[3].Trim().Split('|');
+            }
         }
 
         internal void Update(string key, string description, string info, string[] possibleValues)
         {
-            Key            = key;
-            Description    = description;
-            Info           = info;
-            PossibleValues = possibleValues;
+            lock (_lock)
+            {
+                Key            = key;
+                Description    = description;
+                Info           = info;
+                PossibleValues = possibleValues;
+            }
         }
 
-        internal void SetVisibility(bool visible) => Visible = visible;
+        internal void SetVisibility(bool visible)
+        {
+            lock (_lock)
+            {
+                Visible = visible;
+            }
+        }
     }
 }

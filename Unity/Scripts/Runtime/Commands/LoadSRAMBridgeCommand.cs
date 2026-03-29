@@ -22,7 +22,7 @@
 
 namespace SK.Libretro.Unity
 {
-    internal class LoadSRAMBridgeCommand : IBridgeCommand
+    internal sealed class LoadSRAMBridgeCommand : IBridgeCommand
     {
         private readonly Wrapper _wrapper;
 

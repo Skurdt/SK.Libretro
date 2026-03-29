@@ -200,12 +200,12 @@ namespace SK.Libretro
             SubsystemInfo.Clear();
 
             var subsystemInfo = data.ToStructure<retro_subsystem_info>();
-            while (!subsystemInfo.desc.IsNull())
+            while (subsystemInfo.desc != IntPtr.Zero && !string.IsNullOrWhiteSpace(subsystemInfo.desc.AsString()))
             {
                 SubsystemInfo.Add(subsystemInfo);
 
-                data += Marshal.SizeOf(subsystemInfo);
-                data.ToStructure(subsystemInfo);
+                data += Marshal.SizeOf<retro_subsystem_info>();
+                subsystemInfo = data.ToStructure<retro_subsystem_info>();
             }
 
             return true;

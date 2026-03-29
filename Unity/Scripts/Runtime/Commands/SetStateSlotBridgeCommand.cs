@@ -22,7 +22,7 @@
 
 namespace SK.Libretro.Unity
 {
-    internal class SetStateSlotBridgeCommand : IBridgeCommand
+    internal sealed class SetStateSlotBridgeCommand : IBridgeCommand
     {
         private readonly Wrapper _wrapper;
         private readonly int _slot;

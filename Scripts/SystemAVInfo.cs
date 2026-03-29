@@ -38,18 +38,22 @@ namespace SK.Libretro
         public void Init(retro_system_av_info info)
         {
             SetGeometry(info.geometry);
-
-            Fps         = info.timing.fps;
-            SampleRate  = Convert.ToInt32(info.timing.sample_rate);
+            SetTiming(info.timing);
         }
 
-        public void SetGeometry(retro_game_geometry geometry)
+        public void SetGeometry(in retro_game_geometry geometry)
         {
             BaseWidth   = (int)geometry.base_width;
             BaseHeight  = (int)geometry.base_height;
             MaxWidth    = (int)geometry.max_width;
             MaxHeight   = (int)geometry.max_height;
             AspectRatio = geometry.aspect_ratio;
+        }
+
+        public void SetTiming(in retro_system_timing timing)
+        {
+            Fps         = timing.fps;
+            SampleRate  = Convert.ToInt32(timing.sample_rate);
         }
     }
 }

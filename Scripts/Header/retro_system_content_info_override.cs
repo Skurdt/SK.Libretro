@@ -25,11 +25,11 @@ using System.Runtime.InteropServices;
 
 namespace SK.Libretro.Header
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal sealed class retro_system_content_info_override
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    internal struct retro_system_content_info_override
     {
         public IntPtr extensions; // const char*
-        public bool need_fullpath;
-        public bool persistent_data;
+        [MarshalAs(UnmanagedType.I1)] public bool need_fullpath;
+        [MarshalAs(UnmanagedType.I1)] public bool persistent_data;
     }
 }

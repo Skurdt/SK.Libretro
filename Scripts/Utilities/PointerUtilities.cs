@@ -52,6 +52,10 @@ namespace SK.Libretro
 
         public static ulong ReadUInt64(this IntPtr ptr) => ptr.IsNotNull() ? Convert.ToUInt64(Marshal.ReadInt64(ptr)) : 0;
 
+        public static IntPtr ReadIntPtr(this IntPtr ptr) => ptr.IsNotNull() ? Marshal.ReadIntPtr(ptr) : IntPtr.Zero;
+        
+        public static IntPtr ReadIntPtr(this IntPtr ptr, int offset) => ptr.IsNotNull() ? Marshal.ReadIntPtr(ptr, IntPtr.Size * offset) : IntPtr.Zero;
+
         public static void Write(this IntPtr ptr, bool value)
         {
             if (ptr.IsNotNull())
@@ -81,8 +85,25 @@ namespace SK.Libretro
             if (ptr.IsNotNull())
                 Marshal.WriteIntPtr(ptr, value);
         }
+        public static void WriteIntPtr(this IntPtr ptr, int offset, IntPtr value)
+        {
+            if (ptr.IsNotNull())
+                Marshal.WriteIntPtr(ptr, IntPtr.Size * offset, value);
+        }
 
         public static T ToStructure<T>(this IntPtr ptr) => Marshal.PtrToStructure<T>(ptr);
+
+        public static void ToPointer<T>(this ref T src, IntPtr dst) where T : struct
+        {
+            if (dst.IsNotNull())
+                Marshal.StructureToPtr(src, dst, false);
+        }
+
+        public static void ToPointer<T>(this T src, IntPtr dst) where T : class
+        {
+            if (dst.IsNotNull())
+                Marshal.StructureToPtr(src, dst, false);
+        }
 
         public static T GetDelegate<T>(this IntPtr ptr) where T : Delegate => ptr.IsNotNull() ? Marshal.GetDelegateForFunctionPointer<T>(ptr) : default;
 
@@ -101,12 +122,19 @@ namespace SK.Libretro
             SetToNull(ref ptr);
         }
 
+        public static IntPtr Alloc() => Marshal.AllocHGlobal(IntPtr.Size);
+
         public static IntPtr Alloc(int size) => Marshal.AllocHGlobal(size);
 
         public static IntPtr Alloc<T>() => Marshal.AllocHGlobal(Marshal.SizeOf<T>());
 
+        public static IntPtr Alloc<T>(int count) => Marshal.AllocHGlobal(Marshal.SizeOf<T>() * count);
+
         public static void Free(IList<IntPtr> ptrs)
         {
+            if (ptrs is null)
+                return;
+
             for (var i = 0; i < ptrs.Count; i++)
             {
                 var ptr = ptrs[i];
@@ -114,6 +142,18 @@ namespace SK.Libretro
             }
 
             ptrs.Clear();
+        }
+
+        public static void Free(IntPtr[] ptrs)
+        {
+            if (ptrs is null)
+                return;
+
+            for (var i = 0; i < ptrs.Length; i++)
+            {
+                var ptr = ptrs[i];
+                Free(ref ptr);
+            }
         }
 
         public static void SetToNull(ref IntPtr ptr) => ptr = IntPtr.Zero;

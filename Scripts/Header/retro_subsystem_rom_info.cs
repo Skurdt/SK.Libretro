@@ -21,16 +21,18 @@
  * SOFTWARE. */
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace SK.Libretro.Header
 {
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct retro_subsystem_rom_info
     {
         public IntPtr desc;             // const char*
         public IntPtr valid_extensions; // const char*
-        public bool need_fullpath;
-        public bool block_extract;
-        public bool required;
+        [MarshalAs(UnmanagedType.I1)] public bool need_fullpath;
+        [MarshalAs(UnmanagedType.I1)] public bool block_extract;
+        [MarshalAs(UnmanagedType.I1)] public bool required;
         public IntPtr memory;           // retro_subsystem_memory_info*
         public uint num_memory;
     }

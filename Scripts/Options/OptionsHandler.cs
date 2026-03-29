@@ -48,7 +48,7 @@ namespace SK.Libretro
                 return false;
 
             var outVariable = data.ToStructure<retro_variable>();
-            if (outVariable.key.IsNull())
+            if (outVariable.key == IntPtr.Zero || string.IsNullOrWhiteSpace(outVariable.key.AsString()))
                 return false;
 
             var key = outVariable.key.AsString();
@@ -68,7 +68,7 @@ namespace SK.Libretro
             }
 
             outVariable.value = _wrapper.GetUnsafeString(coreOption.CurrentValue);
-            Marshal.StructureToPtr(outVariable, data, false);
+            outVariable.ToPointer(data);
             return true;
         }
 
@@ -105,10 +105,11 @@ namespace SK.Libretro
                 Deserialize();
 
                 var variable = data.ToStructure<retro_variable>();
-                while (variable is not null && variable.key.IsNotNull() && variable.value.IsNotNull())
+                while (variable.key != IntPtr.Zero && !string.IsNullOrWhiteSpace(variable.key.AsString()) &&
+                       variable.value != IntPtr.Zero && !string.IsNullOrWhiteSpace(variable.value.AsString()))
                 {
-                    var key     = variable.key.AsString();
-                    var value   = variable.value.AsString();
+                    var key   = variable.key.AsString();
+                    var value = variable.value.AsString();
                     var split = value.Split(';');
                     if (CoreOptions[key] is null)
                         CoreOptions[key] = split.Length > 3 ? new Option(split) : new Option(key, split);
@@ -120,8 +121,9 @@ namespace SK.Libretro
                             CoreOptions[key].Update(key, split);
                     }
 
-                    data += Marshal.SizeOf(variable);
-                    data.ToStructure(variable);
+                    data += Marshal.SizeOf<retro_variable>();
+                    variable.ToPointer(data);
+                    variable = data.ToStructure<retro_variable>();
                 }
 
                 Serialize();
@@ -154,12 +156,72 @@ namespace SK.Libretro
                 return false;
 
             var coreOptionDisplay = data.ToStructure<retro_core_option_display>();
-            if (coreOptionDisplay.key.IsNull())
+            if (coreOptionDisplay.key == IntPtr.Zero || string.IsNullOrWhiteSpace(coreOptionDisplay.key.AsString()))
                 return false;
 
             var key = coreOptionDisplay.key.AsString();
             CoreOptions[key]?.SetVisibility(coreOptionDisplay.visible);
             return true;
+        }
+
+        public bool SetCoreOptionsV2(IntPtr data) => SetCoreOptionsV2Internal(data);
+
+        public bool SetCoreOptionsV2Intl(IntPtr data)
+        {
+            if (data.IsNull())
+                return false;
+
+            var intl = data.ToStructure<retro_core_options_v2_intl>();
+            var result = SetCoreOptionsV2Internal(intl.local);
+            if (!result)
+                result = SetCoreOptionsV2Internal(intl.us);
+            return result;
+        }
+
+        public bool SetVariable(IntPtr data)
+        {
+            if (data.IsNull())
+                return false;
+
+            try
+            {
+                Deserialize();
+
+                var variable = data.ToStructure<retro_variable>();
+                if (variable.key == IntPtr.Zero || string.IsNullOrWhiteSpace(variable.key.AsString()) ||
+                    variable.value == IntPtr.Zero || string.IsNullOrWhiteSpace(variable.value.AsString()))
+                    return false;
+
+                var key = variable.key.AsString();
+                var value = variable.value.AsString();
+
+                if (GameOptions is null || !GameOptions.TryGetValue(key, out var gameOption))
+                {
+                    if (CoreOptions is null)
+                    {
+                        _wrapper.LogHandler.LogWarning($"Core didn't set its options. Requested key: {key}", $"SK.Libretro.OptionsHandler.SetVariable");
+                        return false;
+                    }
+
+                    if (!CoreOptions.TryGetValue(key, out var coreOption))
+                    {
+                        _wrapper.LogHandler.LogWarning($"Core option '{key}' not found.", $"SK.Libretro.OptionsHandler.SetVariable");
+                        return false;
+                    }
+
+                    coreOption.CurrentValue = value;
+                }
+                else
+                    gameOption.CurrentValue = value;
+
+                Serialize();
+                return true;
+            }
+            catch (Exception e)
+            {
+                _wrapper.LogHandler.LogException(e);
+                return false;
+            }
         }
 
         public void Serialize(bool global = true, bool updateVariables = true)
@@ -225,7 +287,7 @@ namespace SK.Libretro
                 var fields = type.GetFields(bindingFlags);
 
                 var optionDefinition = data.ToStructure<retro_core_option_definition>();
-                while (optionDefinition is not null && optionDefinition.key.IsNotNull())
+                while (optionDefinition.key != IntPtr.Zero && !string.IsNullOrWhiteSpace(optionDefinition.key.AsString()))
                 {
                     var key = optionDefinition.key.AsString();
                     var description = optionDefinition.desc.AsString();
@@ -236,7 +298,7 @@ namespace SK.Libretro
                     for (var i = 0; i < fields.Length; ++i)
                     {
                         var fieldInfo = fields[i];
-                        if (fieldInfo.GetValue(optionDefinition.values) is not retro_core_option_value optionValue || optionValue.value.IsNull())
+                        if (fieldInfo.GetValue(optionDefinition.values) is not retro_core_option_value optionValue || optionValue.value == IntPtr.Zero || string.IsNullOrWhiteSpace(optionValue.value.AsString()))
                             continue;
 
                         possibleValues.Add(optionValue.value.AsString());
@@ -253,8 +315,63 @@ namespace SK.Libretro
                     else
                         CoreOptions[key].Update(key, description, info, possibleValues.ToArray());
 
-                    data += Marshal.SizeOf(optionDefinition);
-                    data.ToStructure(optionDefinition);
+                    data += Marshal.SizeOf<retro_core_option_definition>();
+                    optionDefinition = data.ToStructure<retro_core_option_definition>();
+                }
+
+                Serialize();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool SetCoreOptionsV2Internal(IntPtr data)
+        {
+            try
+            {
+                Deserialize();
+
+                if (data.IsNull())
+                    return false;
+
+                var type = typeof(retro_core_option_v2_definition);
+                var bindingFlags = BindingFlags.Public | BindingFlags.Instance;
+                var fields = type.GetFields(bindingFlags);
+
+                var optionDefinition = data.ToStructure<retro_core_option_v2_definition>();
+                while (optionDefinition.key != IntPtr.Zero && !string.IsNullOrWhiteSpace(optionDefinition.key.AsString()))
+                {
+                    var key = optionDefinition.key.AsString();
+                    var description = optionDefinition.desc.AsString();
+                    var info = optionDefinition.info.AsString();
+                    var defaultValue = optionDefinition.default_value.AsString();
+
+                    List<string> possibleValues = new();
+                    for (var i = 0; i < fields.Length; ++i)
+                    {
+                        var fieldInfo = fields[i];
+                        if (fieldInfo.GetValue(optionDefinition) is not retro_core_option_value optionValue || optionValue.value == IntPtr.Zero || string.IsNullOrWhiteSpace(optionValue.value.AsString()))
+                            continue;
+
+                        possibleValues.Add(optionValue.value.AsString());
+                    }
+
+                    var value = "";
+                    if (!string.IsNullOrWhiteSpace(defaultValue))
+                        value = defaultValue;
+                    else if (possibleValues.Count > 0)
+                        value = possibleValues[0];
+
+                    if (CoreOptions[key] is null)
+                        CoreOptions[key] = new Option(key, description, info, value, possibleValues.ToArray());
+                    else
+                        CoreOptions[key].Update(key, description, info, possibleValues.ToArray());
+
+                    data += Marshal.SizeOf<retro_core_option_v2_definition>();
+                    optionDefinition = data.ToStructure<retro_core_option_v2_definition>();
                 }
 
                 Serialize();

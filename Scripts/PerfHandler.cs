@@ -106,7 +106,7 @@ namespace SK.Libretro
             callback.perf_stop        = _perf_stop.GetFunctionPointer();
             callback.perf_log         = _perf_log.GetFunctionPointer();
 
-            Marshal.StructureToPtr(callback, data, false);
+            callback.ToPointer(data);
             return true;
         }
     }

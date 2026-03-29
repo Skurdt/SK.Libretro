@@ -80,13 +80,15 @@ namespace SK.Libretro
             };
         }
 
-        public void Dispose()
-        {
-            _processor.Dispose();
-            _hardwareRenderProxy?.Dispose();
-        }
+        public void Dispose() => _processor.Dispose();
 
         public bool InitHwRender() => _hardwareRenderProxy is null || _hardwareRenderProxy.Init(_wrapper.Game.SystemAVInfo.BaseWidth, _wrapper.Game.SystemAVInfo.BaseHeight);
+
+        public void ResizeHwRender(int width, int height) => _hardwareRenderProxy?.Resize(width, height);
+
+        public void CallHwRenderContextDestroy() => _hardwareRenderProxy?.CallContextDestroy();
+
+        public void DeInitHwRender() => _hardwareRenderProxy?.DeInit();
 
         public void SetCoreCallback(retro_set_video_refresh_t setVideoRefresh) => setVideoRefresh(_refreshCallback);
 
@@ -124,13 +126,15 @@ namespace SK.Libretro
             framebuffer.access_flags = (uint)RETRO_MEMORY_ACCESS.WRITE;
             framebuffer.memory_flags = RETRO.MEMORY_TYPE_CACHED;
 
-            Marshal.StructureToPtr(framebuffer, data, true);
+            framebuffer.ToPointer(data);
             _frameHandler = new GraphicsFrameHandlerSoftwareFramebuffer(_processor);
             return true;
 #else
             return false;
 #endif
         }
+
+        public bool GetHwRenderInterface(IntPtr data) => !data.IsNull() && _hardwareRenderProxy is not null && _hardwareRenderProxy.GetHwRenderInterface(data);
 
         public bool GetPreferredHwRender(IntPtr data)
         {
@@ -168,7 +172,9 @@ namespace SK.Libretro
             _hardwareRenderProxy = hwRenderCallback.context_type switch
             {
                 retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL
-                or retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE => new OpenGLRenderProxySDL(_wrapper, hwRenderCallback),
+                or retro_hw_context_type.RETRO_HW_CONTEXT_OPENGL_CORE => new HardwareRenderProxyOpenGL(_wrapper, hwRenderCallback),
+
+                retro_hw_context_type.RETRO_HW_CONTEXT_VULKAN => new HardwareRenderProxyVulkan(_wrapper, hwRenderCallback),
 
                 retro_hw_context_type.RETRO_HW_CONTEXT_NONE
                 or _ => default
@@ -179,7 +185,7 @@ namespace SK.Libretro
 
             hwRenderCallback.get_current_framebuffer = _hardwareRenderProxy.GetCurrentFrameBuffer.GetFunctionPointer();
             hwRenderCallback.get_proc_address        = _hardwareRenderProxy.GetProcAddress.GetFunctionPointer();
-            Marshal.StructureToPtr(hwRenderCallback, data, false);
+            hwRenderCallback.ToPointer(data);
             return true;
         }
 
@@ -194,6 +200,8 @@ namespace SK.Libretro
             }
             return true;
         }
+
+        public bool SetHwRenderContextNegotiationInterface(IntPtr data) => !data.IsNull() && _hardwareRenderProxy is not null && _hardwareRenderProxy.SetHwRenderContextNegotiationInterface(data);
 
 #if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_video_refresh_t))]

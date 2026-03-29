@@ -26,13 +26,14 @@ using System.Runtime.InteropServices;
 namespace SK.Libretro.Header
 {
     // typedef bool (RETRO_CALLCONV* retro_set_sensor_state_t) (unsigned port, enum retro_sensor_action action, unsigned rate);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     [return: MarshalAs(UnmanagedType.I1)]
     internal delegate bool retro_set_sensor_state_t(uint port, retro_sensor_action action, uint rate);
     // typedef float (RETRO_CALLCONV* retro_sensor_get_input_t) (unsigned port, unsigned id);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate float retro_sensor_get_input_t(uint port, uint id);
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct retro_sensor_interface
     {
         public IntPtr set_sensor_state; // retro_set_sensor_state_t

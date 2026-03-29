@@ -84,14 +84,14 @@ namespace SK.Libretro
 
             var logCallback = data.ToStructure<retro_log_callback>();
             logCallback.log = _logPrintf.GetFunctionPointer();
-            Marshal.StructureToPtr(logCallback, data, false);
+            logCallback.ToPointer(data);
             return true;
         }
 
 #if ENABLE_IL2CPP
         [MonoPInvokeCallback(typeof(retro_log_printf_t))]
         private static void LogPrintf(retro_log_level level,
-                                      string format,
+                                      IntPtr format,
                                       IntPtr arg1,
                                       IntPtr arg2,
                                       IntPtr arg3,
@@ -109,7 +109,7 @@ namespace SK.Libretro
                 return;
 #else
         private void LogPrintf(retro_log_level level,
-                                      string format,
+                                      IntPtr format,
                                       IntPtr arg1,
                                       IntPtr arg2,
                                       IntPtr arg3,
@@ -126,11 +126,11 @@ namespace SK.Libretro
 #endif
             var logLevel = level.ToLogLevel();
             if (logLevel >= _wrapper.LogHandler._level)
-                _wrapper.LogHandler.LogMessage(logLevel, format);
+                _wrapper.LogHandler.LogMessage(logLevel, format.AsString());
         }
 
         protected virtual void Log(retro_log_level level,
-                                   string format,
+                                   IntPtr format,
                                    IntPtr arg1,
                                    IntPtr arg2,
                                    IntPtr arg3,
@@ -146,7 +146,7 @@ namespace SK.Libretro
         {
             var logLevel = level.ToLogLevel();
             if (logLevel >= _level)
-                LogMessage(logLevel, format);
+                LogMessage(logLevel, format.AsString());
         }
 
         protected void LogMessage(LogLevel level, string message)
